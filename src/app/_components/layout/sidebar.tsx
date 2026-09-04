@@ -132,7 +132,7 @@ export function Sidebar({
           <button
             aria-label={collapsed ? "Expandir menú lateral" : "Contraer menú lateral"}
             className={[
-              "mt-3 hidden min-h-10 w-full items-center rounded-xl border border-white/10 text-xs font-medium text-slate-300 transition hover:bg-white/8 hover:text-white lg:flex",
+              "mt-3 hidden min-h-10 w-full items-center rounded-xl border border-white/10 text-xs font-medium text-slate-300 transition hover:bg-white/5 hover:text-white lg:flex",
               collapsed ? "justify-center px-3" : "gap-3 px-3.5",
             ].join(" ")}
             type="button"
