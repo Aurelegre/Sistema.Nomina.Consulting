@@ -7,4 +7,19 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-// Add project-specific models below.
+enum EstadoPeriodoNomina {
+  ABIERTO
+  CERRADO
+}
+
+model PeriodoNomina {
+  id            Int                 @id @default(autoincrement())
+  mes           Int
+  anio          Int
+  estado        EstadoPeriodoNomina @default(ABIERTO)
+  fechaCreacion DateTime            @default(now()) @map("fecha_creacion")
+  fechaCierre   DateTime?           @map("fecha_cierre")
+
+  @@unique([mes, anio], map: "uq_periodo_nomina_mes_anio")
+  @@map("periodo_nomina")
+}
