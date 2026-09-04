@@ -181,7 +181,15 @@ export function PeriodosNominaManager() {
                           className="rounded-lg border border-slate-300 px-3 py-2 text-sm font-medium text-slate-700 transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-60"
                           type="button"
                           disabled={cerrar.isPending}
-                          onClick={() => cerrar.mutate({ id: periodo.id })}
+                          onClick={() => {
+                            const confirmado = window.confirm(
+                              `¿Deseas cerrar ${MESES[periodo.mes - 1]} ${periodo.anio}? Después del cierre no se podrán registrar nuevas novedades en este período.`
+                            );
+
+                            if (confirmado) {
+                              cerrar.mutate({ id: periodo.id });
+                            }
+                          }}
                         >
                           {cerrar.isPending ? "Cerrando..." : "Cerrar"}
                         </button>
