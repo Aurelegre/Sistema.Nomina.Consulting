@@ -27,8 +27,8 @@ export function SidebarItem({
         "group relative flex min-h-11 items-center rounded-xl text-sm font-medium transition",
         collapsed ? "justify-center px-3" : "gap-3 px-3.5",
         active
-          ? "bg-white/12 text-white shadow-sm"
-          : "text-slate-300 hover:bg-white/8 hover:text-white",
+          ? "bg-white/10 text-white shadow-sm"
+          : "text-slate-300 hover:bg-white/5 hover:text-white",
       ].join(" ")}
       href={href}
       onClick={onNavigate}
