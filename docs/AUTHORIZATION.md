@@ -2,7 +2,9 @@
 
 ## Estado
 
-La autenticación todavía no está implementada en el proyecto actual y debe desarrollarse como una feature independiente.
+La rama `feature/auth-bootstrap` incorpora login, sesiones, permisos backend y
+cambio obligatorio de contraseña inicial. La administración visual de usuarios,
+roles y permisos sigue pendiente. Ver `AUTH_BOOTSTRAP.md` para el seed y despliegue.
 
 ## Objetivo
 

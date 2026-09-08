@@ -16,8 +16,12 @@ import {
   UsersIcon,
 } from "~/app/_components/layout/sidebar-icons";
 import { SidebarItem } from "~/app/_components/layout/sidebar-item";
+import { api } from "~/trpc/react";
+import { Button } from "~/components/ui/button";
+import { PERMISOS_RUTAS } from "~/shared/permisos-rutas";
 
 type SidebarProps = {
+  permisos: string[];
   collapsed: boolean;
   mobileOpen: boolean;
   onToggleCollapsed: () => void;
@@ -37,12 +41,16 @@ const navigation = [
 ] as const;
 
 export function Sidebar({
+  permisos,
   collapsed,
   mobileOpen,
   onToggleCollapsed,
   onCloseMobile,
 }: SidebarProps) {
   const pathname = usePathname();
+  const logout = api.auth.logout.useMutation({
+    onSettled: () => window.location.assign("/login"),
+  });
 
   const isActive = (href: string) =>
     href === "/" ? pathname === "/" : pathname.startsWith(href);
@@ -89,48 +97,55 @@ export function Sidebar({
         </div>
 
         <nav className="flex-1 space-y-1 overflow-y-auto px-3 py-5">
-          {navigation.map((item) => (
-            <SidebarItem
-              key={item.href}
-              active={isActive(item.href)}
-              collapsed={collapsed}
-              href={item.href}
-              icon={item.icon}
-              label={item.label}
-              onNavigate={onCloseMobile}
-            />
-          ))}
+          {navigation
+            .filter(
+              (item) =>
+                !PERMISOS_RUTAS[item.href] ||
+                permisos.includes(PERMISOS_RUTAS[item.href]!),
+            )
+            .map((item) => (
+              <SidebarItem
+                key={item.href}
+                active={isActive(item.href)}
+                collapsed={collapsed}
+                href={item.href}
+                icon={item.icon}
+                label={item.label}
+                onNavigate={onCloseMobile}
+              />
+            ))}
         </nav>
 
         <div className="border-t border-white/10 px-3 py-4">
-          <SidebarItem
-            active={isActive("/configuracion")}
-            collapsed={collapsed}
-            href="/configuracion"
-            icon={SettingsIcon}
-            label="Configuración"
-            onNavigate={onCloseMobile}
-          />
+          {permisos.includes("SETTINGS.VIEW") && (
+            <SidebarItem
+              active={isActive("/configuracion")}
+              collapsed={collapsed}
+              href="/configuracion"
+              icon={SettingsIcon}
+              label="Configuración"
+              onNavigate={onCloseMobile}
+            />
+          )}
 
-          <button
+          <Button
             className={[
               "mt-1 flex min-h-11 w-full items-center rounded-xl text-sm font-medium text-slate-400 transition",
               collapsed ? "justify-center px-3" : "gap-3 px-3.5",
             ].join(" ")}
-            disabled
-            title={
-              collapsed
-                ? "Cerrar sesión"
-                : "Disponible al implementar autenticación"
-            }
+            disabled={logout.isPending}
+            onClick={() => logout.mutate()}
+            title="Cerrar sesión"
             type="button"
           >
             <LogoutIcon className="h-5 w-5 shrink-0" aria-hidden="true" />
             {!collapsed ? <span>Cerrar sesión</span> : null}
-          </button>
+          </Button>
 
           <button
-            aria-label={collapsed ? "Expandir menú lateral" : "Contraer menú lateral"}
+            aria-label={
+              collapsed ? "Expandir menú lateral" : "Contraer menú lateral"
+            }
             className={[
               "mt-3 hidden min-h-10 w-full items-center rounded-xl border border-white/10 text-xs font-medium text-slate-300 transition hover:bg-white/5 hover:text-white lg:flex",
               collapsed ? "justify-center px-3" : "gap-3 px-3.5",

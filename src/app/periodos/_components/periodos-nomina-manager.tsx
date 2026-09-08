@@ -1,11 +1,6 @@
 "use client";
 
-import {
-  useCallback,
-  useMemo,
-  useState,
-  type FormEvent,
-} from "react";
+import { useCallback, useMemo, useState, type FormEvent } from "react";
 
 import { ConfirmarCierrePeriodoModal } from "~/app/periodos/_components/confirmar-cierre-periodo-modal";
 import { api } from "~/trpc/react";
@@ -51,6 +46,7 @@ export function PeriodosNominaManager() {
     useState<PeriodoSeleccionado | null>(null);
 
   const utils = api.useUtils();
+  const identidad = api.auth.me.useQuery();
   const periodos = api.periodosNomina.listar.useQuery();
 
   const crear = api.periodosNomina.crear.useMutation({
@@ -96,63 +92,65 @@ export function PeriodosNominaManager() {
   return (
     <>
       <div className="space-y-8">
-        <section className="rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
-          <div className="mb-5">
-            <h2 className="text-xl font-semibold text-slate-950">
-              Crear período de nómina
-            </h2>
-            <p className="mt-1 text-sm text-slate-600">
-              Cada combinación de mes y año puede existir una sola vez.
-            </p>
-          </div>
+        {identidad.data?.permisos.includes("PAYROLL_PERIODS.CREATE") && (
+          <section className="rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
+            <div className="mb-5">
+              <h2 className="text-xl font-semibold text-slate-950">
+                Crear período de nómina
+              </h2>
+              <p className="mt-1 text-sm text-slate-600">
+                Cada combinación de mes y año puede existir una sola vez.
+              </p>
+            </div>
 
-          <form
-            className="grid gap-4 md:grid-cols-[1fr_1fr_auto] md:items-end"
-            onSubmit={handleSubmit}
-          >
-            <label className="grid gap-2 text-sm font-medium text-slate-700">
-              Mes
-              <select
-                className="rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-slate-950 outline-none focus:border-slate-500"
-                value={mes}
-                onChange={(event) => setMes(event.target.value)}
-              >
-                {MESES.map((nombre, index) => (
-                  <option key={nombre} value={index + 1}>
-                    {nombre}
-                  </option>
-                ))}
-              </select>
-            </label>
-
-            <label className="grid gap-2 text-sm font-medium text-slate-700">
-              Año
-              <input
-                className="rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-slate-950 outline-none focus:border-slate-500"
-                type="number"
-                min={1}
-                step={1}
-                value={anio}
-                onChange={(event) => setAnio(event.target.value)}
-                required
-              />
-            </label>
-
-            <button
-              className="rounded-lg bg-slate-950 px-5 py-2.5 text-sm font-medium text-white transition hover:bg-slate-800 disabled:cursor-not-allowed disabled:opacity-60"
-              type="submit"
-              disabled={crear.isPending}
+            <form
+              className="grid gap-4 md:grid-cols-[1fr_1fr_auto] md:items-end"
+              onSubmit={handleSubmit}
             >
-              {crear.isPending ? "Creando..." : "Crear período"}
-            </button>
-          </form>
+              <label className="grid gap-2 text-sm font-medium text-slate-700">
+                Mes
+                <select
+                  className="rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-slate-950 outline-none focus:border-slate-500"
+                  value={mes}
+                  onChange={(event) => setMes(event.target.value)}
+                >
+                  {MESES.map((nombre, index) => (
+                    <option key={nombre} value={index + 1}>
+                      {nombre}
+                    </option>
+                  ))}
+                </select>
+              </label>
 
-          {crear.error ? (
-            <p className="mt-4 text-sm font-medium text-red-700">
-              {crear.error.message}
-            </p>
-          ) : null}
-        </section>
+              <label className="grid gap-2 text-sm font-medium text-slate-700">
+                Año
+                <input
+                  className="rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-slate-950 outline-none focus:border-slate-500"
+                  type="number"
+                  min={1}
+                  step={1}
+                  value={anio}
+                  onChange={(event) => setAnio(event.target.value)}
+                  required
+                />
+              </label>
+
+              <button
+                className="rounded-lg bg-slate-950 px-5 py-2.5 text-sm font-medium text-white transition hover:bg-slate-800 disabled:cursor-not-allowed disabled:opacity-60"
+                type="submit"
+                disabled={crear.isPending}
+              >
+                {crear.isPending ? "Creando..." : "Crear período"}
+              </button>
+            </form>
+
+            {crear.error ? (
+              <p className="mt-4 text-sm font-medium text-red-700">
+                {crear.error.message}
+              </p>
+            ) : null}
+          </section>
+        )}
 
         <section className="rounded-xl border border-slate-200 bg-white shadow-sm">
           <div className="border-b border-slate-200 px-6 py-5">
@@ -180,7 +178,7 @@ export function PeriodosNominaManager() {
           ) : (
             <div className="overflow-x-auto">
               <table className="min-w-full divide-y divide-slate-200 text-sm">
-                <thead className="bg-slate-50 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">
+                <thead className="bg-slate-50 text-left text-xs font-semibold tracking-wide text-slate-500 uppercase">
                   <tr>
                     <th className="px-6 py-3">Período</th>
                     <th className="px-6 py-3">Estado</th>
@@ -192,10 +190,10 @@ export function PeriodosNominaManager() {
                 <tbody className="divide-y divide-slate-100">
                   {periodos.data.map((periodo) => (
                     <tr key={periodo.id} className="text-slate-700">
-                      <td className="whitespace-nowrap px-6 py-4 font-medium text-slate-950">
+                      <td className="px-6 py-4 font-medium whitespace-nowrap text-slate-950">
                         {formatPeriodo(periodo.mes, periodo.anio)}
                       </td>
-                      <td className="whitespace-nowrap px-6 py-4">
+                      <td className="px-6 py-4 whitespace-nowrap">
                         <span
                           className={
                             periodo.estado === "ABIERTO"
@@ -206,14 +204,17 @@ export function PeriodosNominaManager() {
                           {periodo.estado}
                         </span>
                       </td>
-                      <td className="whitespace-nowrap px-6 py-4">
+                      <td className="px-6 py-4 whitespace-nowrap">
                         {formatFecha(periodo.fechaCreacion)}
                       </td>
-                      <td className="whitespace-nowrap px-6 py-4">
+                      <td className="px-6 py-4 whitespace-nowrap">
                         {formatFecha(periodo.fechaCierre)}
                       </td>
-                      <td className="whitespace-nowrap px-6 py-4 text-right">
-                        {periodo.estado === "ABIERTO" ? (
+                      <td className="px-6 py-4 text-right whitespace-nowrap">
+                        {periodo.estado === "ABIERTO" &&
+                        identidad.data?.permisos.includes(
+                          "PAYROLL_PERIODS.CLOSE",
+                        ) ? (
                           <button
                             className="rounded-lg border border-slate-300 px-3 py-2 text-sm font-medium text-slate-700 transition hover:bg-slate-50"
                             type="button"

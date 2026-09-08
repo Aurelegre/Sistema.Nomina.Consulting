@@ -7,7 +7,13 @@ import { Sidebar } from "~/app/_components/layout/sidebar";
 
 const STORAGE_KEY = "nomina-sidebar-collapsed";
 
-export function AppShell({ children }: { children: React.ReactNode }) {
+export function AppShell({
+  children,
+  permisos,
+}: {
+  children: React.ReactNode;
+  permisos: string[];
+}) {
   const [collapsed, setCollapsed] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
 
@@ -30,6 +36,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
   return (
     <div className="min-h-screen bg-slate-50">
       <Sidebar
+        permisos={permisos}
         collapsed={collapsed}
         mobileOpen={mobileOpen}
         onCloseMobile={() => setMobileOpen(false)}

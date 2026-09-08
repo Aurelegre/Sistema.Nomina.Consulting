@@ -33,3 +33,5 @@ generated/
 .vscode/*
 !.vscode/extensions.json
 .vercel/
+test-results/
+playwright-report/

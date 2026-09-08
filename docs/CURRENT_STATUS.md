@@ -103,7 +103,11 @@ Prioridad:
 
 ## Autenticación
 
-Aún no implementada.
+Implementación inicial en `feature/auth-bootstrap`, pendiente de integración:
+modelos de seguridad, catálogo y seed administrador, login/logout, sesiones,
+cambio obligatorio de contraseña temporal y protección backend de períodos.
+Administración visual de usuarios/roles y ámbito departamental aún pendientes.
+Preparación de acceso y despliegue: `AUTH_BOOTSTRAP.md`.
 
 El diseño objetivo está en `AUTHORIZATION.md`.
 
