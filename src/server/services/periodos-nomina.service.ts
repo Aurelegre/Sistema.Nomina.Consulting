@@ -28,7 +28,7 @@ export const obtenerPeriodoNomina = async (db: PrismaClient, id: number) => {
 
 export const crearPeriodoNomina = async (
   db: PrismaClient,
-  input: CrearPeriodoInput
+  input: CrearPeriodoInput,
 ) => {
   const existente = await db.periodoNomina.findFirst({
     where: {
@@ -41,7 +41,8 @@ export const crearPeriodoNomina = async (
   if (existente) {
     throw new TRPCError({
       code: "CONFLICT",
-      message: "Ya existe un período de nómina para el mes y año seleccionados.",
+      message:
+        "Ya existe un período de nómina para el mes y año seleccionados.",
     });
   }
 
