@@ -34,6 +34,7 @@ export function PrimeraPasswordForm() {
           </DialogDescription>
         </DialogHeader>
         <form
+          method="post"
           className="space-y-4"
           onSubmit={(event) => {
             event.preventDefault();

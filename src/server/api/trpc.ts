@@ -2,9 +2,10 @@ import { initTRPC, TRPCError } from "@trpc/server";
 import superjson from "superjson";
 import { ZodError } from "zod";
 import { db } from "~/server/db";
-import { obtenerSesion } from "~/server/services/auth.service";
-import { type CodigoPermiso } from "~/shared/permisos";
+import { type CodigoPermiso } from "~/server/permisos/Helpers/permisos";
+import { obtenerSesion } from "../sesion/Helpers/sesion.helper";
 
+// crea el contexto de tRPC, incluyendo la sesión del usuario y la base de datos.
 export const createTRPCContext = async (opts: {
   headers: Headers;
   responseHeaders?: Headers;
@@ -15,6 +16,7 @@ export const createTRPCContext = async (opts: {
   sesion: await obtenerSesion(db, opts.headers),
 });
 
+// inicializa tRPC con el contexto y la serialización de datos.
 const t = initTRPC.context<typeof createTRPCContext>().create({
   transformer: superjson,
   errorFormatter({ shape, error }) {

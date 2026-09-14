@@ -1,6 +1,7 @@
 "use client";
 
 import { api } from "~/trpc/react";
+import { useHidratado } from "~/shared/use-hidratado";
 import { textoFormulario } from "~/shared/form-data";
 import { Button } from "~/components/ui/button";
 import { Input } from "~/components/ui/input";
@@ -9,6 +10,7 @@ import { Card, CardHeader, CardTitle, CardContent } from "~/components/ui/card";
 import { Alert, AlertDescription } from "~/components/ui/alert";
 
 export function LoginForm() {
+  const listo = useHidratado();
   const login = api.auth.login.useMutation({
     onSuccess: ({ debeCambiarPassword }) =>
       window.location.assign(debeCambiarPassword ? "/cambiar-password" : "/"),
@@ -20,6 +22,7 @@ export function LoginForm() {
       </CardHeader>
       <CardContent>
         <form
+          method="post"
           className="space-y-4"
           onSubmit={(event) => {
             event.preventDefault();
@@ -34,6 +37,7 @@ export function LoginForm() {
             <Label htmlFor="username">Usuario</Label>
             <Input
               id="username"
+              disabled={!listo}
               name="username"
               autoComplete="username"
               required
@@ -44,6 +48,7 @@ export function LoginForm() {
             <Label htmlFor="password">Contraseña</Label>
             <Input
               id="password"
+              disabled={!listo}
               name="password"
               type="password"
               autoComplete="current-password"
@@ -56,7 +61,7 @@ export function LoginForm() {
               <AlertDescription>{login.error.message}</AlertDescription>
             </Alert>
           )}
-          <Button type="submit" disabled={login.isPending}>
+          <Button type="submit" disabled={!listo || login.isPending}>
             {login.isPending ? "Ingresando…" : "Ingresar"}
           </Button>
         </form>

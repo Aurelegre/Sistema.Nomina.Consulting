@@ -65,7 +65,7 @@ Implementado:
 
 Orden sugerido:
 
-1. autenticación + usuarios + roles + permisos;
+1. integrar y revisar administración de usuarios + roles + permisos;
 2. empleados;
 3. departamentos;
 4. ausencias;
@@ -103,10 +103,14 @@ Prioridad:
 
 ## Autenticación
 
-Implementación inicial en `feature/auth-bootstrap`, pendiente de integración:
+Implementación inicial de `feature/auth-bootstrap`, integrada en develop:
 modelos de seguridad, catálogo y seed administrador, login/logout, sesiones,
 cambio obligatorio de contraseña temporal y protección backend de períodos.
-Administración visual de usuarios/roles y ámbito departamental aún pendientes.
+Administración visual de usuarios/roles/permisos implementada en
+`feature/users-roles-permissions`, pendiente de integración. Incluye contraseñas
+temporales, revocación de sesiones, delegación limitada y control de concurrencia.
+El ámbito departamental queda pendiente de los módulos de empleados/ausencias.
+Detalles: `ACCESS_MANAGEMENT.md`.
 Preparación de acceso y despliegue: `AUTH_BOOTSTRAP.md`.
 
 El diseño objetivo está en `AUTHORIZATION.md`.

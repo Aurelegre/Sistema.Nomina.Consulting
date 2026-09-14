@@ -2,9 +2,10 @@
 
 ## Estado
 
-La rama `feature/auth-bootstrap` incorpora login, sesiones, permisos backend y
-cambio obligatorio de contraseña inicial. La administración visual de usuarios,
-roles y permisos sigue pendiente. Ver `AUTH_BOOTSTRAP.md` para el seed y despliegue.
+La autenticación inicial está integrada en develop. La rama
+`feature/users-roles-permissions` agrega la administración de usuarios, roles y
+permisos. Ver `AUTH_BOOTSTRAP.md` para acceso inicial y `ACCESS_MANAGEMENT.md`
+para pantallas, permisos, reglas de delegación y control de concurrencia.
 
 ## Objetivo
 

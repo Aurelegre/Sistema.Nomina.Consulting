@@ -1,10 +1,6 @@
 import { Prisma, type PrismaClient } from "@prisma/client";
 import { TRPCError } from "@trpc/server";
-
-type CrearPeriodoInput = {
-  mes: number;
-  anio: number;
-};
+import type { CrearPeriodoInput } from "./Models/CrearPeriodoInput.model";
 
 export const listarPeriodosNomina = (db: PrismaClient) =>
   db.periodoNomina.findMany({

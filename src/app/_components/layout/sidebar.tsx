@@ -38,6 +38,8 @@ const navigation = [
   { href: "/asociacion", label: "Asociación", icon: AssociationIcon },
   { href: "/reportes", label: "Reportes", icon: ReportIcon },
   { href: "/usuarios", label: "Usuarios", icon: UsersIcon },
+  { href: "/roles", label: "Roles", icon: UsersIcon },
+  { href: "/permisos", label: "Permisos", icon: SettingsIcon },
 ] as const;
 
 export function Sidebar({

@@ -1,7 +1,8 @@
 import { PrismaClient } from "@prisma/client";
 import { pathToFileURL } from "node:url";
-import { PERMISOS } from "../src/shared/permisos";
-import { hashPassword } from "../src/server/security/password";
+import { PERMISOS } from "../src/server/permisos/Helpers/permisos";
+import { hashPassword } from "../src/server/sesion/Helpers/password";
+import { ROLES_INICIALES } from "./roles-iniciales";
 
 export async function seed(
   db: PrismaClient,
@@ -63,6 +64,27 @@ export async function seed(
           },
           update: {},
         });
+      }
+      // Plantillas solo al crear el rol: no sobrescribir ajustes de la UI.
+      for (const inicial of ROLES_INICIALES) {
+        const existeRol = await tx.rol.findUnique({
+          where: { codigo: inicial.codigo },
+        });
+        if (!existeRol) {
+          const permisos = await tx.permiso.findMany({
+            where: { codigo: { in: inicial.permisos } },
+          });
+          await tx.rol.create({
+            data: {
+              codigo: inicial.codigo,
+              nombre: inicial.nombre,
+              descripcion: inicial.descripcion,
+              permisos: {
+                create: permisos.map(({ id }) => ({ permisoId: id })),
+              },
+            },
+          });
+        }
       }
       const admin = await tx.usuario.findUnique({
         where: { username },

@@ -1,57 +1,8 @@
-import { createHash, randomBytes } from "node:crypto";
 import { TRPCError } from "@trpc/server";
 import { type PrismaClient } from "@prisma/client";
-import { hashPassword, verificarPassword } from "../security/password";
-
-export const SESSION_COOKIE = "nomina_session";
-const SESSION_SECONDS = 8 * 60 * 60;
-const digest = (token: string) =>
-  createHash("sha256").update(token).digest("hex");
-export const usuarioPublico = {
-  id: true,
-  username: true,
-  nombre: true,
-  debeCambiarPassword: true,
-  estado: true,
-  rol: { include: { permisos: { include: { permiso: true } } } },
-} as const;
-
-export async function obtenerSesion(db: PrismaClient, headers: Headers) {
-  const token = headers
-    .get("cookie")
-    ?.split(";")
-    .map((part) => part.trim())
-    .find((part) => part.startsWith(`${SESSION_COOKIE}=`))
-    ?.slice(SESSION_COOKIE.length + 1);
-  if (!token || !/^[a-f0-9]{64}$/.test(token)) return null;
-  const sesion = await db.sesion.findUnique({
-    where: { tokenHash: digest(token) },
-    include: { usuario: { select: usuarioPublico } },
-  });
-  if (
-    !sesion ||
-    sesion.fechaExpiracion <= new Date() ||
-    sesion.usuario.estado !== "ACTIVO" ||
-    sesion.usuario.rol.estado !== "ACTIVO"
-  )
-    return null;
-  return {
-    id: sesion.id,
-    usuario: {
-      id: sesion.usuario.id,
-      username: sesion.usuario.username,
-      nombre: sesion.usuario.nombre,
-      debeCambiarPassword: sesion.usuario.debeCambiarPassword,
-      permisos: sesion.usuario.rol.permisos.map(
-        ({ permiso }) => permiso.codigo,
-      ),
-    },
-  };
-}
-
-export function cookieSesion(token: string, borrar = false) {
-  return `${SESSION_COOKIE}=${token}; Path=/; HttpOnly; SameSite=Lax; Max-Age=${borrar ? 0 : SESSION_SECONDS}${process.env.NODE_ENV === "production" ? "; Secure" : ""}`;
-}
+import { hashPassword, verificarPassword } from "./Helpers/password";
+import { randomBytes } from "crypto";
+import { digest, SESSION_SECONDS } from "./Helpers/sesion.helper";
 
 export async function iniciarSesion(
   db: PrismaClient,
@@ -150,7 +101,11 @@ export async function cambiarPrimeraPassword(
         estado: "ACTIVO",
         rol: { estado: "ACTIVO" },
       },
-      data: { passwordHash, debeCambiarPassword: false },
+      data: {
+        passwordHash,
+        debeCambiarPassword: false,
+        version: { increment: 1 },
+      },
     });
     if (resultado.count !== 1)
       throw new TRPCError({

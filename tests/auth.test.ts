@@ -3,14 +3,16 @@ import { randomBytes } from "node:crypto";
 import { test } from "node:test";
 import { PrismaClient } from "@prisma/client";
 import { seed } from "../prisma/seed";
-import { PERMISOS } from "../src/shared/permisos";
+import { PERMISOS } from "../src/server/permisos/Helpers/permisos";
 import {
   iniciarSesion,
-  obtenerSesion,
   cambiarPrimeraPassword,
-  cookieSesion,
-} from "../src/server/services/auth.service";
+} from "../src/server/sesion/auth.service";
 import { createCaller } from "../src/server/api/root";
+import {
+  cookieSesion,
+  obtenerSesion,
+} from "~/server/sesion/Helpers/sesion.helper";
 
 void test("seed repetible y ciclo de contraseña inicial, sesión y permisos", async () => {
   const db = new PrismaClient();

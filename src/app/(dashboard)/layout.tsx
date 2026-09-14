@@ -2,7 +2,7 @@ import { AppShell } from "~/app/_components/layout/app-shell";
 import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 import { db } from "~/server/db";
-import { obtenerSesion } from "~/server/services/auth.service";
+import { obtenerSesion } from "~/server/sesion/Helpers/sesion.helper";
 
 export default async function DashboardLayout({
   children,

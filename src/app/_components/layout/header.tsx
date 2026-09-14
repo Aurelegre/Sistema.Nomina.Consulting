@@ -18,6 +18,8 @@ const TITLES: Record<string, string> = {
   "/asociacion": "Asociación Solidarista",
   "/reportes": "Reportes",
   "/usuarios": "Usuarios",
+  "/roles": "Roles",
+  "/permisos": "Permisos",
   "/configuracion": "Configuración",
 };
 
@@ -25,7 +27,7 @@ export function Header({ onOpenMobile }: HeaderProps) {
   const pathname = usePathname();
   const section =
     Object.entries(TITLES).find(([route]) =>
-      route === "/" ? pathname === "/" : pathname.startsWith(route)
+      route === "/" ? pathname === "/" : pathname.startsWith(route),
     )?.[1] ?? "Sistema de Nómina";
 
   return (
@@ -40,7 +42,7 @@ export function Header({ onOpenMobile }: HeaderProps) {
       </button>
 
       <div>
-        <p className="text-xs font-medium uppercase tracking-[0.16em] text-slate-400">
+        <p className="text-xs font-medium tracking-[0.16em] text-slate-400 uppercase">
           Consulting, S.A.
         </p>
         <h1 className="text-base font-semibold text-slate-950">{section}</h1>

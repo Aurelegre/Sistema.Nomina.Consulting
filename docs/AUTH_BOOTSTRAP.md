@@ -2,7 +2,8 @@
 
 Esta feature agrega el catálogo de permisos, el rol ADMINISTRADOR, el primer
 usuario, sesiones y cambio obligatorio de contraseña temporal. La administración
-visual de usuarios y roles sigue siendo una feature pendiente.
+visual de usuarios y roles está implementada en `feature/users-roles-permissions`;
+ver `ACCESS_MANAGEMENT.md`.
 
 ## Preparar un entorno
 
@@ -42,9 +43,9 @@ No usar el seed como mecanismo de recuperación de contraseña.
 
 ## Contraseñas iniciales de futuros usuarios
 
-Usuario.debeCambiarPassword tiene default true. Los futuros servicios de creación
-y restablecimiento deben guardar un hash Argon2id de la contraseña temporal,
-establecer este indicador y revocar sesiones al restablecer. El único flujo que
+Usuario.debeCambiarPassword tiene default true. Los servicios de creación
+y restablecimiento guardan un hash Argon2id de la contraseña temporal,
+establecen este indicador y revocan sesiones al restablecer. El único flujo que
 lo desactiva verifica la contraseña actual, exige una nueva distinta y guarda
 ambos cambios en una transacción. Nunca aceptar este indicador desde un formulario
 general de edición de usuarios.

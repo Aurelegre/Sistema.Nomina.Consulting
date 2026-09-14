@@ -1,0 +1,17 @@
+export const MODULOS_PERMISOS: Record<string, string> = {
+  USERS: "Usuarios",
+  ROLES: "Roles",
+  PERMISSIONS: "Permisos",
+  EMPLOYEES: "Empleados",
+  DEPARTMENTS: "Departamentos",
+  PAYROLL_PERIODS: "Períodos",
+  ABSENCES: "Ausencias",
+  PAYROLL: "Nómina",
+  PAYROLL_NEWS: "Novedades",
+  ADVANCES: "Anticipos",
+  ASSOCIATION: "Asociación Solidarista",
+  REPORTS: "Reportes",
+  ACCOUNTING_POLICY: "Póliza contable",
+  SALARY_BOOK: "Libro de Salarios",
+  SETTINGS: "Configuración",
+};

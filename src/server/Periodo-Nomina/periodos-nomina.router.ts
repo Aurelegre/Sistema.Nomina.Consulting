@@ -6,7 +6,7 @@ import {
   crearPeriodoNomina,
   listarPeriodosNomina,
   obtenerPeriodoNomina,
-} from "~/server/services/periodos-nomina.service";
+} from "~/server/Periodo-Nomina/periodos-nomina.service";
 
 const crearPeriodoSchema = z.object({
   mes: z

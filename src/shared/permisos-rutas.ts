@@ -1,4 +1,4 @@
-import { type CodigoPermiso } from "./permisos";
+import { type CodigoPermiso } from "../server/permisos/Helpers/permisos";
 
 export const PERMISOS_RUTAS: Record<string, CodigoPermiso> = {
   "/empleados": "EMPLOYEES.VIEW",
@@ -9,5 +9,7 @@ export const PERMISOS_RUTAS: Record<string, CodigoPermiso> = {
   "/asociacion": "ASSOCIATION.VIEW",
   "/reportes": "REPORTS.VIEW",
   "/usuarios": "USERS.VIEW",
+  "/roles": "ROLES.VIEW",
+  "/permisos": "PERMISSIONS.VIEW",
   "/configuracion": "SETTINGS.VIEW",
 };
