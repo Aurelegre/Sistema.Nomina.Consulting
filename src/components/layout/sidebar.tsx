@@ -70,7 +70,7 @@ export function Sidebar({
 
       <aside
         className={[
-          "fixed inset-y-0 left-0 z-40 flex flex-col bg-[#11122f] text-white shadow-xl transition-[width,transform] duration-300",
+          "bg-primary fixed inset-y-0 left-0 z-40 flex flex-col text-white shadow-xl transition-[width,transform] duration-300",
           collapsed ? "lg:w-20" : "lg:w-64",
           mobileOpen ? "translate-x-0" : "-translate-x-full",
           "w-64 lg:translate-x-0",
@@ -82,7 +82,7 @@ export function Sidebar({
             collapsed ? "justify-center px-3" : "gap-3 px-5",
           ].join(" ")}
         >
-          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-white text-sm font-bold text-[#11122f]">
+          <div className="text-primary flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-white text-sm font-bold">
             CS
           </div>
 
