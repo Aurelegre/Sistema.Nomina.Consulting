@@ -214,6 +214,12 @@ test("administrador gestiona roles, permisos, usuarios y contraseñas", async ({
   await expect(
     page.getByRole("heading", { name: "Períodos registrados" }),
   ).toBeVisible();
+  await expect(
+    page.getByRole("button", { name: "Crear período", exact: true }),
+  ).not.toBeVisible();
+  await expect(
+    page.getByRole("button", { name: "Cerrar", exact: true }),
+  ).not.toBeVisible();
 });
 
 test("consulta de roles independiente del permiso de usuarios", async ({
