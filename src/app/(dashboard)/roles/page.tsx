@@ -1,5 +1,5 @@
 import { permisoPagina } from "~/server/permisos/Helpers/pagina-permiso";
-import { RolesManager } from "~/app/_components/acceso/roles-manager";
+import { RolesView } from "~/features/roles/roles.view";
 export default async function RolesPage() {
-  return <RolesManager identidad={await permisoPagina("ROLES.VIEW")} />;
+  return <RolesView identidad={await permisoPagina("ROLES.VIEW")} />;
 }

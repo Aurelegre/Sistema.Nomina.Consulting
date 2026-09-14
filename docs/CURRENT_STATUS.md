@@ -84,6 +84,19 @@ Orden sugerido:
 
 ## Refactor UI pendiente
 
+La rama `feature/frontend-entity-architecture` reorganiza las pantallas existentes
+en `src/features`, con vistas, componentes, modales y modelos por entidad.
+Incluye usuarios, roles, permisos, períodos, sesión e inicio. Los elementos de
+layout y acceso reutilizados se ubican en `src/components`.
+Períodos utiliza los componentes shadcn/ui existentes para formulario, tabla y
+confirmación de cierre. La integración a develop queda pendiente de revisión
+y autorización del propietario. No agrega módulos funcionales ni cambios de BD.
+
+Validación de la refactorización: `pnpm lint`, `pnpm typecheck` y `pnpm build`
+correctos; cuatro pruebas Playwright aprobadas para acceso, usuarios/roles,
+autenticación y períodos. La prueba de períodos también verifica cancelación,
+duplicados, cierre persistido y ausencia de desbordamiento horizontal en móvil.
+
 El proyecto adoptó shadcn/ui como estándar después de las primeras features.
 
 Por tanto, algunos componentes actuales todavía usan Tailwind manual.

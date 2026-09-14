@@ -27,6 +27,45 @@ MySQL
 - shadcn/ui
 - Tailwind CSS como sistema de estilos subyacente
 
+### Organización por entidad
+
+El frontend se organiza en `src/features/<entidad>`. Las entidades implementadas
+son usuarios, roles, permisos y períodos de nómina; las pantallas existentes de
+sesión e inicio también se agrupan como módulos de interfaz.
+
+```text
+src/features/usuarios/
+  usuarios.view.tsx
+  Components/
+    usuarios-table.tsx
+    Modals/
+      editorUsuario.modal.tsx
+      confirmarUsuario.modal.tsx
+      credencialUsuario.modal.tsx
+  Models/
+    Usuario.model.ts
+    editorUsuario.model.ts
+  Helpers/                 # solo cuando existan funciones puras propias
+```
+
+- Las vistas componen la pantalla y coordinan selección, filtros y actualización
+  de consultas. Las tablas notifican acciones mediante callbacks tipados.
+- Los modales contienen los formularios y operaciones de su responsabilidad.
+  Creación y edición pueden compartir un editor cuando reutilizan el mismo
+  formulario. No se crean modales para acciones inexistentes.
+- `Models/*.model.ts` contiene contratos específicos de la UI, derivados de las
+  salidas de tRPC cuando corresponda. JSX utiliza `.tsx`.
+- `Helpers` contiene funciones puras. Los hooks reutilizables se ubican en
+  `Hooks`; los compartidos están en `src/shared/Hooks`.
+- Las rutas de `src/app` conservan autorización, redirecciones y composición del
+  servidor. Las vistas cliente consumen tRPC, nunca servicios ni Prisma.
+- `src/components/ui` conserva shadcn/ui. El layout, controles de acceso comunes
+  y la presentación genérica de módulos pendientes viven en `src/components`.
+- Los contratos Zod ya compartidos con formularios deben permanecer libres de
+  dependencias exclusivas del servidor. Las reglas de negocio y la autorización
+  efectiva siguen en backend.
+- No se crean carpetas vacías ni módulos funcionales para entidades pendientes.
+
 ## Backend
 
 Next.js ejecuta la capa server sobre Node.js.
@@ -73,9 +112,21 @@ src/
   app/
     (dashboard)/
     api/
-    _components/
+  features/
+    usuarios/
+    roles/
+    permisos/
+    periodos-nomina/
+    sesion/
+    inicio/
   components/
     ui/             # shadcn/ui
+    layout/
+    acceso/
+    navigation/
+  shared/
+    Models/
+    Hooks/
   server/
     api/
       routers/
@@ -94,7 +145,7 @@ docs/
 
 `(dashboard)` contiene módulos administrativos que comparten AppShell/sidebar.
 
-Una futura agrupación `(auth)` contendrá login y pantallas sin sidebar.
+`(auth)` contiene login y cambio de contraseña, sin sidebar.
 
 ## Componentes
 

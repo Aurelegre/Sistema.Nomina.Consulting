@@ -74,6 +74,12 @@ Reglas:
 
 Reglas obligatorias:
 
+- Organizar el frontend por entidad en `src/features/<entidad>/`.
+- La vista principal es `<entidad>.view.tsx`; componentes propios en `Components/`, modales en `Components/Modals/`, tipos específicos en `Models/*.model.ts` y funciones puras en `Helpers/`.
+- Usar `.tsx` para archivos con JSX. Crear carpetas y archivos solo cuando tengan una responsabilidad real.
+- Mantener `src/app` para rutas, layouts, autorización de página y composición del servidor; las páginas renderizan las vistas correspondientes.
+- Componentes compartidos en `src/components`, componentes shadcn/ui en `src/components/ui` y hooks compartidos en `src/shared/Hooks`. No colocar hooks en `Helpers`.
+- Inferir los datos de tRPC; no duplicar modelos del backend ni importar servicios en componentes cliente.
 - Usar componentes de shadcn/ui como primera opción.
 - Evitar construir Buttons, Inputs, Selects, Dialogs, Tables, Cards, Dropdowns, Tooltips, Badges, Forms y similares con clases Tailwind manuales si existe un componente shadcn/ui adecuado.
 - Tailwind manual se permite principalmente para layout, espaciado y composición cuando shadcn/ui no cubre el caso.

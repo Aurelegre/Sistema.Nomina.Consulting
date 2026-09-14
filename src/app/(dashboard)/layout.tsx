@@ -1,4 +1,4 @@
-import { AppShell } from "~/app/_components/layout/app-shell";
+import { AppShell } from "~/components/layout/app-shell";
 import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 import { db } from "~/server/db";

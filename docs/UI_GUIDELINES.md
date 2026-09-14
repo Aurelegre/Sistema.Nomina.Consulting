@@ -2,6 +2,12 @@
 
 ## Principio principal
 
+Organizar cada interfaz por entidad en `src/features`, con una vista
+`*.view.tsx`, componentes propios en `Components`, modales en
+`Components/Modals`, contratos en `Models/*.model.ts` y funciones puras en
+`Helpers` cuando sean necesarias. Ver `ARCHITECTURE.md` para responsabilidades
+y límites entre rutas, módulos y elementos compartidos.
+
 Usar shadcn/ui como biblioteca estándar de componentes de interfaz.
 
 Tailwind CSS manual no debe ser la primera opción para construir controles interactivos.
