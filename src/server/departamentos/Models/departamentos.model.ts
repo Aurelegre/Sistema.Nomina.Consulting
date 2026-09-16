@@ -1,4 +1,12 @@
 import type { z } from "zod";
-import type { editarDepartamentoSchema } from "./departamentos.schema";
+import type {
+  crearDepartamentoSchema,
+  desactivarDepartamentoSchema,
+  editarDepartamentoSchema,
+} from "./departamentos.schema";
 
 export type EditarDepartamentoInput = z.infer<typeof editarDepartamentoSchema>;
+export type CrearDepartamentoInput = z.infer<typeof crearDepartamentoSchema>;
+export type DesactivarDepartamentoInput = z.infer<
+  typeof desactivarDepartamentoSchema
+>;

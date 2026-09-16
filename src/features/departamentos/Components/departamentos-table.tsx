@@ -17,6 +17,7 @@ export function DepartamentosTable({
   puedeEditar,
   actualizando,
   onEditar,
+  onDesactivar,
 }: DepartamentosTableProps) {
   return (
     <Table>
@@ -25,6 +26,7 @@ export function DepartamentosTable({
           <TableHead>Departamento</TableHead>
           <TableHead>Código</TableHead>
           <TableHead>Cuenta contable</TableHead>
+          <TableHead>Estado</TableHead>
           {puedeEditar && (
             <TableHead className="text-right">Acciones</TableHead>
           )}
@@ -33,7 +35,7 @@ export function DepartamentosTable({
       <TableBody>
         {!departamentos.length && (
           <TableRow>
-            <TableCell colSpan={puedeEditar ? 4 : 3}>
+            <TableCell colSpan={puedeEditar ? 5 : 4}>
               No se encontraron departamentos.
             </TableCell>
           </TableRow>
@@ -47,16 +49,37 @@ export function DepartamentosTable({
                 <Badge variant="outline">Pendiente de configurar</Badge>
               )}
             </TableCell>
+            <TableCell>
+              <Badge
+                variant={
+                  departamento.estado === "ACTIVO" ? "default" : "secondary"
+                }
+              >
+                {departamento.estado === "ACTIVO" ? "Activo" : "Inactivo"}
+              </Badge>
+            </TableCell>
             {puedeEditar && (
               <TableCell className="text-right">
-                <Button
-                  variant="outline"
-                  size="sm"
-                  disabled={actualizando}
-                  onClick={() => onEditar(departamento)}
-                >
-                  Editar
-                </Button>
+                <div className="flex justify-end gap-2">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    disabled={actualizando}
+                    onClick={() => onEditar(departamento)}
+                  >
+                    Editar
+                  </Button>
+                  {departamento.estado === "ACTIVO" && (
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      disabled={actualizando}
+                      onClick={() => onDesactivar(departamento)}
+                    >
+                      Desactivar
+                    </Button>
+                  )}
+                </div>
               </TableCell>
             )}
           </TableRow>

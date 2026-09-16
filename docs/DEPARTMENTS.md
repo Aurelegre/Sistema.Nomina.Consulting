@@ -2,12 +2,17 @@
 
 ## Alcance
 
-RF-005 y RF-006: consultar y editar los cinco departamentos de Consulting, S.A.
+RF-005 y RF-006: consultar, crear, editar y desactivar departamentos de Consulting, S.A.
 La ruta es `/departamentos`, dentro del layout administrativo existente.
 
-El catálogo incluye FINANZAS, PRODUCCION, LOGISTICA, RECURSOS_HUMANOS y MERCADEO.
-El código es fijo; el nombre visible y la cuenta contable se editan en un modal.
-No existen procedimientos para crear, eliminar o desactivar departamentos.
+El catálogo inicial incluye FINANZAS, PRODUCCION, LOGISTICA, RECURSOS_HUMANOS y MERCADEO.
+Admite departamentos adicionales. Crear requiere código, nombre y cuenta contable;
+el código se normaliza a mayúsculas, inicia con una letra y admite letras ASCII,
+números y guion bajo (máximo 50 caracteres). Código y nombre son únicos incluso
+entre inactivos. El código es inmutable; nombre y cuenta se editan en un modal.
+Los nuevos departamentos inician ACTIVO. Desactivar requiere confirmación y
+cambia a INACTIVO sin borrar datos; ambos estados aparecen en la tabla.
+La edición de nombre/cuenta no cambia el estado. No hay eliminación ni reactivación.
 Las futuras reglas específicas de un departamento deben utilizar su código,
 no comparar el nombre editable.
 
@@ -21,7 +26,7 @@ departamentos porque los requerimientos no establecen esa restricción.
 
 La migración carga los cinco departamentos con `cuentaContable = null`, indicando
 configuración pendiente. No es una cuenta contable válida ni un valor ficticio.
-Toda edición exige una cuenta no vacía; la interfaz señala los registros que
+Toda creación y edición exige una cuenta no vacía; la interfaz señala los registros que
 todavía necesitan configuración. Los futuros procesos de póliza deberán
 rechazar departamentos sin cuenta y conservar la cuenta aplicada al histórico.
 Esta feature no implementa aún el procesamiento contable.
@@ -29,7 +34,7 @@ Esta feature no implementa aún el procesamiento contable.
 ## Seguridad y concurrencia
 
 - `DEPARTMENTS.VIEW`: acceso a la página y al listado.
-- `DEPARTMENTS.MANAGE`: edición. Para editar desde la UI se requieren ambos.
+- `DEPARTMENTS.MANAGE`: creación, edición y desactivación. En la UI se requieren ambos permisos.
 - La asignación existente de permisos por rol se conserva. NOMINA_RRHH tiene
   consulta; el administrador puede delegar gestión desde Roles.
 - El router valida permisos y entrada estricta. La policy del módulo comprueba
@@ -42,6 +47,21 @@ Esta feature no implementa aún el procesamiento contable.
 - La respuesta de edición confirma `id` y la nueva versión. El cliente invalida
   el listado. Ante un conflicto conserva el formulario y refresca el catálogo;
   cerrar y reabrir carga los datos actuales.
+- Desactivar compara `id`, `version` y estado ACTIVO en una sola escritura e
+  incrementa la versión. Un registro inexistente devuelve NOT_FOUND; una versión
+  antigua o un departamento ya inactivo devuelve CONFLICT. Editar no reactiva.
+
+## Integración pendiente con empleados
+
+Por instrucción del propietario se aplazan hasta desarrollar empleados:
+
+- exigir un jefe asignado para crear un departamento;
+- impedir la desactivación si hay empleados asignados.
+
+No se incluyen campos ficticios de jefe ni simulaciones de empleados en esta
+feature. La implementación futura debe aplicar ambas reglas en backend y
+coordinar transaccionalmente la asignación de empleados y la desactivación,
+evitando una asignación concurrente después de comprobar que está vacío.
 
 ## Arquitectura
 
@@ -62,7 +82,9 @@ pnpm db:generate
 
 En un despliegue se utiliza `pnpm db:deploy`. La migración ya incluye el catálogo;
 el seed también lo prepara de manera idempotente, conservando nombres, cuentas y
-versiones existentes. La shadow database debe ser diferente de la principal.
+versiones y estados existentes. La segunda migración transforma el código ENUM
+en VARCHAR(50) conservando sus valores y agrega estado ACTIVO a los registros
+existentes. La shadow database debe ser diferente de la principal.
 
 ```bash
 pnpm lint
@@ -73,7 +95,7 @@ pnpm test:auth:ui
 
 Las pruebas de backend cubren catálogo, permisos, entradas inválidas, duplicados,
 seed repetible, escrituras concurrentes y sesiones revocadas. Las de navegador
-cubren edición, cancelación, conflictos entre pestañas, persistencia, permisos
+cubren creación, desactivación, estados, edición, cancelación, conflictos entre pestañas, persistencia, permisos
 de consulta y acceso directo a API, además de la presentación móvil.
 Las cuentas de prueba se eliminan; los cambios del departamento de prueba se
 restauran solo si aún coinciden con la versión y los valores escritos por la

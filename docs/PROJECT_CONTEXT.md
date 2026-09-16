@@ -50,6 +50,8 @@ El sistema debe manejar:
 - Mercadeo
 
 Cada departamento tendrá asociada una cuenta contable para la generación de la póliza.
+El catálogo inicial puede ampliarse. Los departamentos se pueden desactivar y
+conservan su información y estado visible en administración.
 
 ## Tecnología
 

@@ -5,9 +5,12 @@ import { ErrorAcceso } from "~/components/acceso/ErrorAcceso";
 import { Alert, AlertDescription } from "~/components/ui/alert";
 import { Card, CardContent } from "~/components/ui/card";
 import { Input } from "~/components/ui/input";
+import { Button } from "~/components/ui/button";
 import { api } from "~/trpc/react";
 import { DepartamentosTable } from "./Components/departamentos-table";
 import { EditDepartamentoModal } from "./Components/Modals/editDepartamento.modal";
+import { CreateDepartamentoModal } from "./Components/Modals/createDepartamento.modal";
+import { DeactivateDepartamentoModal } from "./Components/Modals/deactivateDepartamento.modal";
 import { filtrarDepartamentos } from "./Helpers/departamentos.helper";
 import type { Departamento } from "./Models/departamentos.model";
 import type { DepartamentosViewProps } from "./Models/departamentosView.model";
@@ -16,6 +19,8 @@ export function DepartamentosView({ identidad }: DepartamentosViewProps) {
   const [busqueda, setBusqueda] = useState("");
   const [seleccionado, setSeleccionado] = useState<Departamento | null>(null);
   const [mensaje, setMensaje] = useState<string | null>(null);
+  const [creando, setCreando] = useState(false);
+  const [desactivando, setDesactivando] = useState<Departamento | null>(null);
   const departamentos = api.departamentos.listar.useQuery();
   const puedeEditar = identidad.permisos.includes("DEPARTMENTS.MANAGE");
   const pendientes =
@@ -32,6 +37,16 @@ export function DepartamentosView({ identidad }: DepartamentosViewProps) {
           contables.
         </p>
       </div>
+      {puedeEditar && (
+        <Button
+          onClick={() => {
+            setMensaje(null);
+            setCreando(true);
+          }}
+        >
+          Crear departamento
+        </Button>
+      )}
       {mensaje && (
         <p role="status" className="text-sm">
           {mensaje}
@@ -40,7 +55,7 @@ export function DepartamentosView({ identidad }: DepartamentosViewProps) {
       {pendientes > 0 && (
         <Alert>
           <AlertDescription>
-            {pendientes} departamentos tienen pendiente su cuenta contable.
+            Cuentas contables pendientes: {pendientes}.
             {puedeEditar
               ? " Completa la configuración desde Editar."
               : " Solicita su configuración a un usuario autorizado."}
@@ -69,6 +84,10 @@ export function DepartamentosView({ identidad }: DepartamentosViewProps) {
                 setMensaje(null);
                 setSeleccionado(departamento);
               }}
+              onDesactivar={(departamento) => {
+                setMensaje(null);
+                setDesactivando(departamento);
+              }}
             />
           )}
         </CardContent>
@@ -81,6 +100,26 @@ export function DepartamentosView({ identidad }: DepartamentosViewProps) {
           onGuardado={() => {
             setSeleccionado(null);
             setMensaje("Departamento guardado correctamente");
+          }}
+        />
+      )}
+      {creando && puedeEditar && (
+        <CreateDepartamentoModal
+          onCerrar={() => setCreando(false)}
+          onGuardado={() => {
+            setCreando(false);
+            setBusqueda("");
+            setMensaje("Departamento creado correctamente");
+          }}
+        />
+      )}
+      {desactivando && puedeEditar && (
+        <DeactivateDepartamentoModal
+          departamento={desactivando}
+          onCerrar={() => setDesactivando(null)}
+          onGuardado={() => {
+            setDesactivando(null);
+            setMensaje("Departamento desactivado correctamente");
           }}
         />
       )}

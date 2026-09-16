@@ -150,3 +150,17 @@ Los valores de una nómina cerrada no deben cambiar automáticamente si después
 
 ## RN-028 — Autorización
 Una acción solo puede ejecutarse si el usuario posee el permiso correspondiente en backend.
+
+## RN-029 — Ciclo de vida de departamentos
+
+El catálogo admite nuevos departamentos con código único e inmutable, nombre
+único y cuenta contable obligatoria. Los nuevos registros inician ACTIVO.
+Desactivar cambia a INACTIVO sin eliminar datos; ambos estados son consultables.
+Crear, editar y desactivar requieren DEPARTMENTS.MANAGE.
+
+## RN-030 — Departamento y empleados (pendiente)
+
+Al desarrollar empleados, exigir un jefe asignado para crear un departamento e
+impedir desactivar departamentos con empleados asignados. Estas comprobaciones
+se aplazan expresamente hasta implementar empleados. Deberán ejecutarse en
+backend y evitar carreras entre asignación de empleados y desactivación.

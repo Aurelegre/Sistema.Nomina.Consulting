@@ -1,7 +1,7 @@
-import type { Prisma, CodigoDepartamento } from "@prisma/client";
+import type { Prisma } from "@prisma/client";
 
 export const DEPARTAMENTOS_INICIALES: {
-  codigo: CodigoDepartamento;
+  codigo: string;
   nombre: string;
 }[] = [
   { codigo: "FINANZAS", nombre: "Finanzas" },

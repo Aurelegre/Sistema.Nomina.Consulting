@@ -5,4 +5,5 @@ export type DepartamentosTableProps = {
   puedeEditar: boolean;
   actualizando: boolean;
   onEditar: (departamento: Departamento) => void;
+  onDesactivar: (departamento: Departamento) => void;
 };

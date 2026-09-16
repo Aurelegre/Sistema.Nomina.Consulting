@@ -66,7 +66,7 @@ Implementado:
 Orden sugerido:
 
 1. revisar e integrar departamentos (`feature/departments`);
-2. empleados, utilizando el catálogo de departamentos;
+2. empleados, utilizando el catálogo de departamentos e incorporando jefe obligatorio al crear departamentos y bloqueo de desactivación si tienen empleados asignados;
 3. ausencias;
 4. novedades de nómina;
 5. Asociación Solidarista;
@@ -84,10 +84,13 @@ Orden sugerido:
 ## Departamentos
 
 Implementado en `feature/departments`, pendiente de revisión e integración:
-catálogo de cinco departamentos, nombre y cuenta contable editables, códigos
-fijos, consulta y edición por permisos, control de concurrencia por versión y
-modal shadcn/ui. La migración carga las cuentas como pendientes de configurar,
-sin inventar valores contables. Detalles en `DEPARTMENTS.md`.
+catálogo ampliable con cinco departamentos iniciales, creación, edición y
+desactivación por permisos, códigos únicos e inmutables y estado ACTIVO/INACTIVO
+visible en tabla. Incluye control de concurrencia, formularios modales y
+confirmación shadcn/ui. Las cuentas iniciales quedan pendientes de configurar;
+los nuevos departamentos requieren cuenta. La asignación obligatoria de jefe y
+la validación de empleados al desactivar quedan aplazadas a empleados por
+instrucción del propietario. Detalles en `DEPARTMENTS.md`.
 
 ## Arquitectura frontend
 

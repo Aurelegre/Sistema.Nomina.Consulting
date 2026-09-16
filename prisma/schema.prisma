@@ -108,17 +108,15 @@ model PeriodoNomina {
   @@map("periodo_nomina")
 }
 
-enum CodigoDepartamento {
-  FINANZAS
-  PRODUCCION
-  LOGISTICA
-  RECURSOS_HUMANOS
-  MERCADEO
+enum EstadoDepartamento {
+  ACTIVO
+  INACTIVO
 }
 
 model Departamento {
   id                 Int                @id @default(autoincrement())
-  codigo             CodigoDepartamento @unique
+  codigo             String             @unique @db.VarChar(50)
+  estado             EstadoDepartamento @default(ACTIVO)
   nombre             String             @unique @db.VarChar(100)
   cuentaContable     String?            @map("cuenta_contable") @db.VarChar(50)
   version            Int                @default(1)

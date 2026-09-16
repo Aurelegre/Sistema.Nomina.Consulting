@@ -10,6 +10,8 @@ import { createCaller } from "../src/server/api/root";
 import {
   listarDepartamentos,
   editarDepartamento,
+  crearDepartamento,
+  desactivarDepartamento,
 } from "../src/server/departamentos/departamentos.service";
 import {
   cookieSesion,
@@ -83,13 +85,23 @@ void test("departamentos: catálogo, permisos, validaciones y concurrencia", asy
     };
 
     await t.test(
-      "cinco departamentos estables y consultas protegidas",
+      "departamentos iniciales estables y consultas protegidas",
       async () => {
         assert.deepEqual(
-          lista.map((d) => d.codigo).sort(),
+          lista
+            .filter((d) =>
+              DEPARTAMENTOS_INICIALES.some(
+                (inicial) => inicial.codigo === d.codigo,
+              ),
+            )
+            .map((d) => d.codigo)
+            .sort(),
           DEPARTAMENTOS_INICIALES.map((d) => d.codigo).sort(),
         );
-        assert.equal((await lector.caller.departamentos.listar()).length, 5);
+        assert.equal(
+          (await lector.caller.departamentos.listar()).length,
+          lista.length,
+        );
         const anonimo = createCaller({
           db,
           headers: new Headers(),
@@ -177,7 +189,7 @@ void test("departamentos: catálogo, permisos, validaciones y concurrencia", asy
                 }),
                 guardado,
               );
-              assert.equal(await tx.departamento.count(), 5);
+              assert.equal(await tx.departamento.count(), lista.length);
               throw rollback;
             },
             { timeout: 30000 },
@@ -235,6 +247,194 @@ void test("departamentos: catálogo, permisos, validaciones y concurrencia", asy
     );
 
     await t.test(
+      "crear y desactivar: permisos, validación, duplicados y persistencia",
+      async () => {
+        const nuevo = {
+          codigo: `${prefix}_nuevo`,
+          nombre: `Nuevo ${prefix}`,
+          cuentaContable: " 001.20 ",
+        };
+        const referencia = { id: original.id, version: original.version };
+        for (const caller of [lector.caller, ninguno.caller]) {
+          await assert.rejects(caller.departamentos.crear(nuevo), {
+            code: "FORBIDDEN",
+          });
+          await assert.rejects(caller.departamentos.desactivar(referencia), {
+            code: "FORBIDDEN",
+          });
+        }
+        await assert.rejects(crearDepartamento(db, lector.actor, nuevo), {
+          code: "FORBIDDEN",
+        });
+        await assert.rejects(
+          desactivarDepartamento(db, lector.actor, referencia),
+          { code: "FORBIDDEN" },
+        );
+        for (const input of [
+          { ...nuevo, codigo: "" },
+          { ...nuevo, codigo: "con espacios" },
+          { ...nuevo, codigo: "1INICIO" },
+          { ...nuevo, codigo: "ÁREA" },
+          { ...nuevo, codigo: "A".repeat(51) },
+          { ...nuevo, nombre: " " },
+          { ...nuevo, cuentaContable: " " },
+          { ...nuevo, estado: "INACTIVO" },
+          { ...nuevo, jefeId: 1 },
+        ]) {
+          await assert.rejects(editor.caller.departamentos.crear(input), {
+            code: "BAD_REQUEST",
+          });
+        }
+        await assert.rejects(
+          editor.caller.departamentos.desactivar({ ...referencia, version: 0 }),
+          { code: "BAD_REQUEST" },
+        );
+        await assert.rejects(
+          editor.caller.departamentos.desactivar({
+            id: 2147483647,
+            version: 1,
+          }),
+          { code: "NOT_FOUND" },
+        );
+        const creado = await editor.caller.departamentos.crear(nuevo);
+        assert.equal(creado.codigo, nuevo.codigo.toUpperCase());
+        assert.equal(creado.estado, "ACTIVO");
+        assert.equal(creado.cuentaContable, "001.20");
+        await assert.rejects(
+          editor.caller.departamentos.crear({
+            ...nuevo,
+            nombre: `${nuevo.nombre} otro`,
+          }),
+          { code: "CONFLICT" },
+        );
+        await assert.rejects(
+          editor.caller.departamentos.crear({
+            ...nuevo,
+            codigo: `${nuevo.codigo}_otro`,
+          }),
+          { code: "CONFLICT" },
+        );
+        await editor.caller.departamentos.desactivar({
+          id: creado.id,
+          version: creado.version,
+        });
+        const inactivo = await db.departamento.findUniqueOrThrow({
+          where: { id: creado.id },
+        });
+        assert.equal(inactivo.estado, "INACTIVO");
+        assert.equal(inactivo.version, creado.version + 1);
+        assert.equal(inactivo.nombre, creado.nombre);
+        assert.equal(inactivo.cuentaContable, creado.cuentaContable);
+        assert.ok(
+          (await lector.caller.departamentos.listar()).some(
+            (d) => d.id === creado.id && d.estado === "INACTIVO",
+          ),
+        );
+        await assert.rejects(
+          editor.caller.departamentos.desactivar({
+            id: inactivo.id,
+            version: inactivo.version,
+          }),
+          { code: "CONFLICT" },
+        );
+        await assert.rejects(
+          editor.caller.departamentos.editar({
+            id: creado.id,
+            version: creado.version,
+            nombre: creado.nombre,
+            cuentaContable: "002",
+          }),
+          { code: "CONFLICT" },
+        );
+        await editor.caller.departamentos.editar({
+          id: inactivo.id,
+          version: inactivo.version,
+          nombre: inactivo.nombre,
+          cuentaContable: "003",
+        });
+        assert.equal(
+          (
+            await db.departamento.findUniqueOrThrow({
+              where: { id: creado.id },
+            })
+          ).estado,
+          "INACTIVO",
+        );
+        await assert.rejects(editor.caller.departamentos.crear(nuevo), {
+          code: "CONFLICT",
+        });
+      },
+    );
+
+    await t.test(
+      "edición y desactivación concurrentes no se sobrescriben",
+      async () => {
+        const creado = await editor.caller.departamentos.crear({
+          codigo: `${prefix}_race`,
+          nombre: `Race ${prefix}`,
+          cuentaContable: "001",
+        });
+        const resultados = await Promise.allSettled([
+          editor.caller.departamentos.editar({
+            id: creado.id,
+            version: creado.version,
+            nombre: creado.nombre,
+            cuentaContable: "002",
+          }),
+          editor.caller.departamentos.desactivar({
+            id: creado.id,
+            version: creado.version,
+          }),
+        ]);
+        assert.equal(
+          resultados.filter((r) => r.status === "fulfilled").length,
+          1,
+        );
+        const fallo = resultados.find((r) => r.status === "rejected");
+        assert.ok(fallo?.status === "rejected");
+        assert.equal((fallo.reason as { code: string }).code, "CONFLICT");
+        const actual = await db.departamento.findUniqueOrThrow({
+          where: { id: creado.id },
+        });
+        assert.equal(actual.version, creado.version + 1);
+        assert.ok(
+          (actual.estado === "ACTIVO" && actual.cuentaContable === "002") ||
+            (actual.estado === "INACTIVO" && actual.cuentaContable === "001"),
+        );
+      },
+    );
+
+    await t.test(
+      "seed conserva el estado inactivo de un departamento inicial",
+      async () => {
+        const rollback = new Error("rollback estado");
+        try {
+          await db.$transaction(async (tx) => {
+            const actual = await tx.departamento.findUniqueOrThrow({
+              where: { id: original.id },
+            });
+            await tx.departamento.update({
+              where: { id: actual.id },
+              data: { estado: "INACTIVO" },
+            });
+            await prepararDepartamentos(tx);
+            assert.equal(
+              (
+                await tx.departamento.findUniqueOrThrow({
+                  where: { id: actual.id },
+                })
+              ).estado,
+              "INACTIVO",
+            );
+            throw rollback;
+          });
+        } catch (error) {
+          if (error !== rollback) throw error;
+        }
+      },
+    );
+
+    await t.test(
       "un contexto capturado no conserva permisos ni sesiones revocadas",
       async () => {
         await db.rolPermiso.deleteMany({ where: { rolId: editor.rolId } });
@@ -244,6 +444,21 @@ void test("departamentos: catálogo, permisos, validaciones y concurrencia", asy
         await assert.rejects(editor.caller.departamentos.editar(entrada), {
           code: "FORBIDDEN",
         });
+        await assert.rejects(
+          editor.caller.departamentos.crear({
+            codigo: "NUEVO",
+            nombre: "Nuevo",
+            cuentaContable: "001",
+          }),
+          { code: "FORBIDDEN" },
+        );
+        await assert.rejects(
+          editor.caller.departamentos.desactivar({
+            id: original.id,
+            version: original.version,
+          }),
+          { code: "FORBIDDEN" },
+        );
         await db.sesion.delete({ where: { id: lector.actor.sesionId } });
         await assert.rejects(lector.caller.departamentos.listar(), {
           code: "UNAUTHORIZED",
@@ -254,6 +469,9 @@ void test("departamentos: catálogo, permisos, validaciones y concurrencia", asy
       },
     );
   } finally {
+    await db.departamento.deleteMany({
+      where: { codigo: { startsWith: prefix.toUpperCase() } },
+    });
     await db.usuario.deleteMany({
       where: { username: { startsWith: prefix } },
     });
