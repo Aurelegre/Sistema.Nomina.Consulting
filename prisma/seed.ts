@@ -3,6 +3,7 @@ import { pathToFileURL } from "node:url";
 import { PERMISOS } from "../src/server/permisos/Helpers/permisos";
 import { hashPassword } from "../src/server/sesion/Helpers/password";
 import { ROLES_INICIALES } from "./roles-iniciales";
+import { prepararDepartamentos } from "./departamentos-iniciales";
 
 export async function seed(
   db: PrismaClient,
@@ -31,6 +32,7 @@ export async function seed(
 
   await db.$transaction(
     async (tx) => {
+      await prepararDepartamentos(tx);
       const rol = await tx.rol.upsert({
         where: { codigo: "ADMINISTRADOR" },
         create: {

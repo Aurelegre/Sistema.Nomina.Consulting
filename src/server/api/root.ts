@@ -5,8 +5,10 @@ import { rolesRouter } from "~/server/Rol/roles.router";
 import { permisosRouter } from "~/server/permisos/permisos.router";
 import { periodosNominaRouter } from "~/server/Periodo-Nomina/periodos-nomina.router";
 import { createCallerFactory, createTRPCRouter } from "~/server/api/trpc";
+import { departamentosRouter } from "~/server/departamentos/departamentos.router";
 
 export const appRouter = createTRPCRouter({
+  departamentos: departamentosRouter,
   usuarios: usuariosRouter,
   roles: rolesRouter,
   permisos: permisosRouter,

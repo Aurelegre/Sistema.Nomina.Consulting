@@ -69,6 +69,7 @@ Reglas:
 - Los Services contienen reglas de negocio y coordinan Prisma.
 - Prisma se usa para persistencia y consultas.
 - Stored procedures y funciones MySQL se usan cuando el requerimiento 2026 lo exige.
+- Los nuevos módulos backend se agrupan en `src/server/<entidad>/` con archivos `*.router.ts`, `*.service.ts`, `*.policy.ts`, `Models` y `Helpers` cuando sean necesarios. Las policies contienen autorización específica; los services conservan las reglas de negocio.
 
 ## Frontend
 

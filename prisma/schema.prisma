@@ -107,3 +107,23 @@ model PeriodoNomina {
   @@unique([mes, anio], map: "uq_periodo_nomina_mes_anio")
   @@map("periodo_nomina")
 }
+
+enum CodigoDepartamento {
+  FINANZAS
+  PRODUCCION
+  LOGISTICA
+  RECURSOS_HUMANOS
+  MERCADEO
+}
+
+model Departamento {
+  id                 Int                @id @default(autoincrement())
+  codigo             CodigoDepartamento @unique
+  nombre             String             @unique @db.VarChar(100)
+  cuentaContable     String?            @map("cuenta_contable") @db.VarChar(50)
+  version            Int                @default(1)
+  fechaCreacion      DateTime           @default(now()) @map("fecha_creacion")
+  fechaActualizacion DateTime           @updatedAt @map("fecha_actualizacion")
+
+  @@map("departamento")
+}

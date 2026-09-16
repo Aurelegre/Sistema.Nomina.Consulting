@@ -72,6 +72,12 @@ Next.js ejecuta la capa server sobre Node.js.
 
 La API se expone principalmente mediante tRPC.
 
+Los nuevos módulos se organizan por entidad en `src/server/<entidad>/`, con
+`<entidad>.router.ts`, `<entidad>.service.ts`, `<entidad>.policy.ts`, contratos y
+esquemas en `Models` y funciones auxiliares en `Helpers` cuando sean necesarias.
+La policy evalúa acceso; el servicio conserva las reglas de negocio y la
+coordinación de persistencia. Departamentos implementa esta convención.
+
 ### Router
 Responsabilidades:
 - entrada;
@@ -116,6 +122,7 @@ src/
     usuarios/
     roles/
     permisos/
+    departamentos/
     periodos-nomina/
     sesion/
     inicio/
@@ -128,9 +135,9 @@ src/
     Models/
     Hooks/
   server/
-    api/
-      routers/
-    services/
+    api/             # infraestructura y registro de routers
+    departamentos/   # router, service, policy, Models
+    # otros módulos por entidad
     db.ts
   trpc/
 

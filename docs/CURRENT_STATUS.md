@@ -1,6 +1,6 @@
 # Estado actual
 
-Fecha de referencia: septiembre 2026.
+Fecha de referencia: 16 de septiembre de 2026.
 
 ## Base técnica
 
@@ -65,32 +65,39 @@ Implementado:
 
 Orden sugerido:
 
-1. integrar y revisar administración de usuarios + roles + permisos;
-2. empleados;
-3. departamentos;
-4. ausencias;
-5. novedades de nómina;
-6. Asociación Solidarista;
-7. cálculo de IGSS;
-8. ISR;
-9. procesamiento de nómina;
-10. stored procedure;
-11. función nombre de mes;
-12. póliza contable;
-13. reportes;
-14. histórico/auditoría;
-15. deployment cloud;
-16. pruebas y documentación final.
+1. revisar e integrar departamentos (`feature/departments`);
+2. empleados, utilizando el catálogo de departamentos;
+3. ausencias;
+4. novedades de nómina;
+5. Asociación Solidarista;
+6. cálculo de IGSS;
+7. ISR;
+8. procesamiento de nómina;
+9. stored procedure;
+10. función nombre de mes;
+11. póliza contable;
+12. reportes;
+13. histórico/auditoría;
+14. deployment cloud;
+15. pruebas y documentación final.
 
-## Refactor UI pendiente
+## Departamentos
+
+Implementado en `feature/departments`, pendiente de revisión e integración:
+catálogo de cinco departamentos, nombre y cuenta contable editables, códigos
+fijos, consulta y edición por permisos, control de concurrencia por versión y
+modal shadcn/ui. La migración carga las cuentas como pendientes de configurar,
+sin inventar valores contables. Detalles en `DEPARTMENTS.md`.
+
+## Arquitectura frontend
 
 La rama `feature/frontend-entity-architecture` reorganiza las pantallas existentes
 en `src/features`, con vistas, componentes, modales y modelos por entidad.
 Incluye usuarios, roles, permisos, períodos, sesión e inicio. Los elementos de
 layout y acceso reutilizados se ubican en `src/components`.
 Períodos utiliza los componentes shadcn/ui existentes para formulario, tabla y
-confirmación de cierre. La integración a develop queda pendiente de revisión
-y autorización del propietario. No agrega módulos funcionales ni cambios de BD.
+confirmación de cierre. Integrada en develop mediante el PR #12.
+No agregó módulos funcionales ni cambios de BD.
 
 Validación de la refactorización: `pnpm lint`, `pnpm typecheck` y `pnpm build`
 correctos; cuatro pruebas Playwright aprobadas para acceso, usuarios/roles,
@@ -120,7 +127,7 @@ Implementación inicial de `feature/auth-bootstrap`, integrada en develop:
 modelos de seguridad, catálogo y seed administrador, login/logout, sesiones,
 cambio obligatorio de contraseña temporal y protección backend de períodos.
 Administración visual de usuarios/roles/permisos implementada en
-`feature/users-roles-permissions`, pendiente de integración. Incluye contraseñas
+`feature/users-roles-permissions`, integrada en develop. Incluye contraseñas
 temporales, revocación de sesiones, delegación limitada y control de concurrencia.
 El ámbito departamental queda pendiente de los módulos de empleados/ausencias.
 Detalles: `ACCESS_MANAGEMENT.md`.
