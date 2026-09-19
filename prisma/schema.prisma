@@ -119,9 +119,39 @@ model Departamento {
   estado             EstadoDepartamento @default(ACTIVO)
   nombre             String             @unique @db.VarChar(100)
   cuentaContable     String?            @map("cuenta_contable") @db.VarChar(50)
+  jefeId             Int?               @unique @map("jefe_id")
+  empleados          Empleado[]         @relation("EmpleadoDepartamento")
+  jefe               Empleado?          @relation("JefeDepartamento", fields: [jefeId], references: [id], onDelete: Restrict)
   version            Int                @default(1)
   fechaCreacion      DateTime           @default(now()) @map("fecha_creacion")
   fechaActualizacion DateTime           @updatedAt @map("fecha_actualizacion")
 
+  @@index([jefeId])
   @@map("departamento")
+}
+
+enum EstadoEmpleado {
+  ACTIVO
+  INACTIVO
+}
+
+model Empleado {
+  id                    Int            @id @default(autoincrement())
+  codigo                String         @unique @db.VarChar(50)
+  nombre                String         @db.VarChar(150)
+  fechaNacimiento       DateTime       @map("fecha_nacimiento") @db.Date
+  fechaIngreso          DateTime       @map("fecha_ingreso") @db.Date
+  fechaSalida           DateTime?      @map("fecha_salida") @db.Date
+  salarioBase           Decimal        @map("salario_base") @db.Decimal(12, 2)
+  estado                EstadoEmpleado @default(ACTIVO)
+  departamentoId        Int            @map("departamento_id")
+  departamento          Departamento   @relation("EmpleadoDepartamento", fields: [departamentoId], references: [id], onDelete: Restrict)
+  departamentoQueDirige Departamento?  @relation("JefeDepartamento")
+  version               Int            @default(1)
+  fechaCreacion         DateTime       @default(now()) @map("fecha_creacion")
+  fechaActualizacion    DateTime       @updatedAt @map("fecha_actualizacion")
+
+  @@index([departamentoId])
+  @@index([estado])
+  @@map("empleado")
 }
