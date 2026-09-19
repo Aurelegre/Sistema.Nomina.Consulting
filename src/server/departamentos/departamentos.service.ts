@@ -96,11 +96,13 @@ async function desactivarDepartamentoInterno(
     });
   }
   const { id, version } = validado.data;
-  if (await db.empleado.count({ where: { departamentoId: id } })) {
+  if (
+    await db.empleado.count({ where: { departamentoId: id, estado: "ACTIVO" } })
+  ) {
     throw new TRPCError({
       code: "BAD_REQUEST",
       message:
-        "No se puede desactivar un departamento con empleados asignados.",
+        "No se puede desactivar un departamento con empleados activos asignados.",
     });
   }
   const resultado = await db.departamento.updateMany({
