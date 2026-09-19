@@ -1,3 +1,4 @@
+import { transaccionOrganizacion } from "~/server/empleados/Helpers/organizacion.helper";
 import { Prisma } from "@prisma/client";
 import { TRPCError } from "@trpc/server";
 import type { ActorAcceso } from "~/server/permisos/Models/ActorAcceso.Model";
@@ -15,7 +16,7 @@ import {
 } from "./Models/departamentos.schema";
 import { autorizarDepartamentos } from "./departamentos.policy";
 
-export async function crearDepartamento(
+async function crearDepartamentoInterno(
   db: Prisma.TransactionClient,
   actor: ActorAcceso,
   input: CrearDepartamentoInput,
@@ -28,7 +29,7 @@ export async function crearDepartamento(
       message: validado.error.issues[0]?.message ?? "Datos inválidos",
     });
   }
-  // La asignación obligatoria de jefe se integrará con la feature de empleados.
+  await validarJefe(db, validado.data.jefeId);
   try {
     return await db.departamento.create({ data: validado.data });
   } catch (error) {
@@ -81,7 +82,7 @@ export async function reactivarDepartamento(
   return { id, version: version + 1 };
 }
 
-export async function desactivarDepartamento(
+async function desactivarDepartamentoInterno(
   db: Prisma.TransactionClient,
   actor: ActorAcceso,
   input: DesactivarDepartamentoInput,
@@ -95,8 +96,13 @@ export async function desactivarDepartamento(
     });
   }
   const { id, version } = validado.data;
-  // Al implementar empleados se debe verificar, de forma atómica con esta escritura,
-  // que no existan empleados asignados. Esta validación está aplazada explícitamente.
+  if (await db.empleado.count({ where: { departamentoId: id } })) {
+    throw new TRPCError({
+      code: "BAD_REQUEST",
+      message:
+        "No se puede desactivar un departamento con empleados asignados.",
+    });
+  }
   const resultado = await db.departamento.updateMany({
     where: { id, version, estado: "ACTIVO" },
     data: { estado: "INACTIVO", version: { increment: 1 } },
@@ -129,7 +135,7 @@ export async function listarDepartamentos(
   });
 }
 
-export async function editarDepartamento(
+async function editarDepartamentoInterno(
   db: Prisma.TransactionClient,
   actor: ActorAcceso,
   input: EditarDepartamentoInput,
@@ -143,12 +149,13 @@ export async function editarDepartamento(
       cause: validado.error,
     });
   }
-  const { id, version, nombre, cuentaContable } = validado.data;
+  const { id, version, nombre, cuentaContable, jefeId } = validado.data;
+  if (jefeId !== undefined) await validarJefe(db, jefeId, id);
   try {
     // La versión se compara en la misma escritura: dos ediciones no pueden ganar.
     const resultado = await db.departamento.updateMany({
       where: { id, version },
-      data: { nombre, cuentaContable, version: { increment: 1 } },
+      data: { nombre, cuentaContable, jefeId, version: { increment: 1 } },
     });
     if (resultado.count === 0) {
       const existente = await db.departamento.findUnique({
@@ -178,4 +185,74 @@ export async function editarDepartamento(
     }
     throw error;
   }
+}
+
+export async function crearDepartamento(
+  db: Prisma.TransactionClient,
+  actor: ActorAcceso,
+  input: CrearDepartamentoInput,
+) {
+  return transaccionOrganizacion(db, (tx) =>
+    crearDepartamentoInterno(tx, actor, input),
+  );
+}
+
+export async function editarDepartamento(
+  db: Prisma.TransactionClient,
+  actor: ActorAcceso,
+  input: EditarDepartamentoInput,
+) {
+  return transaccionOrganizacion(db, (tx) =>
+    editarDepartamentoInterno(tx, actor, input),
+  );
+}
+
+export async function desactivarDepartamento(
+  db: Prisma.TransactionClient,
+  actor: ActorAcceso,
+  input: DesactivarDepartamentoInput,
+) {
+  return transaccionOrganizacion(db, (tx) =>
+    desactivarDepartamentoInterno(tx, actor, input),
+  );
+}
+
+async function validarJefe(
+  db: Prisma.TransactionClient,
+  jefeId: number,
+  departamentoId?: number,
+) {
+  const jefe = await db.empleado.findUnique({
+    where: { id: jefeId },
+    include: { departamentoQueDirige: true },
+  });
+  if (jefe?.estado !== "ACTIVO")
+    throw new TRPCError({
+      code: "BAD_REQUEST",
+      message: "Selecciona un empleado activo como jefe.",
+    });
+  if (
+    jefe.departamentoQueDirige &&
+    jefe.departamentoQueDirige.id !== departamentoId
+  )
+    throw new TRPCError({
+      code: "CONFLICT",
+      message: "El empleado ya es jefe de otro departamento.",
+    });
+}
+export async function jefesDisponibles(
+  db: Prisma.TransactionClient,
+  actor: ActorAcceso,
+) {
+  await autorizarDepartamentos(db, actor, "editar");
+  return db.empleado.findMany({
+    where: { estado: "ACTIVO" },
+    select: {
+      id: true,
+      nombre: true,
+      codigo: true,
+      departamentoQueDirige: { select: { id: true } },
+    },
+    orderBy: { nombre: "asc" },
+  });
 }

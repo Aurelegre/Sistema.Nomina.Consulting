@@ -28,10 +28,9 @@ incluye Finanzas, Producción, Logística, Recursos Humanos y Mercadeo y permite
 agregar más departamentos. Mostrar el estado ACTIVO/INACTIVO en administración.
 La desactivación conserva el registro.
 
-Al implementar empleados, la creación de un departamento deberá exigir un jefe
-asignado y la desactivación deberá impedirse si tiene empleados asignados.
-Por instrucción del propietario, ambas validaciones quedan aplazadas hasta esa
-feature; por ahora se permite crear sin jefe y desactivar sin consultar empleados.
+La creación de un departamento exige un jefe asignado y la desactivación se
+impide si tiene empleados asignados. Ambas validaciones, aplazadas originalmente
+por instrucción del propietario, se incorporan en `feature/employees`.
 
 ### RF-006 — Asignar cuenta contable a departamento
 Cada departamento debe estar asociado a una cuenta contable.

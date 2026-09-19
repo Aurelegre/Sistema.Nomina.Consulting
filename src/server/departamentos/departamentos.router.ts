@@ -6,6 +6,7 @@ import {
 } from "./Models/departamentos.schema";
 import {
   editarDepartamento,
+  jefesDisponibles,
   listarDepartamentos,
   crearDepartamento,
   desactivarDepartamento,
@@ -13,6 +14,12 @@ import {
 } from "./departamentos.service";
 
 export const departamentosRouter = createTRPCRouter({
+  jefesDisponibles: permissionProcedure("DEPARTMENTS.MANAGE").query(({ ctx }) =>
+    jefesDisponibles(ctx.db, {
+      usuarioId: ctx.sesion.usuario.id,
+      sesionId: ctx.sesion.id,
+    }),
+  ),
   crear: permissionProcedure("DEPARTMENTS.MANAGE")
     .input(crearDepartamentoSchema)
     .mutation(({ ctx, input }) =>

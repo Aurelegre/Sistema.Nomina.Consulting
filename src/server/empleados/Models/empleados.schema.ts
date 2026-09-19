@@ -40,6 +40,7 @@ const camposEmpleado = {
     .number()
     .finite("El salario base no es válido")
     .positive("El salario base debe ser mayor que cero")
+    .multipleOf(0.01, "El salario base admite hasta dos decimales")
     .max(
       9_999_999_999.99,
       "El salario base no puede superar Q9,999,999,999.99",
@@ -89,12 +90,25 @@ export const desactivarEmpleadoSchema = registroVersionSchema
 
 export const reactivarEmpleadoSchema = registroVersionSchema.strict();
 
-export const listarEmpleadosSchema = paginaSchema.extend({
-  departamentoId: z.number().int().positive().optional(),
-  estado: z.enum(["ACTIVO", "INACTIVO"]).optional(),
-  codigo: z.string().trim().toUpperCase().optional(),
-  fechaIngresoDesde: fechaSchema.optional(),
-  fechaIngresoHasta: fechaSchema.optional(),
-});
+export const listarEmpleadosSchema = paginaSchema
+  .extend({
+    departamentoId: z.number().int().positive().optional(),
+    estado: z.enum(["ACTIVO", "INACTIVO"]).optional(),
+    codigo: z.string().trim().toUpperCase().optional(),
+    fechaIngresoDesde: fechaSchema.optional(),
+    fechaIngresoHasta: fechaSchema.optional(),
+  })
+  .refine(
+    (filtros) =>
+      !filtros.fechaIngresoDesde ||
+      !filtros.fechaIngresoHasta ||
+      filtros.fechaIngresoDesde <= filtros.fechaIngresoHasta,
+    {
+      message: "La fecha inicial no puede ser posterior a la final",
+      path: ["fechaIngresoHasta"],
+    },
+  );
 
-export const obtenerEmpleadoSchema = registroVersionSchema.strict();
+export const obtenerEmpleadoSchema = registroVersionSchema
+  .pick({ id: true })
+  .strict();

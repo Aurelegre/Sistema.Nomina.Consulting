@@ -1,6 +1,7 @@
 import { createTRPCRouter, permissionProcedure } from "../api/trpc";
 import {
   crearEmpleado,
+  departamentosEmpleados,
   despedirEmpleado,
   editarEmpleado,
   listarEmpleados,
@@ -17,6 +18,12 @@ import {
 } from "./Models/empleados.schema";
 
 export const empleadosRouter = createTRPCRouter({
+  departamentos: permissionProcedure("EMPLOYEES.VIEW").query(({ ctx }) =>
+    departamentosEmpleados(ctx.db, {
+      usuarioId: ctx.sesion.usuario.id,
+      sesionId: ctx.sesion.id,
+    }),
+  ),
   listar: permissionProcedure("EMPLOYEES.VIEW")
     .input(listarEmpleadosSchema)
     .query(({ ctx, input }) =>

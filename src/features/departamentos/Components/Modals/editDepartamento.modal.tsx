@@ -1,5 +1,6 @@
 "use client";
 
+import { Selector } from "~/components/acceso/Selector";
 import { useState } from "react";
 import { ErrorAcceso } from "~/components/acceso/ErrorAcceso";
 import { Button } from "~/components/ui/button";
@@ -26,6 +27,8 @@ export function EditDepartamentoModal({
     departamento.cuentaContable ?? "",
   );
   const [error, setError] = useState<string | null>(null);
+  const [jefeId, setJefeId] = useState(String(departamento.jefeId ?? ""));
+  const jefes = api.departamentos.jefesDisponibles.useQuery();
   const utils = api.useUtils();
   const editar = api.departamentos.editar.useMutation({
     onSuccess: async () => {
@@ -67,6 +70,7 @@ export function EditDepartamentoModal({
               version: departamento.version,
               nombre,
               cuentaContable,
+              jefeId: jefeId ? Number(jefeId) : undefined,
             });
             if (!validado.success) {
               setError(
@@ -115,6 +119,37 @@ export function EditDepartamentoModal({
               Ingresa la cuenta asignada a este departamento en el catálogo
               contable de la empresa.
             </p>
+          </div>
+          <div className="space-y-2">
+            <p className="text-sm font-medium">Jefe del departamento</p>
+            <Selector
+              etiqueta="Jefe del departamento"
+              valor={jefeId}
+              onChange={setJefeId}
+              disabled={editar.isPending || jefes.isPending || jefes.isError}
+              opciones={(jefes.data ?? [])
+                .filter(
+                  (j) =>
+                    !j.departamentoQueDirige ||
+                    j.departamentoQueDirige.id === departamento.id,
+                )
+                .map((j) => ({
+                  value: String(j.id),
+                  label: `${j.codigo} · ${j.nombre}`,
+                }))}
+            />
+            {jefes.isSuccess &&
+              !jefes.data.some(
+                (j) =>
+                  !j.departamentoQueDirige ||
+                  j.departamentoQueDirige.id === departamento.id,
+              ) && (
+                <p className="text-muted-foreground text-sm">
+                  Registra primero un empleado activo sin jefatura en un
+                  departamento existente.
+                </p>
+              )}
+            <ErrorAcceso mensaje={jefes.error?.message} />
           </div>
           <ErrorAcceso mensaje={error ?? editar.error?.message} />
           <div className="flex justify-end gap-2">

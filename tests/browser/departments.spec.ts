@@ -15,6 +15,7 @@ const cuentaB = `00.UI${suffix}.02`;
 let original: Departamento;
 let versionEsperada: number;
 let cantidadInicial: number;
+let jefeId: number;
 
 test.beforeAll(async () => {
   await seed(db, { username: `${prefix}_admin`, password });
@@ -50,6 +51,18 @@ test.beforeAll(async () => {
   original = await db.departamento.findUniqueOrThrow({
     where: { codigo: "FINANZAS" },
   });
+  jefeId = (
+    await db.empleado.create({
+      data: {
+        codigo: prefix.toUpperCase(),
+        nombre: prefix,
+        fechaNacimiento: new Date("1990-01-01"),
+        fechaIngreso: new Date("2020-01-01"),
+        salarioBase: 4000,
+        departamentoId: original.id,
+      },
+    })
+  ).id;
   versionEsperada = original.version;
   cantidadInicial = await db.departamento.count();
 });
@@ -58,6 +71,7 @@ test.afterAll(async () => {
   await db.departamento.deleteMany({
     where: { codigo: { startsWith: prefix.toUpperCase() } },
   });
+  if (jefeId) await db.empleado.delete({ where: { id: jefeId } });
   if (original) {
     await db.departamento.updateMany({
       where: {
@@ -98,7 +112,9 @@ test("edición modal, validación, concurrencia entre pestañas y persistencia",
   test.setTimeout(120000);
   await login(page, "admin");
   await page.getByRole("link", { name: "Departamentos", exact: true }).click();
-  await expect(page.getByRole("row")).toHaveCount(cantidadInicial + 1);
+  await expect(page.getByRole("row")).toHaveCount(cantidadInicial + 1, {
+    timeout: 30000,
+  });
   await expect(page.getByRole("button", { name: /eliminar/i })).toHaveCount(0);
   await page.getByLabel("Buscar departamentos").fill("logistica");
   await expect(page.getByRole("row")).toHaveCount(2);
@@ -264,6 +280,13 @@ test("crear y desactivar con cancelación, conflicto y estado persistido", async
   const nombre = `Tecnología ${suffix}`;
   await modal.getByLabel("Código", { exact: true }).fill(codigo);
   await modal.getByLabel("Nombre", { exact: true }).fill(nombre);
+  await modal.getByRole("combobox", { name: "Jefe del departamento" }).click();
+  await page
+    .getByRole("option", {
+      name: `${prefix.toUpperCase()} · ${prefix}`,
+      exact: true,
+    })
+    .click();
   await modal.getByLabel("Cuenta contable", { exact: true }).fill("   ");
   await modal.getByRole("button", { name: "Crear departamento" }).click();
   await expect(

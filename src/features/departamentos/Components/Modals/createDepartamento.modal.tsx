@@ -1,5 +1,6 @@
 "use client";
 
+import { Selector } from "~/components/acceso/Selector";
 import { useState } from "react";
 import { ErrorAcceso } from "~/components/acceso/ErrorAcceso";
 import { Button } from "~/components/ui/button";
@@ -24,6 +25,8 @@ export function CreateDepartamentoModal({
   const [nombre, setNombre] = useState("");
   const [cuentaContable, setCuentaContable] = useState("");
   const [error, setError] = useState<string | null>(null);
+  const [jefeId, setJefeId] = useState("");
+  const jefes = api.departamentos.jefesDisponibles.useQuery();
   const utils = api.useUtils();
   const crear = api.departamentos.crear.useMutation({
     onSuccess: async () => {
@@ -59,6 +62,7 @@ export function CreateDepartamentoModal({
               codigo,
               nombre,
               cuentaContable,
+              jefeId: Number(jefeId),
             });
             if (!validado.success) {
               setError(
@@ -110,6 +114,29 @@ export function CreateDepartamentoModal({
               disabled={crear.isPending}
               onChange={(event) => setCuentaContable(event.target.value)}
             />
+          </div>
+          <div className="space-y-2">
+            <p className="text-sm font-medium">Jefe del departamento</p>
+            <Selector
+              etiqueta="Jefe del departamento"
+              valor={jefeId}
+              onChange={setJefeId}
+              disabled={crear.isPending || jefes.isPending || jefes.isError}
+              opciones={(jefes.data ?? [])
+                .filter((j) => !j.departamentoQueDirige)
+                .map((j) => ({
+                  value: String(j.id),
+                  label: `${j.codigo} · ${j.nombre}`,
+                }))}
+            />
+            {jefes.isSuccess &&
+              !jefes.data.some((j) => !j.departamentoQueDirige) && (
+                <p className="text-muted-foreground text-sm">
+                  Registra primero un empleado activo sin jefatura en un
+                  departamento existente.
+                </p>
+              )}
+            <ErrorAcceso mensaje={jefes.error?.message} />
           </div>
           <ErrorAcceso mensaje={error ?? crear.error?.message} />
           <div className="flex justify-end gap-2">

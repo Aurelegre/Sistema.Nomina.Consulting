@@ -1,4 +1,6 @@
-import { Prisma, PrismaClient } from "@prisma/client";
+﻿import { type Prisma, type PrismaClient } from "@prisma/client";
+import { TRPCError } from "@trpc/server";
+import { type z } from "zod";
 import type { ActorAcceso } from "../permisos/Models/ActorAcceso.Model";
 import type {
   CrearEmpleadoInput,
@@ -17,210 +19,155 @@ import {
   obtenerEmpleadoSchema,
   reactivarEmpleadoSchema,
 } from "./Models/empleados.schema";
-import { TRPCError } from "@trpc/server";
+import {
+  departamentoActivo,
+  transaccionOrganizacion,
+} from "./Helpers/organizacion.helper";
 
+function validar<T>(
+  schema: z.ZodType<T, z.ZodTypeDef, unknown>,
+  input: unknown,
+): T {
+  const resultado = schema.safeParse(input);
+  if (!resultado.success)
+    throw new TRPCError({
+      code: "BAD_REQUEST",
+      message: resultado.error.issues[0]?.message ?? "Datos inválidos",
+    });
+  return resultado.data;
+}
+async function empleadoVigente(
+  tx: Prisma.TransactionClient,
+  id: number,
+  version: number,
+) {
+  const empleado = await tx.empleado.findUnique({
+    where: { id },
+    include: { departamentoQueDirige: true },
+  });
+  if (!empleado)
+    throw new TRPCError({
+      code: "NOT_FOUND",
+      message: "No se encontró el empleado.",
+    });
+  if (empleado.version !== version)
+    throw new TRPCError({
+      code: "CONFLICT",
+      message:
+        "El empleado cambió. Cierra el modal y vuelve a abrirlo para cargar la información actual.",
+    });
+  return empleado;
+}
 export async function crearEmpleado(
-  db: Prisma.TransactionClient,
+  db: PrismaClient,
   actor: ActorAcceso,
   input: CrearEmpleadoInput,
 ) {
-  await autorizarEmpleados(db, actor, "crear");
-  const validado = crearEmpleadoSchema.safeParse(input);
-  if (!validado.success) {
-    throw new TRPCError({
-      code: "BAD_REQUEST",
-      message: validado.error.issues[0]?.message ?? "Datos inválidos",
-    });
-  }
-  try {
-    return await db.empleado.create({ data: validado.data });
-  } catch (error) {
-    if (
-      error instanceof Prisma.PrismaClientKnownRequestError &&
-      error.code === "P2002"
-    ) {
-      throw new TRPCError({
-        code: "CONFLICT",
-        message: "Ya existe un empleado con ese código.",
-      });
-    }
-    throw error;
-  }
+  return transaccionOrganizacion(db, async (tx) => {
+    await autorizarEmpleados(tx, actor, "crear");
+    const data = validar(crearEmpleadoSchema, input);
+    await departamentoActivo(tx, data.departamentoId);
+    const empleado = await tx.empleado.create({ data });
+    return { id: empleado.id, version: empleado.version };
+  });
 }
-
 export async function editarEmpleado(
-  db: Prisma.TransactionClient,
+  db: PrismaClient,
   actor: ActorAcceso,
   input: EditarEmpleadoInput,
 ) {
-  await autorizarEmpleados(db, actor, "editar");
-  const validado = editarEmpleadoSchema.safeParse(input);
-  if (!validado.success) {
-    throw new TRPCError({
-      code: "BAD_REQUEST",
-      message: validado.error.issues[0]?.message ?? "Datos inválidos",
-    });
-  }
-  const {
-    id,
-    nombre,
-    version,
-    departamentoId,
-    fechaIngreso,
-    fechaNacimiento,
-    salarioBase,
-  } = validado.data;
-  try {
-    // la versión se incrementa automáticamente para evitar conflictos de concurrencia.
-    const resultado = await db.empleado.updateMany({
-      where: { id, version },
-      data: {
-        nombre,
-        departamentoId,
-        fechaIngreso,
-        fechaNacimiento,
-        salarioBase,
-        version: { increment: 1 },
-      },
-    });
-    //se valida si el registro fue actualizado, si no se actualizó se lanza un error de conflicto
-    if (resultado.count === 0) {
-      const existente = await db.empleado.findUnique({
-        where: { id },
-        select: { id: true },
-      });
-      throw new TRPCError(
-        existente
-          ? {
-              code: "CONFLICT",
-              message:
-                "El registro fue modificado por otro usuario. Vuelve a cargar la información.",
-            }
-          : {
-              code: "NOT_FOUND",
-              message: "No se encontró el empleado.",
-            },
-      );
-    }
-    return { id, version: version + 1 };
-  } catch (error) {
-    if (
-      error instanceof Prisma.PrismaClientKnownRequestError &&
-      error.code === "P2002"
-    ) {
+  return transaccionOrganizacion(db, async (tx) => {
+    await autorizarEmpleados(tx, actor, "editar");
+    const { id, version, ...data } = validar(editarEmpleadoSchema, input);
+    const empleado = await empleadoVigente(tx, id, version);
+    await departamentoActivo(tx, data.departamentoId);
+    if (empleado.fechaSalida && data.fechaIngreso > empleado.fechaSalida)
       throw new TRPCError({
-        code: "CONFLICT",
-        message: "Ya existe un empleado con ese código.",
+        code: "BAD_REQUEST",
+        message:
+          "La fecha de ingreso no puede ser posterior a la fecha de salida.",
       });
-    }
-    throw error;
-  }
+    await tx.empleado.update({
+      where: { id, version },
+      data: { ...data, version: { increment: 1 } },
+    });
+    return { id, version: version + 1 };
+  });
 }
-
 export async function despedirEmpleado(
-  db: Prisma.TransactionClient,
+  db: PrismaClient,
   actor: ActorAcceso,
   input: DesactivarEmpleadoInput,
 ) {
-  await autorizarEmpleados(db, actor, "desactivar");
-  const validado = desactivarEmpleadoSchema.safeParse(input);
-  if (!validado.success) {
-    throw new TRPCError({
-      code: "BAD_REQUEST",
-      message: validado.error.issues[0]?.message ?? "Datos inválidos",
-    });
-  }
-  const { id, version } = validado.data;
-  const resultado = await db.empleado.updateMany({
-    where: { id, version, estado: "ACTIVO" },
-    data: {
-      estado: "INACTIVO",
-      version: { increment: 1 },
-      fechaSalida: new Date(),
-    },
-  });
-  if (!resultado.count) {
-    const existe = await db.empleado.findUnique({
-      where: { id },
-      select: { id: true },
-    });
-    throw new TRPCError(
-      existe
-        ? {
-            code: "CONFLICT",
-            message:
-              "El registro fue modificado por otro usuario. Vuelve a cargar la información.",
-          }
-        : {
-            code: "NOT_FOUND",
-            message: "No se encontró el empleado.",
-          },
+  return transaccionOrganizacion(db, async (tx) => {
+    await autorizarEmpleados(tx, actor, "desactivar");
+    const { id, version, fechaSalida } = validar(
+      desactivarEmpleadoSchema,
+      input,
     );
-  }
-  return { id, version: version + 1 };
+    const empleado = await empleadoVigente(tx, id, version);
+    if (empleado.estado !== "ACTIVO")
+      throw new TRPCError({
+        code: "CONFLICT",
+        message: "El empleado ya está inactivo.",
+      });
+    if (empleado.departamentoQueDirige)
+      throw new TRPCError({
+        code: "BAD_REQUEST",
+        message:
+          "Asigna otro jefe al departamento antes de dar de baja a este empleado.",
+      });
+    if (fechaSalida < empleado.fechaIngreso)
+      throw new TRPCError({
+        code: "BAD_REQUEST",
+        message:
+          "La fecha de salida no puede ser anterior a la fecha de ingreso.",
+      });
+    await tx.empleado.update({
+      where: { id, version },
+      data: { estado: "INACTIVO", fechaSalida, version: { increment: 1 } },
+    });
+    return { id, version: version + 1 };
+  });
 }
-
 export async function recontratarEmpleado(
-  db: Prisma.TransactionClient,
+  db: PrismaClient,
   actor: ActorAcceso,
   input: ReactivarEmpleadoInput,
 ) {
-  await autorizarEmpleados(db, actor, "reactivar");
-  const validado = reactivarEmpleadoSchema.safeParse(input);
-  if (!validado.success) {
-    throw new TRPCError({
-      code: "BAD_REQUEST",
-      message: validado.error.issues[0]?.message ?? "Datos inválidos",
+  return transaccionOrganizacion(db, async (tx) => {
+    await autorizarEmpleados(tx, actor, "reactivar");
+    const { id, version } = validar(reactivarEmpleadoSchema, input);
+    const empleado = await empleadoVigente(tx, id, version);
+    if (empleado.estado !== "INACTIVO")
+      throw new TRPCError({
+        code: "CONFLICT",
+        message: "El empleado ya está activo.",
+      });
+    await departamentoActivo(tx, empleado.departamentoId);
+    await tx.empleado.update({
+      where: { id, version },
+      data: { estado: "ACTIVO", fechaSalida: null, version: { increment: 1 } },
     });
-  }
-  const { id, version } = validado.data;
-  const resultado = await db.empleado.updateMany({
-    where: { id, version, estado: "INACTIVO" },
-    data: { estado: "ACTIVO", version: { increment: 1 }, fechaSalida: null },
+    return { id, version: version + 1 };
   });
-  if (!resultado.count) {
-    const existe = await db.empleado.findUnique({
-      where: { id },
-      select: { id: true },
-    });
-    throw new TRPCError(
-      existe
-        ? {
-            code: "CONFLICT",
-            message:
-              "El registro fue modificado por otro usuario. Vuelve a cargar la información.",
-          }
-        : {
-            code: "NOT_FOUND",
-            message: "No se encontró el empleado.",
-          },
-    );
-  }
-  return { id, version: version + 1 };
 }
-
 export async function listarEmpleados(
   db: PrismaClient,
   actor: ActorAcceso,
   input: ListarEmpleadosInput,
 ) {
   await autorizarEmpleados(db, actor, "consultar");
-  const validado = listarEmpleadosSchema.safeParse(input);
-  if (!validado.success) {
-    throw new TRPCError({
-      code: "BAD_REQUEST",
-      message: validado.error.issues[0]?.message ?? "Datos inválidos",
-    });
-  }
+  const data = validar(listarEmpleadosSchema, input);
   const where: Prisma.EmpleadoWhereInput = {
-    nombre: { contains: validado.data.busqueda },
-    departamentoId: validado.data.departamentoId,
-    estado: validado.data.estado,
-    codigo: validado.data.codigo,
-    fechaIngreso: {
-      gte: validado.data.fechaIngresoDesde,
-      lte: validado.data.fechaIngresoHasta,
-    },
+    OR: [
+      { nombre: { contains: data.busqueda } },
+      { codigo: { contains: data.busqueda } },
+    ],
+    departamentoId: data.departamentoId,
+    estado: data.estado,
+    codigo: data.codigo,
+    fechaIngreso: { gte: data.fechaIngresoDesde, lte: data.fechaIngresoHasta },
   };
   const [total, filas] = await db.$transaction([
     db.empleado.count({ where }),
@@ -228,57 +175,57 @@ export async function listarEmpleados(
       where,
       select: {
         id: true,
+        version: true,
         nombre: true,
         codigo: true,
         fechaIngreso: true,
         fechaNacimiento: true,
+        fechaSalida: true,
+        salarioBase: true,
         departamento: { select: { nombre: true, id: true } },
         estado: true,
       },
       orderBy: [{ nombre: "asc" }, { id: "asc" }],
-      skip: (validado.data.pagina - 1) * validado.data.tamano,
-      take: validado.data.tamano,
+      skip: (data.pagina - 1) * data.tamano,
+      take: data.tamano,
     }),
   ]);
   return {
     total,
-    filas,
+    filas: filas.map((fila) => ({
+      ...fila,
+      salarioBase: fila.salarioBase.toFixed(2),
+    })),
   };
 }
-
 export async function obtenerEmpleado(
   db: PrismaClient,
   actor: ActorAcceso,
   input: ObtenerEmpleadoInput,
 ) {
   await autorizarEmpleados(db, actor, "consultar");
-  const validado = obtenerEmpleadoSchema.safeParse(input);
-  if (!validado.success) {
-    throw new TRPCError({
-      code: "BAD_REQUEST",
-      message: validado.error.issues[0]?.message ?? "Datos inválidos",
-    });
-  }
-  const { id, version } = validado.data;
+  const { id } = validar(obtenerEmpleadoSchema, input);
   const empleado = await db.empleado.findUnique({
-    where: { id, version },
-    select: {
-      id: true,
-      nombre: true,
-      codigo: true,
-      salarioBase: true,
-      fechaIngreso: true,
-      fechaNacimiento: true,
+    where: { id },
+    include: {
       departamento: { select: { nombre: true, id: true } },
-      estado: true,
       departamentoQueDirige: { select: { id: true, nombre: true } },
     },
   });
-  if (!empleado) {
+  if (!empleado)
     throw new TRPCError({
       code: "NOT_FOUND",
       message: "No se encontró el empleado.",
     });
-  }
-  return empleado;
+  return { ...empleado, salarioBase: empleado.salarioBase.toFixed(2) };
+}
+export async function departamentosEmpleados(
+  db: PrismaClient,
+  actor: ActorAcceso,
+) {
+  await autorizarEmpleados(db, actor, "consultar");
+  return db.departamento.findMany({
+    select: { id: true, nombre: true, estado: true },
+    orderBy: { nombre: "asc" },
+  });
 }

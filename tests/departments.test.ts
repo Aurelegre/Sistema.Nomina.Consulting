@@ -77,6 +77,18 @@ void test("departamentos: catálogo, permisos, validaciones y concurrencia", asy
     const original = lista.find(
       (departamento) => departamento.codigo === "FINANZAS",
     )!;
+    async function nuevoJefe() {
+      return db.empleado.create({
+        data: {
+          codigo: `${prefix}_${randomBytes(3).toString("hex")}`.toUpperCase(),
+          nombre: prefix,
+          fechaNacimiento: new Date("1990-01-01"),
+          fechaIngreso: new Date("2020-01-01"),
+          salarioBase: 4000,
+          departamentoId: original.id,
+        },
+      });
+    }
     const entrada = {
       id: original.id,
       version: original.version,
@@ -250,6 +262,7 @@ void test("departamentos: catálogo, permisos, validaciones y concurrencia", asy
       "crear y desactivar: permisos, validación, duplicados y persistencia",
       async () => {
         const nuevo = {
+          jefeId: (await nuevoJefe()).id,
           codigo: `${prefix}_nuevo`,
           nombre: `Nuevo ${prefix}`,
           cuentaContable: " 001.20 ",
@@ -279,7 +292,7 @@ void test("departamentos: catálogo, permisos, validaciones y concurrencia", asy
           { ...nuevo, nombre: " " },
           { ...nuevo, cuentaContable: " " },
           { ...nuevo, estado: "INACTIVO" },
-          { ...nuevo, jefeId: 1 },
+          { ...nuevo, jefeId: 0 },
         ]) {
           await assert.rejects(editor.caller.departamentos.crear(input), {
             code: "BAD_REQUEST",
@@ -370,6 +383,7 @@ void test("departamentos: catálogo, permisos, validaciones y concurrencia", asy
       "edición y desactivación concurrentes no se sobrescriben",
       async () => {
         const creado = await editor.caller.departamentos.crear({
+          jefeId: (await nuevoJefe()).id,
           codigo: `${prefix}_race`,
           nombre: `Race ${prefix}`,
           cuentaContable: "001",
@@ -446,6 +460,7 @@ void test("departamentos: catálogo, permisos, validaciones y concurrencia", asy
         });
         await assert.rejects(
           editor.caller.departamentos.crear({
+            jefeId: 1,
             codigo: "NUEVO",
             nombre: "Nuevo",
             cuentaContable: "001",
@@ -470,6 +485,9 @@ void test("departamentos: catálogo, permisos, validaciones y concurrencia", asy
     );
   } finally {
     await db.departamento.deleteMany({
+      where: { codigo: { startsWith: prefix.toUpperCase() } },
+    });
+    await db.empleado.deleteMany({
       where: { codigo: { startsWith: prefix.toUpperCase() } },
     });
     await db.usuario.deleteMany({

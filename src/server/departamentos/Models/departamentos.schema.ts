@@ -20,12 +20,19 @@ const camposDepartamento = {
 };
 
 export const editarDepartamentoSchema = registroVersionSchema
-  .extend(camposDepartamento)
+  .extend({
+    ...camposDepartamento,
+    jefeId: z.number().int().positive().optional(),
+  })
   .strict();
 
 export const crearDepartamentoSchema = z
   .object({
     ...camposDepartamento,
+    jefeId: z
+      .number({ required_error: "Selecciona un jefe para el departamento" })
+      .int()
+      .positive("Selecciona un jefe para el departamento"),
     codigo: z
       .string()
       .trim()

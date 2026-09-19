@@ -6,13 +6,14 @@ RF-005 y RF-006: consultar, crear, editar y desactivar departamentos de Consulti
 La ruta es `/departamentos`, dentro del layout administrativo existente.
 
 El catálogo inicial incluye FINANZAS, PRODUCCION, LOGISTICA, RECURSOS_HUMANOS y MERCADEO.
-Admite departamentos adicionales. Crear requiere código, nombre y cuenta contable;
+Admite departamentos adicionales. Crear requiere código, nombre, cuenta contable y jefe;
 el código se normaliza a mayúsculas, inicia con una letra y admite letras ASCII,
 números y guion bajo (máximo 50 caracteres). Código y nombre son únicos incluso
 entre inactivos. El código es inmutable; nombre y cuenta se editan en un modal.
 Los nuevos departamentos inician ACTIVO. Desactivar requiere confirmación y
 cambia a INACTIVO sin borrar datos; ambos estados aparecen en la tabla.
-La edición de nombre/cuenta no cambia el estado. No hay eliminación ni reactivación.
+La edición de nombre/cuenta/jefe no cambia el estado. La reactivación requiere
+confirmación y conserva los datos. No hay eliminación.
 Las futuras reglas específicas de un departamento deben utilizar su código,
 no comparar el nombre editable.
 
@@ -51,17 +52,13 @@ Esta feature no implementa aún el procesamiento contable.
   incrementa la versión. Un registro inexistente devuelve NOT_FOUND; una versión
   antigua o un departamento ya inactivo devuelve CONFLICT. Editar no reactiva.
 
-## Integración pendiente con empleados
+## Integración con empleados
 
-Por instrucción del propietario se aplazan hasta desarrollar empleados:
-
-- exigir un jefe asignado para crear un departamento;
-- impedir la desactivación si hay empleados asignados.
-
-No se incluyen campos ficticios de jefe ni simulaciones de empleados en esta
-feature. La implementación futura debe aplicar ambas reglas en backend y
-coordinar transaccionalmente la asignación de empleados y la desactivación,
-evitando una asignación concurrente después de comprobar que está vacío.
+`feature/employees` incorpora jefe activo obligatorio al crear, selección y
+sustitución de jefe desde el editor y bloqueo de desactivación si hay empleados
+asignados. Las escrituras comparten bloqueos transaccionales con empleados.
+Los departamentos iniciales pueden conservar su jefe pendiente de configuración.
+El selector se autoriza con `DEPARTMENTS.MANAGE`. Ver `EMPLOYEES.md`.
 
 ## Arquitectura
 

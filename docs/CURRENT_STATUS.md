@@ -1,6 +1,16 @@
 # Estado actual
 
-Fecha de referencia: 16 de septiembre de 2026.
+Fecha de referencia: 19 de septiembre de 2026.
+
+## Empleados
+
+Implementado en `feature/employees`, pendiente de revisión e integración:
+listado paginado, búsqueda y filtros, detalle, editor modal para creación y
+actualización de datos y salario, baja con fecha de salida y recontratación.
+Incluye permisos, versiones y validaciones transaccionales de departamentos
+activos y jefaturas. La creación de departamentos exige jefe activo y la
+desactivación se bloquea si tiene empleados asignados. Se reutilizan los modelos
+Prisma existentes de la rama. Detalles y validación en `EMPLOYEES.md`.
 
 ## Base técnica
 
@@ -66,7 +76,7 @@ Implementado:
 Orden sugerido:
 
 1. revisar e integrar departamentos (`feature/departments`);
-2. empleados, utilizando el catálogo de departamentos e incorporando jefe obligatorio al crear departamentos y bloqueo de desactivación si tienen empleados asignados;
+2. revisar e integrar empleados (`feature/employees`), con jefe obligatorio al crear departamentos y bloqueo de desactivación si tienen empleados asignados;
 3. ausencias;
 4. novedades de nómina;
 5. Asociación Solidarista;
@@ -89,8 +99,8 @@ desactivación por permisos, códigos únicos e inmutables y estado ACTIVO/INACT
 visible en tabla. Incluye control de concurrencia, formularios modales y
 confirmación shadcn/ui. Las cuentas iniciales quedan pendientes de configurar;
 los nuevos departamentos requieren cuenta. La asignación obligatoria de jefe y
-la validación de empleados al desactivar quedan aplazadas a empleados por
-instrucción del propietario. Detalles en `DEPARTMENTS.md`.
+la validación de empleados al desactivar se incorporan en `feature/employees`.
+Detalles en `DEPARTMENTS.md`.
 
 ## Arquitectura frontend
 

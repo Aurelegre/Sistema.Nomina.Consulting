@@ -158,9 +158,9 @@ El catálogo admite nuevos departamentos con código único e inmutable, nombre
 Desactivar cambia a INACTIVO sin eliminar datos; ambos estados son consultables.
 Crear, editar y desactivar requieren DEPARTMENTS.MANAGE.
 
-## RN-030 — Departamento y empleados (pendiente)
+## RN-030 — Departamento y empleados
 
-Al desarrollar empleados, exigir un jefe asignado para crear un departamento e
-impedir desactivar departamentos con empleados asignados. Estas comprobaciones
-se aplazan expresamente hasta implementar empleados. Deberán ejecutarse en
-backend y evitar carreras entre asignación de empleados y desactivación.
+Exigir un jefe activo asignado para crear un departamento e impedir desactivar
+departamentos con empleados asignados, incluso inactivos. Estas comprobaciones
+se ejecutan en backend y coordinan transaccionalmente las asignaciones y la
+desactivación. Implementadas en `feature/employees`; ver `EMPLOYEES.md`.
