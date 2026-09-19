@@ -18,6 +18,7 @@ export function DepartamentosTable({
   actualizando,
   onEditar,
   onDesactivar,
+  onReactivar,
 }: DepartamentosTableProps) {
   return (
     <Table>
@@ -77,6 +78,16 @@ export function DepartamentosTable({
                       onClick={() => onDesactivar(departamento)}
                     >
                       Desactivar
+                    </Button>
+                  )}
+                  {departamento.estado === "INACTIVO" && (
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      disabled={actualizando}
+                      onClick={() => onReactivar(departamento)}
+                    >
+                      Reactivar
                     </Button>
                   )}
                 </div>

@@ -6,7 +6,7 @@ import type { ActorAcceso } from "~/server/permisos/Models/ActorAcceso.Model";
 export async function autorizarDepartamentos(
   db: Prisma.TransactionClient,
   actor: ActorAcceso,
-  accion: "consultar" | "editar" | "crear" | "desactivar",
+  accion: "consultar" | "editar" | "crear" | "desactivar" | "reactivar",
 ) {
   await actorVigente(db, actor, [
     accion === "consultar" ? "DEPARTMENTS.VIEW" : "DEPARTMENTS.MANAGE",

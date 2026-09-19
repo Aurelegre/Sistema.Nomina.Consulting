@@ -14,6 +14,7 @@ import { DeactivateDepartamentoModal } from "./Components/Modals/deactivateDepar
 import { filtrarDepartamentos } from "./Helpers/departamentos.helper";
 import type { Departamento } from "./Models/departamentos.model";
 import type { DepartamentosViewProps } from "./Models/departamentosView.model";
+import { ReactivateDepartamentoModal } from "./Components/Modals/reactivateDepartamento.modal";
 
 export function DepartamentosView({ identidad }: DepartamentosViewProps) {
   const [busqueda, setBusqueda] = useState("");
@@ -21,6 +22,7 @@ export function DepartamentosView({ identidad }: DepartamentosViewProps) {
   const [mensaje, setMensaje] = useState<string | null>(null);
   const [creando, setCreando] = useState(false);
   const [desactivando, setDesactivando] = useState<Departamento | null>(null);
+  const [reactivando, setReactivando] = useState<Departamento | null>(null);
   const departamentos = api.departamentos.listar.useQuery();
   const puedeEditar = identidad.permisos.includes("DEPARTMENTS.MANAGE");
   const pendientes =
@@ -88,6 +90,10 @@ export function DepartamentosView({ identidad }: DepartamentosViewProps) {
                 setMensaje(null);
                 setDesactivando(departamento);
               }}
+              onReactivar={(departamento) => {
+                setMensaje(null);
+                setReactivando(departamento);
+              }}
             />
           )}
         </CardContent>
@@ -120,6 +126,16 @@ export function DepartamentosView({ identidad }: DepartamentosViewProps) {
           onGuardado={() => {
             setDesactivando(null);
             setMensaje("Departamento desactivado correctamente");
+          }}
+        />
+      )}
+      {reactivando && puedeEditar && (
+        <ReactivateDepartamentoModal
+          departamento={reactivando}
+          onCerrar={() => setReactivando(null)}
+          onGuardado={() => {
+            setReactivando(null);
+            setMensaje("Departamento reactivado correctamente");
           }}
         />
       )}

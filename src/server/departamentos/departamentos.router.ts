@@ -9,6 +9,7 @@ import {
   listarDepartamentos,
   crearDepartamento,
   desactivarDepartamento,
+  reactivarDepartamento,
 } from "./departamentos.service";
 
 export const departamentosRouter = createTRPCRouter({
@@ -25,6 +26,15 @@ export const departamentosRouter = createTRPCRouter({
     .input(desactivarDepartamentoSchema)
     .mutation(({ ctx, input }) =>
       desactivarDepartamento(
+        ctx.db,
+        { usuarioId: ctx.sesion.usuario.id, sesionId: ctx.sesion.id },
+        input,
+      ),
+    ),
+  reactivar: permissionProcedure("DEPARTMENTS.MANAGE")
+    .input(desactivarDepartamentoSchema)
+    .mutation(({ ctx, input }) =>
+      reactivarDepartamento(
         ctx.db,
         { usuarioId: ctx.sesion.usuario.id, sesionId: ctx.sesion.id },
         input,

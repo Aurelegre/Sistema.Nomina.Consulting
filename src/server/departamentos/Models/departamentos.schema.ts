@@ -40,3 +40,5 @@ export const crearDepartamentoSchema = z
   .strict();
 
 export const desactivarDepartamentoSchema = registroVersionSchema.strict();
+
+export const reactivarDepartamentoSchema = registroVersionSchema.strict();

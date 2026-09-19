@@ -5,11 +5,13 @@ import type {
   CrearDepartamentoInput,
   DesactivarDepartamentoInput,
   EditarDepartamentoInput,
+  ReactivarDepartamentoInput,
 } from "./Models/departamentos.model";
 import {
   crearDepartamentoSchema,
   desactivarDepartamentoSchema,
   editarDepartamentoSchema,
+  reactivarDepartamentoSchema,
 } from "./Models/departamentos.schema";
 import { autorizarDepartamentos } from "./departamentos.policy";
 
@@ -41,6 +43,42 @@ export async function crearDepartamento(
     }
     throw error;
   }
+}
+
+export async function reactivarDepartamento(
+  db: Prisma.TransactionClient,
+  actor: ActorAcceso,
+  input: ReactivarDepartamentoInput,
+) {
+  await autorizarDepartamentos(db, actor, "reactivar");
+  const validado = reactivarDepartamentoSchema.safeParse(input);
+  if (!validado.success) {
+    throw new TRPCError({
+      code: "BAD_REQUEST",
+      message: validado.error.issues[0]?.message ?? "Datos inválidos",
+    });
+  }
+  const { id, version } = validado.data;
+  const resultado = await db.departamento.updateMany({
+    where: { id, version, estado: "INACTIVO" },
+    data: { estado: "ACTIVO", version: { increment: 1 } },
+  });
+  if (!resultado.count) {
+    const existente = await db.departamento.findUnique({
+      where: { id },
+      select: { id: true },
+    });
+    throw new TRPCError(
+      existente
+        ? {
+            code: "CONFLICT",
+            message:
+              "El departamento cambió o ya está activo. Cierra la confirmación y vuelve a consultar el listado.",
+          }
+        : { code: "NOT_FOUND", message: "El departamento no existe." },
+    );
+  }
+  return { id, version: version + 1 };
 }
 
 export async function desactivarDepartamento(
