@@ -214,3 +214,23 @@ Ejemplo inválido:
 Si una ausencia comprende días de dos meses distintos, debe registrarse como dos solicitudes separadas, una por cada mes.
 
 Esta restricción permite que la aplicación posterior de la ausencia en nómina se asocie de forma inequívoca a un único período mensual.
+
+## RN-032 — Solicitante de ausencia
+
+Usuario y empleado tienen una relación uno a uno opcional. Solo usuarios con
+empleado activo vinculado y permiso de creación pueden solicitar ausencias para
+sí mismos. No se admite creación para terceros, tampoco por administradores.
+
+## RN-033 — Resolución definitiva de ausencia
+
+Solo el jefe vigente del departamento guardado en la solicitud, con el permiso
+correspondiente, puede aprobar o rechazar una solicitud PENDIENTE. Puede resolver
+su propia solicitud. El departamento original se conserva ante traslados.
+El jefe define `aCuentaSalario` tanto al aprobar como al rechazar. Las resoluciones
+no se revierten. Esta feature no calcula ni aplica descuentos monetarios.
+
+## RN-034 — Acceso de usuario vinculado a empleado
+
+Además de las validaciones de usuario y rol, un empleado vinculado INACTIVO
+impide el login y el uso de sesiones existentes. Su baja revoca las sesiones del
+usuario asociado. Un usuario sin empleado conserva las validaciones habituales.

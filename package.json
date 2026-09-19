@@ -18,6 +18,7 @@
     "test:auth": "node --env-file=.env --import tsx --test tests/auth.test.ts",
     "test:access": "node --env-file=.env --import tsx --test tests/access.test.ts",
     "test:departments": "node --env-file=.env --import tsx --test tests/departments.test.ts",
+    "test:absences": "node --env-file=.env --import tsx --test tests/absences.test.ts",
     "test:auth:ui": "node --env-file=.env node_modules/@playwright/test/cli.js test",
     "db:push": "prisma db push",
     "db:studio": "prisma studio",

@@ -19,6 +19,7 @@ export const ROLES_INICIALES: {
       "PAYROLL_PERIODS.CREATE",
       "PAYROLL_PERIODS.CLOSE",
       "ABSENCES.VIEW",
+      "ABSENCES.VIEW_ALL",
       "ABSENCES.CREATE",
       "PAYROLL.VIEW",
       "PAYROLL.PROCESS",
@@ -37,7 +38,12 @@ export const ROLES_INICIALES: {
     nombre: "Jefe de departamento",
     descripcion:
       "Requiere ámbito departamental al implementar empleados y ausencias",
-    permisos: ["EMPLOYEES.VIEW", "ABSENCES.VIEW", "ABSENCES.APPROVE"],
+    permisos: [
+      "EMPLOYEES.VIEW",
+      "ABSENCES.VIEW",
+      "ABSENCES.CREATE",
+      "ABSENCES.APPROVE",
+    ],
   },
   {
     codigo: "FINANZAS_CONSULTA",

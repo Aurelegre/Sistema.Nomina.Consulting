@@ -2,6 +2,15 @@
 
 Fecha de referencia: 19 de septiembre de 2026.
 
+## Ausencias: backend
+
+Implementado en `feature/absences`: creación propia, listado y detalle por ámbito,
+aprobación/rechazo definitivo por jefe vigente del departamento histórico,
+autoaprobación permitida y decisión salarial del jefe sin cálculos monetarios.
+Incluye vínculo opcional usuario-empleado administrable por permiso, bloqueo de
+login/sesiones por empleado inactivo y coordinación con cierre de períodos.
+Reutiliza la migración base existente. Frontend pendiente. Ver `ABSENCES.md`.
+
 ## Empleados
 
 Implementado en `feature/employees`, pendiente de revisión e integración:

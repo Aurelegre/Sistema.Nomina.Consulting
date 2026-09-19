@@ -1,6 +1,7 @@
 import { Prisma, type PrismaClient } from "@prisma/client";
 import { TRPCError } from "@trpc/server";
 import type { CrearPeriodoInput } from "./Models/CrearPeriodoInput.model";
+import { transaccionOrganizacion } from "~/server/empleados/Helpers/organizacion.helper";
 
 export const listarPeriodosNomina = (db: PrismaClient) =>
   db.periodoNomina.findMany({
@@ -66,20 +67,27 @@ export const crearPeriodoNomina = async (
 };
 
 export const cerrarPeriodoNomina = async (db: PrismaClient, id: number) => {
-  const periodo = await obtenerPeriodoNomina(db, id);
+  return transaccionOrganizacion(db, async (tx) => {
+    const periodo = await tx.periodoNomina.findUnique({ where: { id } });
+    if (!periodo)
+      throw new TRPCError({
+        code: "NOT_FOUND",
+        message: "El período de nómina no existe.",
+      });
 
-  if (periodo.estado === "CERRADO") {
-    throw new TRPCError({
-      code: "BAD_REQUEST",
-      message: "El período de nómina ya se encuentra cerrado.",
+    if (periodo.estado === "CERRADO") {
+      throw new TRPCError({
+        code: "BAD_REQUEST",
+        message: "El período de nómina ya se encuentra cerrado.",
+      });
+    }
+
+    return tx.periodoNomina.update({
+      where: { id },
+      data: {
+        estado: "CERRADO",
+        fechaCierre: new Date(),
+      },
     });
-  }
-
-  return db.periodoNomina.update({
-    where: { id },
-    data: {
-      estado: "CERRADO",
-      fechaCierre: new Date(),
-    },
   });
 };

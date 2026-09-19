@@ -4,5 +4,7 @@ export const usuarioPublico = {
   nombre: true,
   debeCambiarPassword: true,
   estado: true,
+  empleadoId: true,
+  empleado: { select: { id: true, estado: true } },
   rol: { include: { permisos: { include: { permiso: true } } } },
 } as const;

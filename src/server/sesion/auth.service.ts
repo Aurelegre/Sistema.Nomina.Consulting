@@ -3,6 +3,7 @@ import { type PrismaClient } from "@prisma/client";
 import { hashPassword, verificarPassword } from "./Helpers/password";
 import { randomBytes } from "crypto";
 import { digest, SESSION_SECONDS } from "./Helpers/sesion.helper";
+import { transaccionOrganizacion } from "~/server/empleados/Helpers/organizacion.helper";
 
 export async function iniciarSesion(
   db: PrismaClient,
@@ -32,7 +33,7 @@ export async function iniciarSesion(
     });
   const usuario = await db.usuario.findUnique({
     where: { username },
-    include: { rol: true },
+    include: { rol: true, empleado: { select: { estado: true } } },
   });
   const valido = usuario
     ? await verificarPassword(usuario.passwordHash, password)
@@ -40,7 +41,8 @@ export async function iniciarSesion(
   if (
     !valido ||
     usuario?.estado !== "ACTIVO" ||
-    usuario.rol.estado !== "ACTIVO"
+    usuario.rol.estado !== "ACTIVO" ||
+    (usuario.empleado !== null && usuario.empleado.estado !== "ACTIVO")
   ) {
     throw new TRPCError({
       code: "UNAUTHORIZED",
@@ -48,7 +50,7 @@ export async function iniciarSesion(
     });
   }
   const token = randomBytes(32).toString("hex");
-  await db.$transaction(async (tx) => {
+  await transaccionOrganizacion(db, async (tx) => {
     // Evita crear una sesión con una contraseña que cambió durante el login.
     const vigente = await tx.usuario.updateMany({
       where: {
@@ -56,6 +58,7 @@ export async function iniciarSesion(
         passwordHash: usuario.passwordHash,
         estado: "ACTIVO",
         rol: { estado: "ACTIVO" },
+        OR: [{ empleadoId: null }, { empleado: { estado: "ACTIVO" } }],
       },
       data: { estado: "ACTIVO" },
     });
@@ -78,8 +81,16 @@ export async function cambiarPrimeraPassword(
   passwordActual: string,
   nuevaPassword: string,
 ) {
-  const usuario = await db.usuario.findUnique({ where: { id: usuarioId } });
-  if (!usuario || !usuario.debeCambiarPassword || usuario.estado !== "ACTIVO")
+  const usuario = await db.usuario.findUnique({
+    where: { id: usuarioId },
+    include: { empleado: { select: { estado: true } } },
+  });
+  if (
+    !usuario ||
+    !usuario.debeCambiarPassword ||
+    usuario.estado !== "ACTIVO" ||
+    (usuario.empleado !== null && usuario.empleado.estado !== "ACTIVO")
+  )
     throw new TRPCError({ code: "FORBIDDEN" });
   if (!(await verificarPassword(usuario.passwordHash, passwordActual)))
     throw new TRPCError({
@@ -92,7 +103,7 @@ export async function cambiarPrimeraPassword(
       message: "La nueva contraseña debe ser diferente de la temporal",
     });
   const passwordHash = await hashPassword(nuevaPassword);
-  await db.$transaction(async (tx) => {
+  await transaccionOrganizacion(db, async (tx) => {
     const resultado = await tx.usuario.updateMany({
       where: {
         id: usuarioId,
@@ -100,6 +111,7 @@ export async function cambiarPrimeraPassword(
         debeCambiarPassword: true,
         estado: "ACTIVO",
         rol: { estado: "ACTIVO" },
+        OR: [{ empleadoId: null }, { empleado: { estado: "ACTIVO" } }],
       },
       data: {
         passwordHash,

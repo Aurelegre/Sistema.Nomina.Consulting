@@ -30,3 +30,6 @@ export const editarUsuarioSchema = registroVersionSchema
 export const asignarRolSchema = registroVersionSchema
   .extend({ rolId: idSchema })
   .strict();
+export const asignarEmpleadoSchema = registroVersionSchema
+  .extend({ empleadoId: idSchema.nullable() })
+  .strict();

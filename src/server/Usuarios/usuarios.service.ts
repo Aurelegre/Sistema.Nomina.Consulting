@@ -1,6 +1,9 @@
 import { randomBytes } from "node:crypto";
 import { type PrismaClient, type Prisma } from "@prisma/client";
 import { TRPCError } from "@trpc/server";
+import { asignarEmpleadoSchema } from "./Models/usuarios.schema";
+import { transaccionOrganizacion } from "~/server/empleados/Helpers/organizacion.helper";
+import { validar } from "~/shared/validar.helper";
 import { type z } from "zod";
 import {
   type estadoSchema,
@@ -230,4 +233,43 @@ export async function restablecerPassword(
       };
     },
   );
+}
+
+export async function asignarEmpleadoUsuario(
+  db: PrismaClient,
+  actor: ActorAcceso,
+  input: z.input<typeof asignarEmpleadoSchema>,
+) {
+  return transaccionOrganizacion(db, async (tx) => {
+    await tx.$queryRaw`SELECT id FROM rol WHERE codigo = 'ADMINISTRADOR' FOR UPDATE`;
+    const gestor = await actorVigente(tx, actor, ["USERS.ASSIGN_EMPLOYEE"]);
+    const data = validar(asignarEmpleadoSchema, input);
+    if (data.id === gestor.id)
+      prohibido("No puedes cambiar tu propio vínculo con un empleado.");
+    const usuario = await usuarioObjetivo(tx, data.id, data.version);
+    comprobarRolAdministrable(gestor, usuario.rol);
+    if (data.empleadoId !== null) {
+      const empleado = await tx.empleado.findUnique({
+        where: { id: data.empleadoId },
+        include: { usuario: { select: { id: true } } },
+      });
+      if (empleado?.estado !== "ACTIVO")
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message: "Selecciona un empleado activo.",
+        });
+      if (empleado.usuario && empleado.usuario.id !== data.id)
+        throw new TRPCError({
+          code: "CONFLICT",
+          message: "El empleado ya está vinculado a otro usuario.",
+        });
+    }
+    const actualizado = await tx.usuario.update({
+      where: { id: data.id, version: data.version },
+      data: { empleadoId: data.empleadoId, version: { increment: 1 } },
+      select: { id: true, version: true, empleadoId: true },
+    });
+    await tx.sesion.deleteMany({ where: { usuarioId: data.id } });
+    return actualizado;
+  });
 }

@@ -30,13 +30,30 @@ export async function actorVigente(
 ) {
   const sesion = await tx.sesion.findUnique({
     where: { id: actor.sesionId },
-    include: { usuario: { include: { rol: { include: rolConPermisos } } } },
+    include: {
+      usuario: {
+        include: {
+          empleado: {
+            select: {
+              id: true,
+              estado: true,
+              departamentoId: true,
+              fechaIngreso: true,
+              departamentoQueDirige: { select: { id: true } },
+            },
+          },
+          rol: { include: rolConPermisos },
+        },
+      },
+    },
   });
   if (
     sesion?.usuarioId !== actor.usuarioId ||
     sesion.fechaExpiracion <= new Date() ||
     sesion.usuario.estado !== "ACTIVO" ||
-    sesion.usuario.rol.estado !== "ACTIVO"
+    sesion.usuario.rol.estado !== "ACTIVO" ||
+    (sesion.usuario.empleado !== null &&
+      sesion.usuario.empleado.estado !== "ACTIVO")
   )
     throw new TRPCError({ code: "UNAUTHORIZED" });
   if (sesion.usuario.debeCambiarPassword)
@@ -48,6 +65,7 @@ export async function actorVigente(
     prohibido("No tienes permiso para esta operación");
   return {
     id: sesion.usuarioId,
+    empleado: sesion.usuario.empleado,
     rolId: sesion.usuario.rolId,
     administrador: sesion.usuario.rol.codigo === "ADMINISTRADOR",
     permisos: codigos,

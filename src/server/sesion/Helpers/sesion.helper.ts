@@ -29,13 +29,16 @@ export async function obtenerSesion(db: PrismaClient, headers: Headers) {
     !sesion ||
     sesion.fechaExpiracion <= new Date() ||
     sesion.usuario.estado !== "ACTIVO" ||
-    sesion.usuario.rol.estado !== "ACTIVO"
+    sesion.usuario.rol.estado !== "ACTIVO" ||
+    (sesion.usuario.empleado !== null &&
+      sesion.usuario.empleado.estado !== "ACTIVO")
   )
     return null;
   return {
     id: sesion.id,
     usuario: {
       id: sesion.usuario.id,
+      empleadoId: sesion.usuario.empleadoId,
       username: sesion.usuario.username,
       nombre: sesion.usuario.nombre,
       debeCambiarPassword: sesion.usuario.debeCambiarPassword,
