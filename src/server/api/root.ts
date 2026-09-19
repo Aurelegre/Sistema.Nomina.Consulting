@@ -6,6 +6,7 @@ import { permisosRouter } from "~/server/permisos/permisos.router";
 import { periodosNominaRouter } from "~/server/Periodo-Nomina/periodos-nomina.router";
 import { createCallerFactory, createTRPCRouter } from "~/server/api/trpc";
 import { departamentosRouter } from "~/server/departamentos/departamentos.router";
+import { empleadosRouter } from "../empleados/empleados.router";
 
 export const appRouter = createTRPCRouter({
   departamentos: departamentosRouter,
@@ -15,6 +16,7 @@ export const appRouter = createTRPCRouter({
   auth: authRouter,
   health: healthRouter,
   periodosNomina: periodosNominaRouter,
+  empleados: empleadosRouter,
 });
 
 export type AppRouter = typeof appRouter;
