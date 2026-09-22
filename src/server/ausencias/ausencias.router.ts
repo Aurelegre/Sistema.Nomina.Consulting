@@ -5,6 +5,8 @@ import {
   obtenerAusencia,
   aprobarAusencia,
   rechazarAusencia,
+  contextoAusencias,
+  empleadosRevision,
 } from "./ausencias.service";
 import {
   crearAusenciaSchema,
@@ -15,6 +17,18 @@ import {
 
 // El servicio valida también invocaciones directas; las fechas viajan como AAAA-MM-DD.
 export const ausenciasRouter = createTRPCRouter({
+  contexto: permissionProcedure("ABSENCES.VIEW").query(({ ctx }) =>
+    contextoAusencias(ctx.db, {
+      usuarioId: ctx.sesion.usuario.id,
+      sesionId: ctx.sesion.id,
+    }),
+  ),
+  empleadosRevision: permissionProcedure("ABSENCES.VIEW").query(({ ctx }) =>
+    empleadosRevision(ctx.db, {
+      usuarioId: ctx.sesion.usuario.id,
+      sesionId: ctx.sesion.id,
+    }),
+  ),
   crear: permissionProcedure("ABSENCES.CREATE")
     .input(crearAusenciaSchema)
     .mutation(({ ctx, input }) =>
@@ -38,6 +52,8 @@ export const ausenciasRouter = createTRPCRouter({
           ...input,
           desde: input.desde?.toISOString().slice(0, 10),
           hasta: input.hasta?.toISOString().slice(0, 10),
+          ingresadaDesde: input.ingresadaDesde?.toISOString().slice(0, 10),
+          ingresadaHasta: input.ingresadaHasta?.toISOString().slice(0, 10),
         },
       ),
     ),

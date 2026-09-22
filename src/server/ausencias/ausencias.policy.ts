@@ -26,7 +26,21 @@ export function empleadoSolicitante(gestor: Gestor) {
     });
   return gestor.empleado;
 }
-export function ambitoAusencias(gestor: Gestor): Prisma.AusenciaWhereInput {
+export function ambitoAusencias(
+  gestor: Gestor,
+  ambito?: "propias" | "departamento",
+): Prisma.AusenciaWhereInput {
+  if (ambito === "propias")
+    return { empleadoId: empleadoSolicitante(gestor).id };
+  if (ambito === "departamento") {
+    const jefe = gestor.empleado?.departamentoQueDirige;
+    if (!jefe)
+      throw new TRPCError({
+        code: "FORBIDDEN",
+        message: "Debes ser jefe de departamento para ingresar a revisión.",
+      });
+    return { departamentoId: jefe.id };
+  }
   if (gestor.permisos.includes("ABSENCES.VIEW_ALL")) return {};
   if (!gestor.empleado) return { id: -1 };
   const jefe = gestor.empleado.departamentoQueDirige;

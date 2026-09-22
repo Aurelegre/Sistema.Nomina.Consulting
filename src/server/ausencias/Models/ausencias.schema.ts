@@ -49,10 +49,16 @@ export const resolverAusenciaSchema = registroVersionSchema
     comentarioResolucion: z.string().trim().max(500).optional(),
   })
   .strict();
-export const obtenerAusenciaSchema = z.object({ id: idSchema }).strict();
+const ambitoSchema = z.enum(["propias", "departamento"]).optional();
+export const obtenerAusenciaSchema = z
+  .object({ id: idSchema, ambito: ambitoSchema })
+  .strict();
 export const listarAusenciasSchema = paginaSchema
   .extend({
     empleadoId: idSchema.optional(),
+    ambito: ambitoSchema,
+    ingresadaDesde: fechaSchema.optional(),
+    ingresadaHasta: fechaSchema.optional(),
     departamentoId: idSchema.optional(),
     estado: z
       .enum(["PENDIENTE", "APROBADA", "RECHAZADA", "APLICADA_NOMINA"])
@@ -61,6 +67,16 @@ export const listarAusenciasSchema = paginaSchema
     hasta: fechaSchema.optional(),
   })
   .strict()
+  .refine(
+    (input) =>
+      !input.ingresadaDesde ||
+      !input.ingresadaHasta ||
+      input.ingresadaDesde <= input.ingresadaHasta,
+    {
+      path: ["ingresadaHasta"],
+      message: "El rango de ingreso de solicitudes no es válido",
+    },
+  )
   .refine(
     (input) => !input.desde || !input.hasta || input.desde <= input.hasta,
     {

@@ -1,6 +1,6 @@
-# Backend de ausencias
+# Gestión de ausencias
 
-Implementado en `feature/absences`. El frontend queda para una feature posterior.
+Implementado en `feature/absences`, con backend y frontend por entidad.
 Reutiliza `Ausencia`, la relación opcional uno a uno `Usuario.empleadoId` y la
 migración `20260919220838_add_ausencias_and_user_employee_relation` existentes.
 Esta implementación no modifica el esquema ni agrega otra migración.
@@ -46,12 +46,24 @@ serializados por la infraestructura SuperJSON del proyecto.
 | `ausencias.obtener` | `id` | `ABSENCES.VIEW` |
 | `ausencias.aprobar` | `id`, `version`, `aCuentaSalario`, `comentarioResolucion?` | `ABSENCES.APPROVE` y jefatura real |
 | `ausencias.rechazar` | Igual que aprobar | `ABSENCES.APPROVE` y jefatura real |
+| `ausencias.contexto` | Sin entrada | `ABSENCES.VIEW` |
+| `ausencias.empleadosRevision` | Sin entrada | `ABSENCES.VIEW` y jefatura real |
 
 Los esquemas son estrictos: no aceptan campos adicionales. Motivo obligatorio,
 comentario opcional, ambos con máximo de 500 caracteres. El listado devuelve
 `{ total, filas }`, con página inicial 1 y tamaño predeterminado 15 (máximo 100).
 La búsqueda incluye motivo, nombre y código de empleado. `desde`/`hasta` filtran
 por intersección con el rango de la ausencia, incluyendo ambos extremos.
+
+`listar` y `obtener` aceptan `ambito: "propias" | "departamento"`. El primero
+exige empleado vinculado y limita la consulta a ese empleado; el segundo exige
+jefatura y limita al departamento dirigido. Estas restricciones se aplican
+incluso con `ABSENCES.VIEW_ALL`. El contrato previo sin ámbito mantiene la
+consulta administrativa global; no se utiliza para alimentar las pestañas.
+
+`listar` también admite `ingresadaDesde` e `ingresadaHasta`: días completos de
+fecha de creación de la solicitud, en hora de Guatemala. El rango de ausencia
+y el de ingreso de solicitud son filtros independientes.
 
 Las respuestas incluyen datos mínimos del empleado, departamento, creador y
 resolutor; no incluyen salarios, contraseñas ni otros datos de cuenta.
@@ -90,6 +102,32 @@ organización y luego seguridad. Las resoluciones comparan estado PENDIENTE,
 ID y versión en una misma escritura y registran usuario, fecha y comentario.
 Dos resoluciones simultáneas tienen un único ganador.
 
+## Interfaz
+
+El sidebar conserva una única opción **Ausencias**, visible con `ABSENCES.VIEW`
+y empleado vinculado. La ruta `/ausencias` muestra **Mis solicitudes** como
+apartado principal. `/ausencias/revision` corresponde a **Revisión del
+departamento**, accesible solo al jefe asignado. La navegación superior reutiliza
+el patrón de botones/enlaces empleado en Usuarios, Roles y Permisos. Ambas rutas
+validan el acceso en servidor; las pestañas no se habilitan por nombre de rol.
+
+El historial permite consultar fechas, ingreso de solicitud, estado, motivo,
+decisión salarial y detalle de resolución. Crear requiere `ABSENCES.CREATE` y
+abre un formulario modal de fechas y motivo. No permite seleccionar terceros.
+
+Revisión abre filtrada por PENDIENTE. Permite elegir todos los estados, empleado,
+texto, fechas de ausencia y de ingreso de solicitud. El selector de empleados
+incluye los actuales y los que conservan solicitudes históricas en el
+departamento después de un traslado. Aprobar/rechazar requiere
+`ABSENCES.APPROVE`; la confirmación exige escoger explícitamente Sí/No para
+`aCuentaSalario` y permite comentario. Las filas resueltas solo admiten consulta.
+
+Las dos vistas incluyen paginación, estados vacíos, carga, errores, actualización
+manual y confirmaciones de guardado. Los conflictos mantienen el modal y
+actualizan la lista para consultar la resolución vigente al cerrarlo.
+Los componentes viven en `src/features/ausencias`, con modales, modelos inferidos
+de tRPC y helpers de presentación; las rutas conservan la autorización.
+
 ## Preparación y validación
 
 Aplicar las migraciones existentes y regenerar Prisma al preparar otro entorno.
@@ -106,6 +144,7 @@ pnpm test:absences
 pnpm test:auth
 pnpm test:access
 pnpm test:departments
+pnpm test:auth:ui absences.spec.ts
 ```
 
 Las pruebas de integración crean datos temporales y comprueban autorización,

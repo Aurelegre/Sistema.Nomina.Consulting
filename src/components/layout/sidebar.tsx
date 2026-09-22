@@ -21,6 +21,7 @@ import { PERMISOS_RUTAS } from "~/shared/permisos-rutas";
 import { api } from "~/trpc/react";
 
 type SidebarProps = {
+  empleadoId?: number | null;
   permisos: string[];
   collapsed: boolean;
   mobileOpen: boolean;
@@ -43,6 +44,7 @@ const navigation = [
 ] as const;
 
 export function Sidebar({
+  empleadoId,
   permisos,
   collapsed,
   mobileOpen,
@@ -100,6 +102,7 @@ export function Sidebar({
 
         <nav className="flex-1 space-y-1 overflow-y-auto px-3 py-5">
           {navigation
+            .filter((item) => item.href !== "/ausencias" || empleadoId != null)
             .filter(
               (item) =>
                 !PERMISOS_RUTAS[item.href] ||

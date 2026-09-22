@@ -70,11 +70,20 @@ export async function listarAusencias(
     const data = validar(listarAusenciasSchema, input);
     const where: Prisma.AusenciaWhereInput = {
       AND: [
-        ambitoAusencias(gestor),
+        ambitoAusencias(gestor, data.ambito),
         {
           empleadoId: data.empleadoId,
           departamentoId: data.departamentoId,
           estado: data.estado,
+          // Días completos de ingreso de solicitud en Guatemala (UTC-06).
+          fechaCreacion: {
+            gte: data.ingresadaDesde
+              ? new Date(data.ingresadaDesde.getTime() + 6 * 3600000)
+              : undefined,
+            lt: data.ingresadaHasta
+              ? new Date(data.ingresadaHasta.getTime() + 30 * 3600000)
+              : undefined,
+          },
           fechaInicio: { lte: data.hasta },
           fechaFin: { gte: data.desde },
           OR: [
@@ -103,9 +112,9 @@ export async function obtenerAusencia(
 ) {
   return db.$transaction(async (tx) => {
     const gestor = await autorizarAusencias(tx, actor, "consultar");
-    const { id } = validar(obtenerAusenciaSchema, input);
+    const { id, ambito } = validar(obtenerAusenciaSchema, input);
     const ausencia = await tx.ausencia.findFirst({
-      where: { AND: [{ id }, ambitoAusencias(gestor)] },
+      where: { AND: [{ id }, ambitoAusencias(gestor, ambito)] },
       include: relaciones,
     });
     if (!ausencia)
@@ -169,3 +178,40 @@ export const rechazarAusencia = (
   actor: ActorAcceso,
   input: ResolverAusenciaInput,
 ) => resolverAusencia(db, actor, input, "RECHAZADA");
+
+export async function contextoAusencias(db: PrismaClient, actor: ActorAcceso) {
+  const gestor = await autorizarAusencias(db, actor, "consultar");
+  const empleado = gestor.empleado
+    ? await db.empleado.findUnique({
+        where: { id: gestor.empleado.id },
+        select: {
+          id: true,
+          nombre: true,
+          fechaIngreso: true,
+          departamento: { select: { id: true, nombre: true } },
+          departamentoQueDirige: { select: { id: true, nombre: true } },
+        },
+      })
+    : null;
+  return {
+    empleado,
+    puedeCrear: !!empleado && gestor.permisos.includes("ABSENCES.CREATE"),
+    puedeResolver:
+      !!empleado?.departamentoQueDirige &&
+      gestor.permisos.includes("ABSENCES.APPROVE"),
+  };
+}
+export async function empleadosRevision(db: PrismaClient, actor: ActorAcceso) {
+  return db.$transaction(async (tx) => {
+    const gestor = await autorizarAusencias(tx, actor, "consultar");
+    ambitoAusencias(gestor, "departamento");
+    const departamentoId = gestor.empleado!.departamentoQueDirige!.id;
+    return tx.empleado.findMany({
+      where: {
+        OR: [{ departamentoId }, { ausencias: { some: { departamentoId } } }],
+      },
+      select: { id: true, codigo: true, nombre: true },
+      orderBy: [{ nombre: "asc" }, { id: "asc" }],
+    });
+  });
+}
