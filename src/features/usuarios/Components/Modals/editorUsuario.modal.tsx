@@ -1,4 +1,7 @@
 "use client";
+import { useState } from "react";
+import { EditorEmpleadoUsuarioModal } from "./editorEmpleadoUsuario.modal";
+import type { EmpleadoAsignable } from "../../Models/editorEmpleadoUsuario.model";
 import { ErrorAcceso } from "~/components/acceso/ErrorAcceso";
 import { Selector } from "~/components/acceso/Selector";
 import { Button } from "~/components/ui/button";
@@ -32,6 +35,8 @@ export function EditorUsuarioModal({
   actualizar,
 }: EditorUsuarioModalProps) {
   const utils = api.useUtils();
+  const [empleado, setEmpleado] = useState<EmpleadoAsignable | null>(null);
+  const [seleccionando, setSeleccionando] = useState(false);
   return (
     <Dialog
       open={!!editor}
@@ -81,6 +86,7 @@ export function EditorUsuarioModal({
                     const validado = crearUsuarioSchema.safeParse({
                       ...campos,
                       rolId: Number(rolElegido),
+                      empleadoId: empleado?.id,
                     });
                     if (!validado.success)
                       throw new Error(validado.error.issues[0]?.message);
@@ -157,6 +163,37 @@ export function EditorUsuarioModal({
                 <ErrorAcceso mensaje={errorAsignables} />
               </div>
             )}
+            {editor.tipo === "crear" &&
+              identidad.permisos.includes("USERS.ASSIGN_EMPLOYEE") && (
+                <div className="space-y-2">
+                  <p className="text-sm font-medium">Empleado (opcional)</p>
+                  <p className="text-muted-foreground text-sm">
+                    {empleado
+                      ? `${empleado.codigo} · ${empleado.nombre} · ${empleado.departamento.nombre}`
+                      : "Sin empleado asignado"}
+                  </p>
+                  <div className="flex flex-wrap gap-2">
+                    <Button
+                      type="button"
+                      variant="outline"
+                      disabled={accion.pendiente}
+                      onClick={() => setSeleccionando(true)}
+                    >
+                      {empleado ? "Cambiar empleado" : "Asignar empleado"}
+                    </Button>
+                    {empleado && (
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        disabled={accion.pendiente}
+                        onClick={() => setEmpleado(null)}
+                      >
+                        Quitar selección
+                      </Button>
+                    )}
+                  </div>
+                </div>
+              )}
             <ErrorAcceso mensaje={accion.error} />
             <div className="flex justify-end gap-2">
               <Button
@@ -179,6 +216,15 @@ export function EditorUsuarioModal({
               </Button>
             </div>
           </form>
+        )}
+        {seleccionando && (
+          <EditorEmpleadoUsuarioModal
+            onCerrar={() => setSeleccionando(false)}
+            onAsignado={(seleccion) => {
+              setEmpleado(seleccion);
+              setSeleccionando(false);
+            }}
+          />
         )}
       </DialogContent>
     </Dialog>

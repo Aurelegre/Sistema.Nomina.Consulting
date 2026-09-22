@@ -22,7 +22,12 @@ export const listarUsuariosSchema = paginaSchema
   })
   .strict();
 export const crearUsuarioSchema = z
-  .object({ username: usernameSchema, nombre: nombreSchema, rolId: idSchema })
+  .object({
+    username: usernameSchema,
+    nombre: nombreSchema,
+    rolId: idSchema,
+    empleadoId: idSchema.optional(),
+  })
   .strict();
 export const editarUsuarioSchema = registroVersionSchema
   .extend({ username: usernameSchema, nombre: nombreSchema })
@@ -32,4 +37,10 @@ export const asignarRolSchema = registroVersionSchema
   .strict();
 export const asignarEmpleadoSchema = registroVersionSchema
   .extend({ empleadoId: idSchema.nullable() })
+  .strict();
+
+export type AsignarEmpleadoInput = z.infer<typeof asignarEmpleadoSchema>;
+
+export const empleadosSinUsuarioSchema = paginaSchema
+  .extend({ departamentoId: idSchema.optional() })
   .strict();

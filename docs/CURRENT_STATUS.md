@@ -2,6 +2,14 @@
 
 Fecha de referencia: 22 de septiembre de 2026.
 
+## Usuario y empleado
+
+Usuarios permite crear cuentas con empleado opcional y asignarlo posteriormente
+mediante el mismo selector modal, con filtros, paginación y confirmación.
+Los servicios listan empleados activos sin usuario y comprueban disponibilidad,
+permisos y concurrencia al guardar. No requiere cambios en Prisma.
+Ver `ACCESS_MANAGEMENT.md`.
+
 ## Ausencias
 
 Implementado en `feature/absences`: creación propia, listado y detalle por ámbito,

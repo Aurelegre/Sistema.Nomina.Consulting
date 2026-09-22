@@ -17,6 +17,7 @@ export function UsuariosTable({
   identidad,
   puede,
   abrirEditor,
+  asignarEmpleado,
   confirmar,
 }: UsuariosTableProps) {
   return (
@@ -28,17 +29,18 @@ export function UsuariosTable({
           <TableHead>Estado</TableHead>
           <TableHead>Contraseña</TableHead>
           <TableHead>Creación</TableHead>
+          <TableHead>Empleado</TableHead>
           <TableHead>Acciones</TableHead>
         </TableRow>
       </TableHeader>
       <TableBody>
         {cargando ? (
           <TableRow>
-            <TableCell colSpan={6}>Cargando usuarios…</TableCell>
+            <TableCell colSpan={7}>Cargando usuarios…</TableCell>
           </TableRow>
         ) : filas?.length === 0 ? (
           <TableRow>
-            <TableCell colSpan={6}>No se encontraron usuarios.</TableCell>
+            <TableCell colSpan={7}>No se encontraron usuarios.</TableCell>
           </TableRow>
         ) : (
           filas?.map((usuario) => (
@@ -71,7 +73,35 @@ export function UsuariosTable({
                 {usuario.fechaCreacion.toLocaleDateString("es-GT")}
               </TableCell>
               <TableCell>
+                {usuario.empleado ? (
+                  <>
+                    <p>
+                      {usuario.empleado.codigo} · {usuario.empleado.nombre}
+                    </p>
+                    <p className="text-muted-foreground text-xs">
+                      {usuario.empleado.departamento.nombre}
+                    </p>
+                  </>
+                ) : (
+                  "Sin empleado"
+                )}
+              </TableCell>
+              <TableCell>
                 <div className="flex flex-wrap gap-2">
+                  {usuario.administrable &&
+                    usuario.id !== identidad.id &&
+                    puede("USERS.ASSIGN_EMPLOYEE") && (
+                      <Button
+                        disabled={pendiente}
+                        size="sm"
+                        variant="outline"
+                        onClick={() => asignarEmpleado(usuario)}
+                      >
+                        {usuario.empleado
+                          ? "Cambiar empleado"
+                          : "Asignar empleado"}
+                      </Button>
+                    )}
                   {usuario.administrable && puede("USERS.UPDATE") && (
                     <Button
                       disabled={pendiente}

@@ -9,6 +9,7 @@ import { UsuariosTable } from "./Components/usuarios-table";
 import { ConfirmarUsuarioModal } from "./Components/Modals/confirmarUsuario.modal";
 
 import { EditorUsuarioModal } from "./Components/Modals/editorUsuario.modal";
+import { EditorEmpleadoUsuarioModal } from "./Components/Modals/editorEmpleadoUsuario.modal";
 
 import { useState } from "react";
 import { EncabezadoAcceso } from "~/components/acceso/EncabezadoAcceso";
@@ -34,6 +35,9 @@ export function UsuariosView({ identidad }: UsuariosViewProps) {
   const [estado, setEstado] = useState("todos");
   const [rolFiltro, setRolFiltro] = useState("todos");
   const [editor, setEditor] = useState<Editor | null>(null);
+  const [usuarioAsignacion, setUsuarioAsignacion] = useState<Usuario | null>(
+    null,
+  );
   const [rolElegido, setRolElegido] = useState("");
   const [confirmacion, setConfirmacion] = useState<Confirmacion | null>(null);
   const [credencial, setCredencial] = useState<Credencial | null>(null);
@@ -150,6 +154,7 @@ export function UsuariosView({ identidad }: UsuariosViewProps) {
             identidad={identidad}
             puede={puede}
             abrirEditor={abrirEditor}
+            asignarEmpleado={setUsuarioAsignacion}
             confirmar={confirmar}
           />
           <Paginacion
@@ -161,19 +166,32 @@ export function UsuariosView({ identidad }: UsuariosViewProps) {
         </CardContent>
       </Card>
 
-      <EditorUsuarioModal
-        editor={editor}
-        setEditor={setEditor}
-        accion={accion}
-        rolElegido={rolElegido}
-        setRolElegido={setRolElegido}
-        opcionesRoles={opcionesRoles}
-        errorAsignables={asignables.error?.message}
-        cargandoAsignables={asignables.isPending}
-        identidad={identidad}
-        setCredencial={setCredencial}
-        actualizar={actualizar}
-      />
+      {editor && (
+        <EditorUsuarioModal
+          editor={editor}
+          setEditor={setEditor}
+          accion={accion}
+          rolElegido={rolElegido}
+          setRolElegido={setRolElegido}
+          opcionesRoles={opcionesRoles}
+          errorAsignables={asignables.error?.message}
+          cargandoAsignables={asignables.isPending}
+          identidad={identidad}
+          setCredencial={setCredencial}
+          actualizar={actualizar}
+        />
+      )}
+
+      {usuarioAsignacion && (
+        <EditorEmpleadoUsuarioModal
+          usuario={usuarioAsignacion}
+          onCerrar={() => setUsuarioAsignacion(null)}
+          onAsignado={() => {
+            setUsuarioAsignacion(null);
+            accion.setMensaje("Empleado asignado correctamente");
+          }}
+        />
+      )}
 
       <ConfirmarUsuarioModal
         confirmacion={confirmacion}

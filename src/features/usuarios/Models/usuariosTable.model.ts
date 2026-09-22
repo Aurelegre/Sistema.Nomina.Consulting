@@ -8,5 +8,6 @@ export type UsuariosTableProps = {
   identidad: Identidad;
   puede: (permiso: string) => boolean;
   abrirEditor: (editor: Editor) => void;
+  asignarEmpleado: (usuario: Usuario) => void;
   confirmar: (tipo: "estado" | "password", usuario: Usuario) => void;
 };

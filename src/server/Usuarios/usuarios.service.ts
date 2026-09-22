@@ -1,7 +1,11 @@
 import { randomBytes } from "node:crypto";
 import { type PrismaClient, type Prisma } from "@prisma/client";
 import { TRPCError } from "@trpc/server";
-import { asignarEmpleadoSchema } from "./Models/usuarios.schema";
+import {
+  asignarEmpleadoSchema,
+  crearUsuarioSchema,
+} from "./Models/usuarios.schema";
+import { comprobarEmpleadoDisponible } from "./empleados-usuario.service";
 import { transaccionOrganizacion } from "~/server/empleados/Helpers/organizacion.helper";
 import { validar } from "~/shared/validar.helper";
 import { type z } from "zod";
@@ -25,11 +29,12 @@ import {
   usuarioObjetivo,
 } from "./Helpers/usuario.helper";
 import type {
+  AsignarEmpleadoInput,
   asignarRolSchema,
-  crearUsuarioSchema,
   editarUsuarioSchema,
   listarUsuariosSchema,
 } from "./Models/usuarios.schema";
+import { empleadoAsignadoUsuario } from "../empleados/Models/empleadoasignadousuario.model";
 
 export async function listarUsuarios(
   db: PrismaClient,
@@ -49,7 +54,11 @@ export async function listarUsuarios(
     db.usuario.count({ where }),
     db.usuario.findMany({
       where,
-      select: { ...seleccionUsuario, rol: { include: rolConPermisos } },
+      select: {
+        ...seleccionUsuario,
+        rol: { include: rolConPermisos },
+        empleado: { select: empleadoAsignadoUsuario },
+      },
       orderBy: [{ nombre: "asc" }, { id: "asc" }],
       skip: (input.pagina - 1) * input.tamano,
       take: input.tamano,
@@ -66,6 +75,7 @@ export async function listarUsuarios(
         estado: rol.estado,
       },
       administrable: puedeAdministrarRol(gestor, rol),
+      empleado: usuario.empleado,
     })),
   };
 }
@@ -75,29 +85,38 @@ export async function crearUsuario(
   actor: ActorAcceso,
   input: z.infer<typeof crearUsuarioSchema>,
 ) {
+  const data = validar(crearUsuarioSchema, input);
   const passwordTemporal = randomBytes(18).toString("base64url");
   const passwordHash = await hashPassword(passwordTemporal);
-  return transaccionAcceso(
-    db,
-    actor,
-    ["USERS.CREATE", "USERS.ASSIGN_ROLE"],
-    async (tx, gestor) => {
-      const rol = await tx.rol.findUnique({
-        where: { id: input.rolId },
-        include: rolConPermisos,
-      });
-      if (rol?.estado !== "ACTIVO")
-        throw new TRPCError({
-          code: "BAD_REQUEST",
-          message: "Selecciona un rol activo",
+  return transaccionOrganizacion(db, (tx) =>
+    transaccionAcceso(
+      tx,
+      actor,
+      [
+        "USERS.CREATE",
+        "USERS.ASSIGN_ROLE",
+        ...(data.empleadoId ? ["USERS.ASSIGN_EMPLOYEE" as const] : []),
+      ],
+      async (tx, gestor) => {
+        const rol = await tx.rol.findUnique({
+          where: { id: data.rolId },
+          include: rolConPermisos,
         });
-      comprobarRolAdministrable(gestor, rol);
-      const usuario = await tx.usuario.create({
-        data: { ...input, passwordHash, debeCambiarPassword: true },
-        select: seleccionUsuario,
-      });
-      return { usuario, passwordTemporal };
-    },
+        if (rol?.estado !== "ACTIVO")
+          throw new TRPCError({
+            code: "BAD_REQUEST",
+            message: "Selecciona un rol activo",
+          });
+        comprobarRolAdministrable(gestor, rol);
+        if (data.empleadoId)
+          await comprobarEmpleadoDisponible(tx, data.empleadoId);
+        const usuario = await tx.usuario.create({
+          data: { ...data, passwordHash, debeCambiarPassword: true },
+          select: seleccionUsuario,
+        });
+        return { usuario, passwordTemporal };
+      },
+    ),
   );
 }
 
@@ -238,7 +257,7 @@ export async function restablecerPassword(
 export async function asignarEmpleadoUsuario(
   db: PrismaClient,
   actor: ActorAcceso,
-  input: z.input<typeof asignarEmpleadoSchema>,
+  input: AsignarEmpleadoInput,
 ) {
   return transaccionOrganizacion(db, async (tx) => {
     await tx.$queryRaw`SELECT id FROM rol WHERE codigo = 'ADMINISTRADOR' FOR UPDATE`;
@@ -249,20 +268,7 @@ export async function asignarEmpleadoUsuario(
     const usuario = await usuarioObjetivo(tx, data.id, data.version);
     comprobarRolAdministrable(gestor, usuario.rol);
     if (data.empleadoId !== null) {
-      const empleado = await tx.empleado.findUnique({
-        where: { id: data.empleadoId },
-        include: { usuario: { select: { id: true } } },
-      });
-      if (empleado?.estado !== "ACTIVO")
-        throw new TRPCError({
-          code: "BAD_REQUEST",
-          message: "Selecciona un empleado activo.",
-        });
-      if (empleado.usuario && empleado.usuario.id !== data.id)
-        throw new TRPCError({
-          code: "CONFLICT",
-          message: "El empleado ya está vinculado a otro usuario.",
-        });
+      await comprobarEmpleadoDisponible(tx, data.empleadoId, data.id);
     }
     const actualizado = await tx.usuario.update({
       where: { id: data.id, version: data.version },
