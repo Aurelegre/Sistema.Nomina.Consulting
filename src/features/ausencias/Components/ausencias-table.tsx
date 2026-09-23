@@ -18,6 +18,7 @@ import { EstadoAusenciaBadge } from "./estado-ausencia-badge";
 export function AusenciasTable({
   filas,
   revision,
+  ambito,
   puedeResolver,
   actualizando,
   onDetalle,
@@ -84,7 +85,8 @@ export function AusenciasTable({
                 </Button>
                 {revision &&
                   puedeResolver &&
-                  ausencia.estado === "PENDIENTE" && (
+                  ausencia.estado === "PENDIENTE" &&
+                  ambito === "departamento" && (
                     <>
                       <Button
                         size="sm"

@@ -28,7 +28,7 @@ export function empleadoSolicitante(gestor: Gestor) {
 }
 export function ambitoAusencias(
   gestor: Gestor,
-  ambito?: "propias" | "departamento",
+  ambito?: "propias" | "departamento" | "todos",
 ): Prisma.AusenciaWhereInput {
   if (ambito === "propias")
     return { empleadoId: empleadoSolicitante(gestor).id };
@@ -41,7 +41,14 @@ export function ambitoAusencias(
       });
     return { departamentoId: jefe.id };
   }
-  if (gestor.permisos.includes("ABSENCES.VIEW_ALL")) return {};
+  if (ambito === "todos") {
+    if (!gestor.permisos.includes("ABSENCES.HISTORICAL_VIEW")) {
+      throw new TRPCError({
+        code: "FORBIDDEN",
+        message: "No tienes permiso para consultar el histórico",
+      });
+    }
+  }
   if (!gestor.empleado) return { id: -1 };
   const jefe = gestor.empleado.departamentoQueDirige;
   return {

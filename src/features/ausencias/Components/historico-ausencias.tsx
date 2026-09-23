@@ -1,53 +1,43 @@
-﻿"use client";
 import { useState } from "react";
-import { api } from "~/trpc/react";
-import { ErrorAcceso } from "~/components/acceso/ErrorAcceso";
-import { Paginacion } from "~/components/acceso/Paginacion";
-import { Selector } from "~/components/acceso/Selector";
-import { Button } from "~/components/ui/button";
-import { Card, CardContent } from "~/components/ui/card";
-import { Input } from "~/components/ui/input";
-import { Label } from "~/components/ui/label";
-import { listarAusenciasSchema } from "~/server/ausencias/Models/ausencias.schema";
-import { estadosAusencia } from "../Helpers/ausencias.helper";
 import type {
   AmbitoAusencias,
-  Ausencia,
   ContextoAusencias,
 } from "../Models/ausencias.model";
+import type { Ausencia } from "@prisma/client";
+import { api } from "~/trpc/react";
+import { listarAusenciasSchema } from "~/server/ausencias/Models/ausencias.schema";
+import { Input } from "~/components/ui/input";
+import { Button } from "~/components/ui/button";
+import { Card, CardContent } from "~/components/ui/card";
+import { Selector } from "~/components/acceso/Selector";
+import { estadosAusencia } from "../Helpers/ausencias.helper";
+import { Label } from "~/components/ui/label";
+import { ErrorAcceso } from "~/components/acceso/ErrorAcceso";
 import { AusenciasTable } from "./ausencias-table";
-import { CrearAusenciaModal } from "./Modals/crearAusencia.modal";
-import { ResolverAusenciaModal } from "./Modals/resolverAusencia.modal";
+import { Paginacion } from "~/components/acceso/Paginacion";
 import { DetalleAusenciaModal } from "./Modals/detalleAusencia.modal";
-export function SolicitudesAusencias({
+
+export function HistoricoAusencias({
   ambito,
   contexto,
 }: {
   ambito: AmbitoAusencias;
   contexto: ContextoAusencias;
 }) {
-  const revision = ambito === "departamento";
-  const [busqueda, setBusqueda] = useState("");
-  const [estado, setEstado] = useState<Ausencia["estado"] | "todos">(
-    revision ? "PENDIENTE" : "todos",
-  );
+  const [busqueda, setBusqueda] = useState<string>("");
+  const [estado, setEstado] = useState<Ausencia["estado"] | "todos">("todos");
   const [empleadoId, setEmpleado] = useState("todos");
   const [desde, setDesde] = useState("");
   const [hasta, setHasta] = useState("");
   const [ingresadaDesde, setIngresadaDesde] = useState("");
   const [ingresadaHasta, setIngresadaHasta] = useState("");
   const [pagina, setPagina] = useState(1);
-  const [creando, setCreando] = useState(false);
-  const [detalle, setDetalle] = useState<number | null>(null);
-  const [resolucion, setResolucion] = useState<{
-    ausencia: Ausencia;
-    decision: "aprobar" | "rechazar";
-  } | null>(null);
   const [mensaje, setMensaje] = useState<string | null>(null);
+  const [detalle, setDetalle] = useState<number | null>(null);
   const empleados = api.ausencias.empleadosRevision.useQuery(
     { ambito },
     {
-      enabled: revision,
+      enabled: true,
     },
   );
   const entrada = {
@@ -56,8 +46,7 @@ export function SolicitudesAusencias({
     tamano: 15,
     busqueda,
     estado: estado === "todos" ? undefined : estado,
-    empleadoId:
-      revision && empleadoId !== "todos" ? Number(empleadoId) : undefined,
+    empleadoId: empleadoId !== "todos" ? Number(empleadoId) : undefined,
     desde: desde || undefined,
     hasta: hasta || undefined,
     ingresadaDesde: ingresadaDesde || undefined,
@@ -67,6 +56,7 @@ export function SolicitudesAusencias({
   const solicitudes = api.ausencias.listar.useQuery(entrada, {
     enabled: validado.success,
   });
+
   function limpiar() {
     setBusqueda("");
     setEstado("todos");
@@ -81,20 +71,8 @@ export function SolicitudesAusencias({
     <>
       <div className="flex flex-wrap items-center justify-between gap-3">
         <h3 className="text-lg font-medium">
-          {revision
-            ? "Solicitudes del departamento"
-            : "Mi historial de solicitudes"}
+          {"Historial de solicitudes de Empleados"}
         </h3>
-        {!revision && contexto.puedeCrear && (
-          <Button
-            onClick={() => {
-              setMensaje(null);
-              setCreando(true);
-            }}
-          >
-            Crear solicitud
-          </Button>
-        )}
       </div>
       {mensaje && (
         <p role="status" className="text-sm">
@@ -107,11 +85,7 @@ export function SolicitudesAusencias({
             <Input
               aria-label="Buscar solicitudes"
               maxLength={100}
-              placeholder={
-                revision
-                  ? "Buscar motivo, empleado o código"
-                  : "Buscar por motivo"
-              }
+              placeholder={"Buscar motivo, empleado o código"}
               value={busqueda}
               onChange={(e) => {
                 setBusqueda(e.target.value);
@@ -132,24 +106,23 @@ export function SolicitudesAusencias({
                 setPagina(1);
               }}
             />
-            {revision && (
-              <Selector
-                etiqueta="Filtrar empleado"
-                valor={empleadoId}
-                opciones={[
-                  { value: "todos", label: "Todos los empleados" },
-                  ...(empleados.data ?? []).map((e) => ({
-                    value: String(e.id),
-                    label: `${e.codigo} · ${e.nombre}`,
-                  })),
-                ]}
-                disabled={empleados.isPending || empleados.isError}
-                onChange={(v) => {
-                  setEmpleado(v);
-                  setPagina(1);
-                }}
-              />
-            )}
+
+            <Selector
+              etiqueta="Filtrar empleado"
+              valor={empleadoId}
+              opciones={[
+                { value: "todos", label: "Todos los empleados" },
+                ...(empleados.data ?? []).map((e) => ({
+                  value: String(e.id),
+                  label: `${e.codigo} · ${e.nombre}`,
+                })),
+              ]}
+              disabled={empleados.isPending || empleados.isError}
+              onChange={(v) => {
+                setEmpleado(v);
+                setPagina(1);
+              }}
+            />
           </div>
           <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-4">
             {[
@@ -210,10 +183,11 @@ export function SolicitudesAusencias({
               !validado.success
                 ? validado.error.issues[0]?.message
                 : (solicitudes.error?.message ??
-                  (revision ? empleados.error?.message : null))
+                  empleados.error?.message ??
+                  null)
             }
           />
-          {revision && empleados.isError && (
+          {empleados.isError && (
             <Button variant="outline" onClick={() => void empleados.refetch()}>
               Reintentar empleados
             </Button>
@@ -226,14 +200,13 @@ export function SolicitudesAusencias({
                 <>
                   <AusenciasTable
                     filas={solicitudes.data.filas}
-                    revision={revision}
+                    revision={true}
                     ambito={ambito}
                     puedeResolver={contexto.puedeResolver}
                     actualizando={solicitudes.isFetching}
                     onDetalle={(a) => setDetalle(a.id)}
-                    onResolver={(ausencia, decision) => {
+                    onResolver={(a, accion) => {
                       setMensaje(null);
-                      setResolucion({ ausencia, decision });
                     }}
                   />
                   <Paginacion
@@ -247,36 +220,11 @@ export function SolicitudesAusencias({
             ))}
         </CardContent>
       </Card>
-      {creando && contexto.puedeCrear && (
-        <CrearAusenciaModal
-          onCerrar={() => setCreando(false)}
-          onGuardado={() => {
-            setCreando(false);
-            limpiar();
-            setMensaje("Solicitud enviada correctamente.");
-          }}
-        />
-      )}
       {detalle !== null && (
         <DetalleAusenciaModal
           id={detalle}
           ambito={ambito}
           onCerrar={() => setDetalle(null)}
-        />
-      )}
-      {resolucion && contexto.puedeResolver && (
-        <ResolverAusenciaModal
-          {...resolucion}
-          onCerrar={() => setResolucion(null)}
-          onGuardado={() => {
-            setResolucion(null);
-            setPagina(1);
-            setMensaje(
-              resolucion.decision === "aprobar"
-                ? "Solicitud aprobada correctamente."
-                : "Solicitud rechazada correctamente.",
-            );
-          }}
         />
       )}
     </>

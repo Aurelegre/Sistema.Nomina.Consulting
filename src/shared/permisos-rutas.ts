@@ -13,3 +13,7 @@ export const PERMISOS_RUTAS: Record<string, CodigoPermiso> = {
   "/permisos": "PERMISSIONS.VIEW",
   "/configuracion": "SETTINGS.VIEW",
 };
+
+export const ANY_PERMISOS_RUTAS: Record<string, CodigoPermiso[]> = {
+  "/ausencias": ["ABSENCES.VIEW", "ABSENCES.HISTORICAL_VIEW"],
+};

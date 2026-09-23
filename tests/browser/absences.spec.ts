@@ -43,7 +43,7 @@ test.beforeAll(async () => {
         "ABSENCES.VIEW",
         "ABSENCES.CREATE",
         "ABSENCES.APPROVE",
-        "ABSENCES.VIEW_ALL",
+        "ABSENCES.HISTORICAL_VIEW",
       ],
       0,
     ],
@@ -53,7 +53,7 @@ test.beforeAll(async () => {
       "sin_empleado",
       [
         "ABSENCES.VIEW",
-        "ABSENCES.VIEW_ALL",
+        "ABSENCES.HISTORICAL_VIEW",
         "ABSENCES.CREATE",
         "ABSENCES.APPROVE",
       ],

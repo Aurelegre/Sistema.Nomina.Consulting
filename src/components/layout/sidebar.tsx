@@ -17,7 +17,7 @@ import {
 } from "~/components/layout/sidebar-icons";
 import { SidebarItem } from "~/components/layout/sidebar-item";
 import { Button } from "~/components/ui/button";
-import { PERMISOS_RUTAS } from "~/shared/permisos-rutas";
+import { ANY_PERMISOS_RUTAS, PERMISOS_RUTAS } from "~/shared/permisos-rutas";
 import { api } from "~/trpc/react";
 
 type SidebarProps = {
@@ -103,11 +103,15 @@ export function Sidebar({
         <nav className="flex-1 space-y-1 overflow-y-auto px-3 py-5">
           {navigation
             .filter((item) => item.href !== "/ausencias" || empleadoId != null)
-            .filter(
-              (item) =>
-                !PERMISOS_RUTAS[item.href] ||
-                permisos.includes(PERMISOS_RUTAS[item.href]!),
-            )
+            .filter((item) => {
+              if (PERMISOS_RUTAS[item.href])
+                return permisos.includes(PERMISOS_RUTAS[item.href]!);
+
+              if (ANY_PERMISOS_RUTAS[item.href])
+                return ANY_PERMISOS_RUTAS[item.href]!.some((permiso) =>
+                  permisos.includes(permiso),
+                );
+            })
             .map((item) => (
               <SidebarItem
                 key={item.href}

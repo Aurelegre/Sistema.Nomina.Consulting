@@ -1,4 +1,8 @@
-﻿import { createTRPCRouter, permissionProcedure } from "~/server/api/trpc";
+﻿import {
+  anyPermissionProcedure,
+  createTRPCRouter,
+  permissionProcedure,
+} from "~/server/api/trpc";
 import {
   crearAusencia,
   listarAusencias,
@@ -10,6 +14,7 @@ import {
 } from "./ausencias.service";
 import {
   crearAusenciaSchema,
+  empleadosRevisionSchema,
   listarAusenciasSchema,
   obtenerAusenciaSchema,
   resolverAusenciaSchema,
@@ -23,12 +28,18 @@ export const ausenciasRouter = createTRPCRouter({
       sesionId: ctx.sesion.id,
     }),
   ),
-  empleadosRevision: permissionProcedure("ABSENCES.VIEW").query(({ ctx }) =>
-    empleadosRevision(ctx.db, {
-      usuarioId: ctx.sesion.usuario.id,
-      sesionId: ctx.sesion.id,
-    }),
-  ),
+  empleadosRevision: permissionProcedure("ABSENCES.VIEW")
+    .input(empleadosRevisionSchema)
+    .query(({ ctx, input }) =>
+      empleadosRevision(
+        ctx.db,
+        {
+          usuarioId: ctx.sesion.usuario.id,
+          sesionId: ctx.sesion.id,
+        },
+        input,
+      ),
+    ),
   crear: permissionProcedure("ABSENCES.CREATE")
     .input(crearAusenciaSchema)
     .mutation(({ ctx, input }) =>
@@ -42,7 +53,7 @@ export const ausenciasRouter = createTRPCRouter({
         },
       ),
     ),
-  listar: permissionProcedure("ABSENCES.VIEW")
+  listar: anyPermissionProcedure(["ABSENCES.VIEW", "ABSENCES.HISTORICAL_VIEW"])
     .input(listarAusenciasSchema)
     .query(({ ctx, input }) =>
       listarAusencias(

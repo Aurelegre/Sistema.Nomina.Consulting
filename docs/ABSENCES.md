@@ -39,15 +39,15 @@ Las fechas de entrada utilizan texto `AAAA-MM-DD`; se rechazan horas, fechas
 inexistentes y conversiones ambiguas de zona horaria. Las salidas contienen Date
 serializados por la infraestructura SuperJSON del proyecto.
 
-| Procedimiento | Entrada | Permiso |
-|---|---|---|
-| `ausencias.crear` | `fechaInicio`, `fechaFin`, `motivo` | `ABSENCES.CREATE` |
-| `ausencias.listar` | `pagina`, `tamano`, `busqueda`, `empleadoId?`, `departamentoId?`, `estado?`, `desde?`, `hasta?` | `ABSENCES.VIEW` |
-| `ausencias.obtener` | `id` | `ABSENCES.VIEW` |
-| `ausencias.aprobar` | `id`, `version`, `aCuentaSalario`, `comentarioResolucion?` | `ABSENCES.APPROVE` y jefatura real |
-| `ausencias.rechazar` | Igual que aprobar | `ABSENCES.APPROVE` y jefatura real |
-| `ausencias.contexto` | Sin entrada | `ABSENCES.VIEW` |
-| `ausencias.empleadosRevision` | Sin entrada | `ABSENCES.VIEW` y jefatura real |
+| Procedimiento                 | Entrada                                                                                         | Permiso                            |
+| ----------------------------- | ----------------------------------------------------------------------------------------------- | ---------------------------------- |
+| `ausencias.crear`             | `fechaInicio`, `fechaFin`, `motivo`                                                             | `ABSENCES.CREATE`                  |
+| `ausencias.listar`            | `pagina`, `tamano`, `busqueda`, `empleadoId?`, `departamentoId?`, `estado?`, `desde?`, `hasta?` | `ABSENCES.VIEW`                    |
+| `ausencias.obtener`           | `id`                                                                                            | `ABSENCES.VIEW`                    |
+| `ausencias.aprobar`           | `id`, `version`, `aCuentaSalario`, `comentarioResolucion?`                                      | `ABSENCES.APPROVE` y jefatura real |
+| `ausencias.rechazar`          | Igual que aprobar                                                                               | `ABSENCES.APPROVE` y jefatura real |
+| `ausencias.contexto`          | Sin entrada                                                                                     | `ABSENCES.VIEW`                    |
+| `ausencias.empleadosRevision` | Sin entrada                                                                                     | `ABSENCES.VIEW` y jefatura real    |
 
 Los esquemas son estrictos: no aceptan campos adicionales. Motivo obligatorio,
 comentario opcional, ambos con máximo de 500 caracteres. El listado devuelve
@@ -57,8 +57,7 @@ por intersección con el rango de la ausencia, incluyendo ambos extremos.
 
 `listar` y `obtener` aceptan `ambito: "propias" | "departamento"`. El primero
 exige empleado vinculado y limita la consulta a ese empleado; el segundo exige
-jefatura y limita al departamento dirigido. Estas restricciones se aplican
-incluso con `ABSENCES.VIEW_ALL`. El contrato previo sin ámbito mantiene la
+jefatura y limita al departamento dirigido. El contrato previo sin ámbito mantiene la
 consulta administrativa global; no se utiliza para alimentar las pestañas.
 
 `listar` también admite `ingresadaDesde` e `ingresadaHasta`: días completos de
@@ -72,8 +71,7 @@ resolutor; no incluyen salarios, contraseñas ni otros datos de cuenta.
 
 `ABSENCES.VIEW` permite al empleado consultar sus solicitudes. Si además es jefe
 asignado, permite consultar las del departamento que dirige. Sin vínculo, el
-listado queda vacío. `ABSENCES.VIEW_ALL`, junto con `ABSENCES.VIEW`, permite
-consulta global incluso sin empleado vinculado. Nunca concede resolución.
+listado queda vacío.
 
 Los filtros se intersectan con el ámbito autorizado. Un detalle fuera del ámbito
 devuelve NOT_FOUND. Los servicios verifican sesión y permisos vigentes incluso

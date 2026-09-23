@@ -49,7 +49,7 @@ export const resolverAusenciaSchema = registroVersionSchema
     comentarioResolucion: z.string().trim().max(500).optional(),
   })
   .strict();
-const ambitoSchema = z.enum(["propias", "departamento"]).optional();
+const ambitoSchema = z.enum(["propias", "departamento", "todos"]).optional();
 export const obtenerAusenciaSchema = z
   .object({ id: idSchema, ambito: ambitoSchema })
   .strict();
@@ -84,3 +84,5 @@ export const listarAusenciasSchema = paginaSchema
       message: "La fecha final del filtro no puede ser anterior a la inicial",
     },
   );
+
+export const empleadosRevisionSchema = z.object({ ambito: ambitoSchema });

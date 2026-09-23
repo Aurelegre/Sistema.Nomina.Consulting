@@ -63,3 +63,21 @@ export const permissionProcedure = (codigo: CodigoPermiso) =>
       });
     return next({ ctx });
   });
+
+export const anyPermissionProcedure = (
+  codigos: readonly [CodigoPermiso, ...CodigoPermiso[]],
+) =>
+  protectedProcedure.use(({ ctx, next }) => {
+    const autorizado = codigos.some((codigo) =>
+      ctx.sesion.usuario.permisos.includes(codigo),
+    );
+
+    if (!autorizado) {
+      throw new TRPCError({
+        code: "FORBIDDEN",
+        message: "No tienes permiso para esta operación",
+      });
+    }
+
+    return next({ ctx });
+  });

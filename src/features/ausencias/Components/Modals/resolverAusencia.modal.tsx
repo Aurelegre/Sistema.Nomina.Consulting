@@ -58,7 +58,7 @@ export function ResolverAusenciaModal({
             no podrá revertirse.
           </AlertDialogDescription>
         </AlertDialogHeader>
-        <p className="text-sm break-words whitespace-pre-wrap">
+        <p className="text-sm wrap-break-word whitespace-pre-wrap">
           {ausencia.motivo}
         </p>
         <div className="space-y-2">

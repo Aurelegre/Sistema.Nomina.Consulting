@@ -75,13 +75,13 @@ export function DetalleAusenciaModal({
               ].map(([label, value]) => (
                 <div key={label} className="min-w-0">
                   <dt className="text-muted-foreground text-sm">{label}</dt>
-                  <dd className="font-medium break-words">{value}</dd>
+                  <dd className="font-medium wrap-break-word">{value}</dd>
                 </div>
               ))}
             </dl>
             <div>
               <p className="text-muted-foreground text-sm">Motivo</p>
-              <p className="break-words whitespace-pre-wrap">
+              <p className="wrap-break-word whitespace-pre-wrap">
                 {ausencia.motivo}
               </p>
             </div>
@@ -90,7 +90,7 @@ export function DetalleAusenciaModal({
                 <p className="text-muted-foreground text-sm">
                   Comentario de resolución
                 </p>
-                <p className="break-words whitespace-pre-wrap">
+                <p className="wrap-break-word whitespace-pre-wrap">
                   {ausencia.comentarioResolucion}
                 </p>
               </div>

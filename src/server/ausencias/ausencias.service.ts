@@ -21,6 +21,7 @@ import {
 } from "./Models/ausencias.schema";
 import type {
   CrearAusenciaInput,
+  EmpleadosRevisionInput,
   ListarAusenciasInput,
   ObtenerAusenciaInput,
   ResolverAusenciaInput,
@@ -199,13 +200,19 @@ export async function contextoAusencias(db: PrismaClient, actor: ActorAcceso) {
     puedeResolver:
       !!empleado?.departamentoQueDirige &&
       gestor.permisos.includes("ABSENCES.APPROVE"),
+    puedeConsultarHistorico:
+      !!empleado && gestor.permisos.includes("ABSENCES.HISTORICAL_VIEW"),
   };
 }
-export async function empleadosRevision(db: PrismaClient, actor: ActorAcceso) {
+export async function empleadosRevision(
+  db: PrismaClient,
+  actor: ActorAcceso,
+  input: EmpleadosRevisionInput,
+) {
   return db.$transaction(async (tx) => {
     const gestor = await autorizarAusencias(tx, actor, "consultar");
-    ambitoAusencias(gestor, "departamento");
-    const departamentoId = gestor.empleado!.departamentoQueDirige!.id;
+    ambitoAusencias(gestor, input.ambito);
+    const departamentoId = gestor.empleado!.departamentoQueDirige?.id;
     return tx.empleado.findMany({
       where: {
         OR: [{ departamentoId }, { ausencias: { some: { departamentoId } } }],

@@ -5,6 +5,7 @@ import { ErrorAcceso } from "~/components/acceso/ErrorAcceso";
 import { Button } from "~/components/ui/button";
 import { SolicitudesAusencias } from "./Components/solicitudes-ausencias";
 import type { AusenciasViewProps } from "./Models/ausencias.model";
+import { HistoricoAusencias } from "./Components/historico-ausencias";
 export function AusenciasView({ contextoInicial, ambito }: AusenciasViewProps) {
   const contexto = api.ausencias.contexto.useQuery(undefined, {
     initialData: contextoInicial,
@@ -12,6 +13,7 @@ export function AusenciasView({ contextoInicial, ambito }: AusenciasViewProps) {
   const empleado = contexto.data.empleado;
   const jefe = empleado?.departamentoQueDirige;
   const acceso = !!empleado && (ambito === "propias" || !!jefe);
+  const historico = contexto.data.puedeConsultarHistorico;
   return (
     <main className="mx-auto max-w-7xl space-y-6">
       <div className="space-y-5">
@@ -57,6 +59,21 @@ export function AusenciasView({ contextoInicial, ambito }: AusenciasViewProps) {
               Revisión del departamento
             </Button>
           )}
+          {historico && (
+            <Button
+              variant={ambito === "todos" ? "default" : "outline"}
+              nativeButton={false}
+              role="link"
+              render={
+                <Link
+                  href="/ausencias/historico"
+                  aria-current={ambito === "todos" ? "page" : undefined}
+                />
+              }
+            >
+              Historial de Empleados
+            </Button>
+          )}
         </nav>
       </div>
       {contexto.isError ? (
@@ -66,8 +83,10 @@ export function AusenciasView({ contextoInicial, ambito }: AusenciasViewProps) {
             Reintentar
           </Button>
         </>
-      ) : !acceso ? (
+      ) : !acceso && !historico ? (
         <ErrorAcceso mensaje="Tu cuenta ya no tiene acceso a este apartado. Solicita la revisión de tu vínculo o jefatura." />
+      ) : ambito === "todos" ? (
+        <HistoricoAusencias ambito="todos" contexto={contexto.data} />
       ) : (
         <SolicitudesAusencias
           key={ambito}
