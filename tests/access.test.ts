@@ -386,6 +386,180 @@ void test("administración de acceso con cuentas temporales", async (t) => {
     );
 
     await t.test(
+      "empleado opcional, filtros, autorización y asignación atómica",
+      async () => {
+        const departamento = await db.departamento.create({
+          data: {
+            codigo: codigo("DEP"),
+            nombre: nombre("Departamento"),
+            cuentaContable: "TEST",
+          },
+        });
+        const empleado = async (
+          s: string,
+          estado: "ACTIVO" | "INACTIVO" = "ACTIVO",
+        ) =>
+          db.empleado.create({
+            data: {
+              codigo: codigo(s),
+              nombre: nombre(s),
+              departamentoId: departamento.id,
+              estado,
+              fechaIngreso: new Date("2020-01-01"),
+              fechaNacimiento: new Date("1990-01-01"),
+              salarioBase: 4000,
+            },
+          });
+        const libre = await empleado("LIBRE");
+        const inactivo = await empleado("INACTIVO", "INACTIVO");
+        const competitivo = await empleado("COMPETITIVO");
+        try {
+          const sinEmpleado = await api.usuarios.crear({
+            username: nombre("sin_empleado"),
+            nombre: "Sin empleado",
+            rolId: rolBasico.id,
+          });
+          assert.equal(sinEmpleado.usuario.empleadoId, null);
+          const lista = await api.usuarios.empleadosSinUsuario({
+            departamentoId: departamento.id,
+            busqueda: codigo("LIBRE"),
+          });
+          assert.equal(lista.total, 1);
+          assert.equal(
+            lista.filas[0]?.departamento.nombre,
+            departamento.nombre,
+          );
+          const paginada = await api.usuarios.empleadosSinUsuario({
+            departamentoId: departamento.id,
+            tamano: 1,
+            pagina: 2,
+          });
+          assert.equal(paginada.total, 2);
+          assert.equal(paginada.filas.length, 1);
+          const creado = await api.usuarios.crear({
+            username: nombre("con_empleado"),
+            nombre: "Con empleado",
+            rolId: rolBasico.id,
+            empleadoId: libre.id,
+          });
+          assert.equal(creado.usuario.empleadoId, libre.id);
+          assert.equal(
+            (
+              await api.usuarios.empleadosSinUsuario({
+                departamentoId: departamento.id,
+                busqueda: libre.nombre,
+              })
+            ).total,
+            0,
+          );
+          await assert.rejects(
+            api.usuarios.crear({
+              username: nombre("ocupado"),
+              nombre: "Ocupado",
+              rolId: rolBasico.id,
+              empleadoId: libre.id,
+            }),
+            { code: "CONFLICT" },
+          );
+          await assert.rejects(
+            api.usuarios.crear({
+              username: nombre("inactivo"),
+              nombre: "Inactivo",
+              rolId: rolBasico.id,
+              empleadoId: inactivo.id,
+            }),
+            { code: "BAD_REQUEST" },
+          );
+          assert.equal(
+            await db.usuario.count({
+              where: {
+                username: { in: [nombre("ocupado"), nombre("inactivo")] },
+              },
+            }),
+            0,
+          );
+          const rolCreador = await db.rol.create({
+            data: {
+              codigo: codigo("CREADOR"),
+              nombre: nombre("Creador"),
+              permisos: {
+                create: ["USERS.CREATE", "USERS.ASSIGN_ROLE"].map((c) => ({
+                  permiso: { connect: { codigo: c } },
+                })),
+              },
+            },
+          });
+          const limitado = await api.usuarios.crear({
+            username: nombre("creador"),
+            nombre: "Creador",
+            rolId: rolCreador.id,
+          });
+          await cambiarPrimeraPassword(
+            db,
+            limitado.usuario.id,
+            limitado.passwordTemporal,
+            password,
+          );
+          const limitadoApi = await caller(
+            (await iniciarSesion(db, nombre("creador"), password)).token,
+          );
+          await assert.rejects(limitadoApi.usuarios.empleadosSinUsuario({}), {
+            code: "FORBIDDEN",
+          });
+          await assert.rejects(limitadoApi.usuarios.departamentosAsignacion(), {
+            code: "FORBIDDEN",
+          });
+          await assert.rejects(
+            limitadoApi.usuarios.crear({
+              username: nombre("prohibido"),
+              nombre: "Prohibido",
+              rolId: rolBasico.id,
+              empleadoId: competitivo.id,
+            }),
+            { code: "FORBIDDEN" },
+          );
+          await limitadoApi.usuarios.crear({
+            username: nombre("permitido"),
+            nombre: "Permitido",
+            rolId: rolBasico.id,
+          });
+          const resultados = await Promise.allSettled([
+            api.usuarios.crear({
+              username: nombre("competidor"),
+              nombre: "Competidor",
+              rolId: rolBasico.id,
+              empleadoId: competitivo.id,
+            }),
+            api.usuarios.asignarEmpleado({
+              id: sinEmpleado.usuario.id,
+              version: sinEmpleado.usuario.version,
+              empleadoId: competitivo.id,
+            }),
+          ]);
+          assert.equal(
+            resultados.filter((r) => r.status === "fulfilled").length,
+            1,
+          );
+          assert.equal(
+            await db.usuario.count({ where: { empleadoId: competitivo.id } }),
+            1,
+          );
+        } finally {
+          await db.usuario.updateMany({
+            where: {
+              empleadoId: { in: [libre.id, inactivo.id, competitivo.id] },
+            },
+            data: { empleadoId: null },
+          });
+          await db.empleado.deleteMany({
+            where: { departamentoId: departamento.id },
+          });
+          await db.departamento.delete({ where: { id: departamento.id } });
+        }
+      },
+    );
+
+    await t.test(
       "dos administradores concurrentes conservan un acceso activo",
       async () => {
         const segundo = await api.usuarios.crear({

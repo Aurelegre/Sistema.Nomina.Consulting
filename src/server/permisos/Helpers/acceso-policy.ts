@@ -30,13 +30,30 @@ export async function actorVigente(
 ) {
   const sesion = await tx.sesion.findUnique({
     where: { id: actor.sesionId },
-    include: { usuario: { include: { rol: { include: rolConPermisos } } } },
+    include: {
+      usuario: {
+        include: {
+          empleado: {
+            select: {
+              id: true,
+              estado: true,
+              departamentoId: true,
+              fechaIngreso: true,
+              departamentoQueDirige: { select: { id: true } },
+            },
+          },
+          rol: { include: rolConPermisos },
+        },
+      },
+    },
   });
   if (
     sesion?.usuarioId !== actor.usuarioId ||
     sesion.fechaExpiracion <= new Date() ||
     sesion.usuario.estado !== "ACTIVO" ||
-    sesion.usuario.rol.estado !== "ACTIVO"
+    sesion.usuario.rol.estado !== "ACTIVO" ||
+    (sesion.usuario.empleado !== null &&
+      sesion.usuario.empleado.estado !== "ACTIVO")
   )
     throw new TRPCError({ code: "UNAUTHORIZED" });
   if (sesion.usuario.debeCambiarPassword)
@@ -48,6 +65,7 @@ export async function actorVigente(
     prohibido("No tienes permiso para esta operación");
   return {
     id: sesion.usuarioId,
+    empleado: sesion.usuario.empleado,
     rolId: sesion.usuario.rolId,
     administrador: sesion.usuario.rol.codigo === "ADMINISTRADOR",
     permisos: codigos,
@@ -76,31 +94,30 @@ export function comprobarRolAdministrable(
 // Todas las escrituras de seguridad toman primero el mismo bloqueo. Así dos
 // administradores no pueden desactivar simultáneamente las últimas cuentas.
 export async function transaccionAcceso<T>(
-  db: PrismaClient,
+  db: PrismaClient | Prisma.TransactionClient,
   actor: ActorAcceso,
   permisos: CodigoPermiso[],
   operacion: (tx: Prisma.TransactionClient, gestor: Gestor) => Promise<T>,
 ): Promise<T> {
   try {
-    return await db.$transaction(
-      async (tx) => {
-        const filas = await tx.$queryRaw<
-          { id: number }[]
-        >`SELECT id FROM rol WHERE codigo = 'ADMINISTRADOR' FOR UPDATE`;
-        if (!filas.length)
-          throw new TRPCError({
-            code: "PRECONDITION_FAILED",
-            message:
-              "Ejecuta el seed de seguridad antes de administrar accesos",
-          });
-        const gestor = await actorVigente(tx, actor, permisos);
-        return operacion(tx, gestor);
-      },
-      {
-        isolationLevel: Prisma.TransactionIsolationLevel.ReadCommitted,
-        timeout: 15000,
-      },
-    );
+    const ejecutar = async (tx: Prisma.TransactionClient) => {
+      const filas = await tx.$queryRaw<
+        { id: number }[]
+      >`SELECT id FROM rol WHERE codigo = 'ADMINISTRADOR' FOR UPDATE`;
+      if (!filas.length)
+        throw new TRPCError({
+          code: "PRECONDITION_FAILED",
+          message: "Ejecuta el seed de seguridad antes de administrar accesos",
+        });
+      const gestor = await actorVigente(tx, actor, permisos);
+      return operacion(tx, gestor);
+    };
+    return "$transaction" in db
+      ? await db.$transaction(ejecutar, {
+          isolationLevel: Prisma.TransactionIsolationLevel.ReadCommitted,
+          timeout: 15000,
+        })
+      : await ejecutar(db);
   } catch (error) {
     if (error instanceof Prisma.PrismaClientKnownRequestError) {
       if (error.code === "P2002")

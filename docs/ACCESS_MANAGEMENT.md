@@ -81,6 +81,32 @@ de nóminas a las cerradas cuando se implemente ese módulo.
 
 ## Validación y despliegue
 
+### Asignación opcional de empleado
+
+La creación de usuarios admite `empleadoId` opcional. Asignarlo exige
+`USERS.ASSIGN_EMPLOYEE`, además de los permisos de creación y asignación de rol.
+El usuario y su vínculo se guardan en una sola transacción, con bloqueo de
+organización antes del de seguridad. Si el empleado ya fue asignado o está
+inactivo, se rechaza toda la creación.
+
+Desde Usuarios se reutiliza el modal **Asignar empleado** para la creación y
+la asignación posterior. Muestra código, nombre y departamento, búsqueda por
+código/nombre, filtro de departamento y paginación. Solo lista empleados activos
+sin usuario, mediante `usuarios.empleadosSinUsuario`; los departamentos del
+filtro provienen de `usuarios.departamentosAsignacion`. Ambos procedimientos
+requieren el permiso de asignación, sin exigir acceso al módulo de empleados ni
+exponer datos salariales.
+
+Cada selección requiere confirmación. Durante la creación solo prepara el vínculo:
+cancelar el formulario no modifica empleados ni crea cuentas. La asignación
+posterior valida la versión del usuario, su rol administrable y la disponibilidad
+del empleado, y revoca las sesiones afectadas. Se conserva la prohibición de
+modificar el vínculo de la propia cuenta. Una cuenta ya vinculada permite cambiar
+el empleado desde Usuarios; no se incorpora asignación desde Empleados.
+
+Pruebas específicas: `pnpm test:access` y
+`pnpm test:auth:ui user-employees.spec.ts`.
+
 Aplicar `pnpm db:deploy` y `pnpm db:seed` después de generar el cliente Prisma.
 En desarrollo usar `pnpm db:migrate`. La migración agrega columnas con valor
 inicial 1, sin modificar usuarios, claves o asignaciones existentes.

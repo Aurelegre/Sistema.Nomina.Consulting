@@ -35,9 +35,10 @@ La UI vive en `src/features/empleados`, con `Components/Modals`, `Models` deriva
 de tRPC y `Helpers` puros. La página conserva la autorización de servidor. Las
 reglas y transacciones permanecen en services, con esquemas Zod compartibles.
 
-El modelo actual todavía no vincula usuarios con empleados: el ámbito de consulta
-por jefe requiere esa relación y queda pendiente de la integración de ausencias.
-Los permisos de consulta actuales conceden acceso al catálogo completo.
+`feature/absences` incorpora el vínculo opcional usuario-empleado y lo utiliza
+para restringir solicitudes de ausencia, comprobar jefaturas y bloquear sesiones
+de empleados inactivos. Ver `ABSENCES.md`. La consulta del catálogo de empleados
+conserva su alcance global para usuarios con `EMPLOYEES.VIEW`.
 
 ## Integración con departamentos
 

@@ -1,6 +1,5 @@
 ﻿import { type Prisma, type PrismaClient } from "@prisma/client";
 import { TRPCError } from "@trpc/server";
-import { type z } from "zod";
 import type { ActorAcceso } from "../permisos/Models/ActorAcceso.Model";
 import type {
   CrearEmpleadoInput,
@@ -116,6 +115,7 @@ export async function despedirEmpleado(
       where: { id, version },
       data: { estado: "INACTIVO", fechaSalida, version: { increment: 1 } },
     });
+    await tx.sesion.deleteMany({ where: { usuario: { empleadoId: id } } });
     return { id, version: version + 1 };
   });
 }

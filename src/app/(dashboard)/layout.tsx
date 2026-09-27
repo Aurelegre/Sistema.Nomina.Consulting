@@ -10,5 +10,12 @@ export default async function DashboardLayout({
   const sesion = await obtenerSesion(db, await headers());
   if (!sesion) redirect("/login");
   if (sesion.usuario.debeCambiarPassword) redirect("/cambiar-password");
-  return <AppShell permisos={sesion.usuario.permisos}>{children}</AppShell>;
+  return (
+    <AppShell
+      permisos={sesion.usuario.permisos}
+      empleadoId={sesion.usuario.empleadoId}
+    >
+      {children}
+    </AppShell>
+  );
 }

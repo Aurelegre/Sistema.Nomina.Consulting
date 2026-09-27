@@ -1,6 +1,27 @@
 # Estado actual
 
-Fecha de referencia: 19 de septiembre de 2026.
+Fecha de referencia: 22 de septiembre de 2026.
+
+## Usuario y empleado
+
+Usuarios permite crear cuentas con empleado opcional y asignarlo posteriormente
+mediante el mismo selector modal, con filtros, paginación y confirmación.
+Los servicios listan empleados activos sin usuario y comprueban disponibilidad,
+permisos y concurrencia al guardar. No requiere cambios en Prisma.
+Ver `ACCESS_MANAGEMENT.md`.
+
+## Ausencias
+
+Implementado en `feature/absences`: creación propia, listado y detalle por ámbito,
+aprobación/rechazo definitivo por jefe vigente del departamento histórico,
+autoaprobación permitida y decisión salarial del jefe sin cálculos monetarios.
+Incluye vínculo opcional usuario-empleado administrable por permiso, bloqueo de
+login/sesiones por empleado inactivo y coordinación con cierre de períodos.
+Reutiliza la migración base existente. Incluye frontend en `/ausencias`: historial
+propio y creación modal, navegación superior a revisión del departamento,
+filtros por empleado/estado/fechas, detalle y confirmaciones de aprobación o
+rechazo. La navegación y las rutas exigen vínculo y jefatura según el apartado.
+Ver `ABSENCES.md`.
 
 ## Empleados
 

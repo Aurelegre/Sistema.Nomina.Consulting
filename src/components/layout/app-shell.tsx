@@ -10,9 +10,11 @@ const STORAGE_KEY = "nomina-sidebar-collapsed";
 export function AppShell({
   children,
   permisos,
+  empleadoId,
 }: {
   children: React.ReactNode;
   permisos: string[];
+  empleadoId?: number | null;
 }) {
   const [collapsed, setCollapsed] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
@@ -36,6 +38,7 @@ export function AppShell({
   return (
     <div className="min-h-screen bg-slate-50">
       <Sidebar
+        empleadoId={empleadoId}
         permisos={permisos}
         collapsed={collapsed}
         mobileOpen={mobileOpen}

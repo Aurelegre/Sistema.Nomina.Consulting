@@ -25,6 +25,10 @@ model Usuario {
   fechaActualizacion  DateTime      @updatedAt @map("fecha_actualizacion")
   rol                 Rol           @relation(fields: [rolId], references: [id], onDelete: Restrict)
   sesiones            Sesion[]
+  empleadoId          Int?          @unique @map("empleado_id")
+  empleado            Empleado?     @relation("EmpleadoUsuario", fields: [empleadoId], references: [id], onDelete: Restrict)
+  ausenciascreadas    Ausencia[]    @relation("AusenciaUsuarioCreacion")
+  ausenciasResolucion Ausencia[]    @relation("AusenciaUsuarioResolucion")
 
   @@index([rolId])
   @@map("usuario")
@@ -125,6 +129,7 @@ model Departamento {
   version            Int                @default(1)
   fechaCreacion      DateTime           @default(now()) @map("fecha_creacion")
   fechaActualizacion DateTime           @updatedAt @map("fecha_actualizacion")
+  ausencias          Ausencia[]         @relation("AusenciaDepartamento")
 
   @@index([jefeId])
   @@map("departamento")
@@ -150,8 +155,57 @@ model Empleado {
   version               Int            @default(1)
   fechaCreacion         DateTime       @default(now()) @map("fecha_creacion")
   fechaActualizacion    DateTime       @updatedAt @map("fecha_actualizacion")
+  usuario               Usuario?       @relation("EmpleadoUsuario")
+  ausencias             Ausencia[]     @relation("AusenciaEmpleado")
 
   @@index([departamentoId])
   @@index([estado])
   @@map("empleado")
+}
+
+enum EstadoAusencia {
+  PENDIENTE
+  APROBADA
+  RECHAZADA
+  APLICADA_NOMINA
+}
+
+model Ausencia {
+  id Int @id @default(autoincrement())
+
+  empleadoId     Int @map("empleado_id")
+  departamentoId Int @map("departamento_id")
+
+  fechaInicio DateTime @map("fecha_inicio") @db.Date
+  fechaFin    DateTime @map("fecha_fin") @db.Date
+
+  motivo String @db.VarChar(500)
+
+  aCuentaSalario Boolean @default(false) @map("a_cuenta_salario")
+
+  estado EstadoAusencia @default(PENDIENTE)
+
+  usuarioResolucionId  Int?      @map("usuario_resolucion_id")
+  fechaResolucion      DateTime? @map("fecha_resolucion")
+  comentarioResolucion String?   @map("comentario_resolucion") @db.VarChar(500)
+
+  version Int @default(1)
+
+  fechaCreacion      DateTime @default(now()) @map("fecha_creacion")
+  fechaActualizacion DateTime @updatedAt @map("fecha_actualizacion")
+
+  empleado          Empleado     @relation("AusenciaEmpleado", fields: [empleadoId], references: [id], onDelete: Restrict)
+  departamento      Departamento @relation("AusenciaDepartamento", fields: [departamentoId], references: [id], onDelete: Restrict)
+  usuarioResolucion Usuario?     @relation("AusenciaUsuarioResolucion", fields: [usuarioResolucionId], references: [id], onDelete: SetNull)
+  usuarioCreacionId Int?         @map("usuario_creacion_id")
+  usuarioCreacion   Usuario?     @relation("AusenciaUsuarioCreacion", fields: [usuarioCreacionId], references: [id], onDelete: SetNull)
+
+  @@index([empleadoId])
+  @@index([departamentoId])
+  @@index([estado])
+  @@index([fechaInicio, fechaFin])
+  @@index([usuarioCreacionId])
+  @@index([usuarioResolucionId])
+  @@index([departamentoId, estado])
+  @@map("ausencia")
 }

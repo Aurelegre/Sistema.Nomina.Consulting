@@ -6,6 +6,7 @@ export const seleccionUsuario = {
   nombre: true,
   estado: true,
   rolId: true,
+  empleadoId: true,
   version: true,
   debeCambiarPassword: true,
   fechaCreacion: true,
