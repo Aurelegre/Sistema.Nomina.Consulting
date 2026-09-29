@@ -21,6 +21,7 @@ import { ANY_PERMISOS_RUTAS, PERMISOS_RUTAS } from "~/shared/permisos-rutas";
 import { api } from "~/trpc/react";
 
 type SidebarProps = {
+  esJefeDepartamento?: boolean;
   empleadoId?: number | null;
   permisos: string[];
   collapsed: boolean;
@@ -30,6 +31,7 @@ type SidebarProps = {
 };
 
 const navigation = [
+  { href: "/mi-departamento", label: "Mi departamento", icon: UsersIcon },
   { href: "/", label: "Dashboard", icon: DashboardIcon },
   { href: "/empleados", label: "Empleados", icon: UsersIcon },
   { href: "/departamentos", label: "Departamentos", icon: BuildingIcon },
@@ -44,6 +46,7 @@ const navigation = [
 ] as const;
 
 export function Sidebar({
+  esJefeDepartamento,
   empleadoId,
   permisos,
   collapsed,
@@ -102,6 +105,9 @@ export function Sidebar({
 
         <nav className="flex-1 space-y-1 overflow-y-auto px-3 py-5">
           {navigation
+            .filter(
+              (item) => item.href !== "/mi-departamento" || esJefeDepartamento,
+            )
             .filter((item) => item.href !== "/ausencias" || empleadoId != null)
             .filter((item) => {
               if (PERMISOS_RUTAS[item.href])

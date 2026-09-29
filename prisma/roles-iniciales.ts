@@ -39,7 +39,12 @@ export const ROLES_INICIALES: {
     descripcion:
       "Requiere ámbito departamental al implementar empleados y ausencias",
     permisos: [
-      "EMPLOYEES.VIEW",
+      "DEPARTMENT_EMPLOYEES.VIEW",
+      "DEPARTMENT_EMPLOYEES.DETAIL",
+      "PAYROLL_NEWS.OVERTIME",
+      "PAYROLL_NEWS.DOUBLE_TIME",
+      "PAYROLL_NEWS.PRODUCTION",
+      "PAYROLL_NEWS.SALES",
       "ABSENCES.VIEW",
       "ABSENCES.CREATE",
       "ABSENCES.APPROVE",

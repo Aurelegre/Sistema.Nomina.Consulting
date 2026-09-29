@@ -1,6 +1,14 @@
 // Agregar aquí cada permiso nuevo junto con la protección de su procedimiento.
 // El seed sincroniza este catálogo sin borrar permisos ni asignaciones existentes.
 export const PERMISOS = {
+  "DEPARTMENT_EMPLOYEES.VIEW": "Consultar empleados del departamento dirigido",
+  "DEPARTMENT_EMPLOYEES.DETAIL":
+    "Ver detalle del empleado del departamento dirigido",
+  "PAYROLL_NEWS.OVERTIME": "Registrar horas extras del departamento dirigido",
+  "PAYROLL_NEWS.DOUBLE_TIME":
+    "Registrar horas dobles del departamento dirigido",
+  "PAYROLL_NEWS.PRODUCTION": "Registrar piezas fabricadas de Producción",
+  "PAYROLL_NEWS.SALES": "Registrar ventas de Mercadeo",
   "USERS.VIEW": "Consultar usuarios",
   "USERS.CREATE": "Crear usuarios",
   "USERS.UPDATE": "Editar usuarios",

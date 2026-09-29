@@ -9,6 +9,7 @@ type HeaderProps = {
 };
 
 const TITLES: Record<string, string> = {
+  "/mi-departamento": "Mi departamento",
   "/": "Dashboard",
   "/empleados": "Empleados",
   "/departamentos": "Departamentos",

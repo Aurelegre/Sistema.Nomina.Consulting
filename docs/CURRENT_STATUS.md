@@ -94,6 +94,16 @@ Implementado:
 
 ## Pendiente / próximas features
 
+### Novedades departamentales
+
+Implementadas en `feature/department-payroll-news`: pantalla `/mi-departamento`
+para jefes vigentes, listado y detalle por permisos, registro acumulable de horas
+extras/dobles, piezas de Producción y ventas de Mercadeo por período abierto.
+Conserva autor y departamento histórico, valida ámbito en servicios y evita
+duplicados al reintentar la misma solicitud. Incluye migración Prisma.
+El cálculo monetario e integración al procesamiento de nómina quedan pendientes.
+Ver `PAYROLL_NEWS.md` para permisos, instalación, decisiones y siguientes pasos.
+
 Orden sugerido:
 
 1. revisar e integrar departamentos (`feature/departments`);
@@ -147,6 +157,7 @@ Regla:
 Cuando se toque una feature existente, migrar progresivamente sus componentes interactivos a shadcn/ui.
 
 Prioridad:
+
 - dialogs;
 - buttons;
 - forms;

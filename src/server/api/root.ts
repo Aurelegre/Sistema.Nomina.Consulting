@@ -1,4 +1,5 @@
 import { healthRouter } from "~/server/api/health";
+import { novedadesRouter } from "~/server/novedades/novedades.router";
 import { authRouter } from "~/server/sesion/auth.router";
 import { usuariosRouter } from "~/server/Usuarios/usuarios.router";
 import { rolesRouter } from "~/server/Rol/roles.router";
@@ -10,6 +11,7 @@ import { empleadosRouter } from "../empleados/empleados.router";
 import { ausenciasRouter } from "../ausencias/ausencias.router";
 
 export const appRouter = createTRPCRouter({
+  novedades: novedadesRouter,
   departamentos: departamentosRouter,
   usuarios: usuariosRouter,
   roles: rolesRouter,

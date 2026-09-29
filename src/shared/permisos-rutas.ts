@@ -1,6 +1,7 @@
 import { type CodigoPermiso } from "../server/permisos/Helpers/permisos";
 
 export const PERMISOS_RUTAS: Record<string, CodigoPermiso> = {
+  "/mi-departamento": "DEPARTMENT_EMPLOYEES.VIEW",
   "/empleados": "EMPLOYEES.VIEW",
   "/departamentos": "DEPARTMENTS.VIEW",
   "/periodos": "PAYROLL_PERIODS.VIEW",

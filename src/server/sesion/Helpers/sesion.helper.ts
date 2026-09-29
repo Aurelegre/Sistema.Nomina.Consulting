@@ -39,6 +39,8 @@ export async function obtenerSesion(db: PrismaClient, headers: Headers) {
     usuario: {
       id: sesion.usuario.id,
       empleadoId: sesion.usuario.empleadoId,
+      esJefeDepartamento:
+        sesion.usuario.empleado?.departamentoQueDirige?.estado === "ACTIVO",
       username: sesion.usuario.username,
       nombre: sesion.usuario.nombre,
       debeCambiarPassword: sesion.usuario.debeCambiarPassword,

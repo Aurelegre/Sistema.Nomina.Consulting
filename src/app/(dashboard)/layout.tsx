@@ -14,6 +14,7 @@ export default async function DashboardLayout({
     <AppShell
       permisos={sesion.usuario.permisos}
       empleadoId={sesion.usuario.empleadoId}
+      esJefeDepartamento={sesion.usuario.esJefeDepartamento}
     >
       {children}
     </AppShell>

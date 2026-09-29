@@ -11,10 +11,12 @@ export function AppShell({
   children,
   permisos,
   empleadoId,
+  esJefeDepartamento,
 }: {
   children: React.ReactNode;
   permisos: string[];
   empleadoId?: number | null;
+  esJefeDepartamento?: boolean;
 }) {
   const [collapsed, setCollapsed] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
@@ -38,6 +40,7 @@ export function AppShell({
   return (
     <div className="min-h-screen bg-slate-50">
       <Sidebar
+        esJefeDepartamento={esJefeDepartamento}
         empleadoId={empleadoId}
         permisos={permisos}
         collapsed={collapsed}
