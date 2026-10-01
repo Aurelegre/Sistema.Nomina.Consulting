@@ -73,6 +73,11 @@ Recomendado para agrupar:
 - otros movimientos controlados.
 
 ### CompraSolidarista
+
+Actualización `feature/tiendaSolidaria`: se implementa `CompraSolidaria` con
+empleado, período, autor, detalle, fecha, monto y control de edición. La propuesta
+legacy de forma de pago, cuotas y saldo que sigue se conserva solo como referencia
+histórica y queda excluida del desarrollo autorizado.
 Debe representar:
 
 - empleado;

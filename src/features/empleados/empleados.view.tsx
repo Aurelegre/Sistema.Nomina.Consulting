@@ -1,5 +1,6 @@
 ﻿"use client";
 import { useState } from "react";
+import { EditorCompraModal } from "~/features/compras-solidarias/Components/Modals/editorCompra.modal";
 import { ErrorAcceso } from "~/components/acceso/ErrorAcceso";
 import { Paginacion } from "~/components/acceso/Paginacion";
 import { Selector } from "~/components/acceso/Selector";
@@ -14,6 +15,7 @@ import { ConfirmarEmpleadoModal } from "./Components/Modals/confirmarEmpleado.mo
 import { DetalleEmpleadoModal } from "./Components/Modals/detalleEmpleado.modal";
 import type { Empleado, EmpleadosViewProps } from "./Models/empleados.model";
 export function EmpleadosView({ identidad }: EmpleadosViewProps) {
+  const [compra, setCompra] = useState<Empleado | null>(null);
   const [busqueda, setBusqueda] = useState("");
   const [estado, setEstado] = useState("todos");
   const [departamento, setDepartamento] = useState("todos");
@@ -169,6 +171,10 @@ export function EmpleadosView({ identidad }: EmpleadosViewProps) {
               empleados.isSuccess && (
                 <>
                   <EmpleadosTable
+                    puedeCompra={identidad.permisos.includes(
+                      "ASSOCIATION.PURCHASES.CREATE",
+                    )}
+                    onCompra={setCompra}
                     empleados={empleados.data.filas}
                     puedeEditar={puedeEditar}
                     actualizando={empleados.isFetching}
@@ -218,6 +224,16 @@ export function EmpleadosView({ identidad }: EmpleadosViewProps) {
       )}
       {detalle !== null && (
         <DetalleEmpleadoModal id={detalle} onCerrar={() => setDetalle(null)} />
+      )}
+      {compra && (
+        <EditorCompraModal
+          empleado={compra}
+          onCerrar={() => setCompra(null)}
+          onGuardado={() => {
+            setCompra(null);
+            setMensaje("Compra solidaria registrada correctamente.");
+          }}
+        />
       )}
     </main>
   );

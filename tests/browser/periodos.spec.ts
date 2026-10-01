@@ -48,13 +48,11 @@ test("períodos conserva creación, duplicados, cancelación y cierre confirmado
   periodoId = (
     await db.periodoNomina.findFirstOrThrow({ where: { anio, mes: 1 } })
   ).id;
-  await page
-    .getByRole("button", { name: "Crear período", exact: true })
-    .click();
   await expect(
-    page.getByText(
-      "Ya existe un período de nómina para el mes y año seleccionados.",
-    ),
+    page.getByRole("button", { name: "Crear período", exact: true }),
+  ).toBeDisabled();
+  await expect(
+    page.getByText(`Debes cerrar el período 1/${anio} antes de crear otro.`),
   ).toBeVisible();
 
   await fila.getByRole("button", { name: "Cerrar", exact: true }).click();
@@ -75,6 +73,14 @@ test("períodos conserva creación, duplicados, cancelación y cierre confirmado
     .click();
   await expect(modal).not.toBeVisible();
   await expect(fila).toContainText("CERRADO");
+  await page
+    .getByRole("button", { name: "Crear período", exact: true })
+    .click();
+  await expect(
+    page.getByText(
+      "Ya existe un período de nómina para el mes y año seleccionados.",
+    ),
+  ).toBeVisible();
   await expect(
     fila.getByRole("button", { name: "Cerrar", exact: true }),
   ).not.toBeVisible();

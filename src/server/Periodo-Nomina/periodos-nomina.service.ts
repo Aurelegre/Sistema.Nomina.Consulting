@@ -27,28 +27,28 @@ export const crearPeriodoNomina = async (
   db: PrismaClient,
   input: CrearPeriodoInput,
 ) => {
-  const existente = await db.periodoNomina.findFirst({
-    where: {
-      mes: input.mes,
-      anio: input.anio,
-    },
-    select: { id: true },
-  });
-
-  if (existente) {
-    throw new TRPCError({
-      code: "CONFLICT",
-      message:
-        "Ya existe un período de nómina para el mes y año seleccionados.",
-    });
-  }
-
   try {
-    return await db.periodoNomina.create({
-      data: {
-        mes: input.mes,
-        anio: input.anio,
-      },
+    return await transaccionOrganizacion(db, async (tx) => {
+      const abierto = await tx.periodoNomina.findFirst({
+        where: { estado: "ABIERTO" },
+      });
+      if (abierto)
+        throw new TRPCError({
+          code: "CONFLICT",
+          message: `Debes cerrar el período ${abierto.mes}/${abierto.anio} antes de crear otro.`,
+        });
+      const existente = await tx.periodoNomina.findUnique({
+        where: { mes_anio: { mes: input.mes, anio: input.anio } },
+      });
+      if (existente)
+        throw new TRPCError({
+          code: "CONFLICT",
+          message:
+            "Ya existe un período de nómina para el mes y año seleccionados.",
+        });
+      return tx.periodoNomina.create({
+        data: { mes: input.mes, anio: input.anio },
+      });
     });
   } catch (error) {
     if (
@@ -58,7 +58,7 @@ export const crearPeriodoNomina = async (
       throw new TRPCError({
         code: "CONFLICT",
         message:
-          "Ya existe un período de nómina para el mes y año seleccionados.",
+          "Ya existe un período abierto o un período para ese mes y año. Actualiza la lista.",
       });
     }
 
@@ -68,6 +68,7 @@ export const crearPeriodoNomina = async (
 
 export const cerrarPeriodoNomina = async (db: PrismaClient, id: number) => {
   return transaccionOrganizacion(db, async (tx) => {
+    await tx.$queryRaw`SELECT id FROM periodo_nomina WHERE id = ${id} FOR UPDATE`;
     const periodo = await tx.periodoNomina.findUnique({ where: { id } });
     if (!periodo)
       throw new TRPCError({

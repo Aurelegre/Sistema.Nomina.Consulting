@@ -12,6 +12,8 @@ import {
 import { fechaEmpleado, salarioEmpleado } from "../Helpers/empleados.helper";
 import type { EmpleadosTableProps } from "../Models/empleados.model";
 export function EmpleadosTable({
+  puedeCompra,
+  onCompra,
   empleados,
   puedeEditar,
   actualizando,
@@ -56,6 +58,16 @@ export function EmpleadosTable({
             </TableCell>
             <TableCell>
               <div className="flex justify-end gap-2">
+                {puedeCompra && (
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    disabled={actualizando || empleado.estado !== "ACTIVO"}
+                    onClick={() => onCompra(empleado)}
+                  >
+                    Tienda Solidaria
+                  </Button>
+                )}
                 <Button
                   size="sm"
                   variant="outline"

@@ -121,9 +121,14 @@ void test("novedades: ámbito, permisos, acumulación, reintentos y cierre", asy
           ...entrada("3"),
           tipo: "HORAS_DOBLES",
         });
-        await registrarNovedad(f.db, f.actor, {
-          ...entrada("9"),
-          periodoId: f.segundo.id,
+        // Histórico independiente; ya no pueden coexistir dos períodos abiertos.
+        await f.db.novedadNomina.create({
+          data: {
+            ...entrada("9"),
+            periodoId: f.segundo.id,
+            departamentoId: f.departamento.id,
+            usuarioId: f.usuario.id,
+          },
         });
         const lista = await listarEmpleadosDepartamento(f.db, f.actor, {
           periodoId: f.periodo.id,

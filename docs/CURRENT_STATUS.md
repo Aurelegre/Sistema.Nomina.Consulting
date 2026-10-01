@@ -33,6 +33,17 @@ activos y jefaturas. La creación de departamentos exige jefe activo y la
 desactivación se bloquea si tiene empleados asignados. Se reutilizan los modelos
 Prisma existentes de la rama. Detalles y validación en `EMPLOYEES.md`.
 
+## Tienda Solidaria
+
+Implementación en `feature/tiendaSolidaria`: compras independientes desde
+`/empleados` y gestión en `/asociacion/compras`, con permisos de consulta,
+creación, edición y eliminación. Histórico por período, monto acumulado,
+detalle obligatorio, autor y control de versiones. No se admiten nuevas compras
+a empleados inactivos ni modificaciones de períodos cerrados. MySQL restringe
+la existencia de más de un período abierto; la fecha del sistema no determina
+el período operativo. Ver `SOLIDARITY_PURCHASES.md`. El procesador de nómina
+continúa pendiente y consumirá la suma de compras por empleado y período.
+
 ## Base técnica
 
 Completado:

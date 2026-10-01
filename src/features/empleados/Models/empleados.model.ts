@@ -12,6 +12,8 @@ export type ConfirmarEmpleadoProps = ModalEmpleadoProps & {
   accion: "baja" | "recontratar";
 };
 export type EmpleadosTableProps = {
+  puedeCompra: boolean;
+  onCompra: (empleado: Empleado) => void;
   empleados: Empleado[];
   puedeEditar: boolean;
   actualizando: boolean;

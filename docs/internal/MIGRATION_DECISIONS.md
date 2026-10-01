@@ -148,6 +148,11 @@ Decisión:
 
 ## Asociación Solidarista
 
+Decisión vigente para `feature/tiendaSolidaria`: sustituir la propuesta de
+financiamiento descrita abajo por compras independientes, con descuento íntegro
+por período. No reutilizar lógica ni estructuras de cuotas, saldos o pagos.
+El ahorro del 3% sigue siendo una feature independiente pendiente.
+
 Legacy:
 existe tienda/crédito solidarista.
 

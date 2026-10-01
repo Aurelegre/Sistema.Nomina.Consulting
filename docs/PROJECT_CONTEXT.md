@@ -29,7 +29,7 @@ El sistema debe manejar:
 - ISR;
 - ahorro de Asociación Solidarista;
 - compras de Asociación Solidarista;
-- cuotas de compras financiadas;
+- compras solidarias acumulables para descuento íntegro por período, sin cuotas;
 - procesamiento de nómina;
 - histórico;
 - póliza contable;

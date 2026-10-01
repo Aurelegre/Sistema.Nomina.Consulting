@@ -50,6 +50,8 @@ Estados:
 - CERRADO
 
 Un período cerrado no admite operaciones ordinarias que alteren su información.
+Solo puede existir un período ABIERTO a la vez, independientemente de la fecha
+del sistema. Puede no existir ninguno. Debe cerrarse el abierto antes de crear otro.
 
 ## Días laborados y ausencias
 
@@ -111,13 +113,20 @@ Aplicar el resultado como egreso del empleado.
 Aplicar ahorro mensual del 3% del salario base.
 
 ### RF-025 — Registrar compra solidarista
-Registrar compras al contado o financiadas.
+Registrar compras independientes por empleado activo, con monto y detalle
+obligatorios, autor y fecha de registro. Se asignan al único período abierto.
+Crear desde `/empleados` y administrar desde `/asociacion/compras`, con permisos
+independientes para consultar, crear, editar y eliminar. El listado permite
+filtrar períodos anteriores y por defecto utiliza el abierto.
 
 ### RF-026 — Administrar financiamiento de compra
-Permitir plazos de 1 a 6 meses.
+Excluido de esta entrega por decisión del propietario: no implementar cuotas,
+plazos, financiamiento, saldos ni control de pagos de compras solidarias.
 
-### RF-027 — Aplicar cuota de compra
-Descontar automáticamente la cuota correspondiente en nómina.
+### RF-027 — Descontar compras del período
+Sumar íntegramente las compras del empleado en el período procesado para su
+deducción en nómina. Los períodos cerrados no permiten crear, editar ni eliminar
+compras. La integración monetaria se realizará con el procesador de nómina.
 
 ## Anticipo
 
