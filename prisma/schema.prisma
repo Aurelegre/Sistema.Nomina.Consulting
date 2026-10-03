@@ -13,23 +13,25 @@ enum EstadoRol {
 }
 
 model Usuario {
+  comprasRegistradas  CompraSolidaria[] @relation("CompraRegistro")
+  comprasActualizadas CompraSolidaria[] @relation("CompraActualizacion")
   novedades           NovedadNomina[]
-  version             Int             @default(1)
-  id                  Int             @id @default(autoincrement())
-  username            String          @unique @db.VarChar(100)
-  nombre              String          @db.VarChar(150)
-  passwordHash        String          @map("password_hash") @db.VarChar(255)
-  debeCambiarPassword Boolean         @default(true) @map("debe_cambiar_password")
-  estado              EstadoUsuario   @default(ACTIVO)
-  rolId               Int             @map("rol_id")
-  fechaCreacion       DateTime        @default(now()) @map("fecha_creacion")
-  fechaActualizacion  DateTime        @updatedAt @map("fecha_actualizacion")
-  rol                 Rol             @relation(fields: [rolId], references: [id], onDelete: Restrict)
+  version             Int               @default(1)
+  id                  Int               @id @default(autoincrement())
+  username            String            @unique @db.VarChar(100)
+  nombre              String            @db.VarChar(150)
+  passwordHash        String            @map("password_hash") @db.VarChar(255)
+  debeCambiarPassword Boolean           @default(true) @map("debe_cambiar_password")
+  estado              EstadoUsuario     @default(ACTIVO)
+  rolId               Int               @map("rol_id")
+  fechaCreacion       DateTime          @default(now()) @map("fecha_creacion")
+  fechaActualizacion  DateTime          @updatedAt @map("fecha_actualizacion")
+  rol                 Rol               @relation(fields: [rolId], references: [id], onDelete: Restrict)
   sesiones            Sesion[]
-  empleadoId          Int?            @unique @map("empleado_id")
-  empleado            Empleado?       @relation("EmpleadoUsuario", fields: [empleadoId], references: [id], onDelete: Restrict)
-  ausenciascreadas    Ausencia[]      @relation("AusenciaUsuarioCreacion")
-  ausenciasResolucion Ausencia[]      @relation("AusenciaUsuarioResolucion")
+  empleadoId          Int?              @unique @map("empleado_id")
+  empleado            Empleado?         @relation("EmpleadoUsuario", fields: [empleadoId], references: [id], onDelete: Restrict)
+  ausenciascreadas    Ausencia[]        @relation("AusenciaUsuarioCreacion")
+  ausenciasResolucion Ausencia[]        @relation("AusenciaUsuarioResolucion")
 
   @@index([rolId])
   @@map("usuario")
@@ -102,6 +104,7 @@ enum EstadoPeriodoNomina {
 }
 
 model PeriodoNomina {
+  compras       CompraSolidaria[]
   novedades     NovedadNomina[]
   id            Int                 @id @default(autoincrement())
   mes           Int
@@ -144,23 +147,24 @@ enum EstadoEmpleado {
 }
 
 model Empleado {
+  compras               CompraSolidaria[]
   novedades             NovedadNomina[]
-  id                    Int             @id @default(autoincrement())
-  codigo                String          @unique @db.VarChar(50)
-  nombre                String          @db.VarChar(150)
-  fechaNacimiento       DateTime        @map("fecha_nacimiento") @db.Date
-  fechaIngreso          DateTime        @map("fecha_ingreso") @db.Date
-  fechaSalida           DateTime?       @map("fecha_salida") @db.Date
-  salarioBase           Decimal         @map("salario_base") @db.Decimal(12, 2)
-  estado                EstadoEmpleado  @default(ACTIVO)
-  departamentoId        Int             @map("departamento_id")
-  departamento          Departamento    @relation("EmpleadoDepartamento", fields: [departamentoId], references: [id], onDelete: Restrict)
-  departamentoQueDirige Departamento?   @relation("JefeDepartamento")
-  version               Int             @default(1)
-  fechaCreacion         DateTime        @default(now()) @map("fecha_creacion")
-  fechaActualizacion    DateTime        @updatedAt @map("fecha_actualizacion")
-  usuario               Usuario?        @relation("EmpleadoUsuario")
-  ausencias             Ausencia[]      @relation("AusenciaEmpleado")
+  id                    Int               @id @default(autoincrement())
+  codigo                String            @unique @db.VarChar(50)
+  nombre                String            @db.VarChar(150)
+  fechaNacimiento       DateTime          @map("fecha_nacimiento") @db.Date
+  fechaIngreso          DateTime          @map("fecha_ingreso") @db.Date
+  fechaSalida           DateTime?         @map("fecha_salida") @db.Date
+  salarioBase           Decimal           @map("salario_base") @db.Decimal(12, 2)
+  estado                EstadoEmpleado    @default(ACTIVO)
+  departamentoId        Int               @map("departamento_id")
+  departamento          Departamento      @relation("EmpleadoDepartamento", fields: [departamentoId], references: [id], onDelete: Restrict)
+  departamentoQueDirige Departamento?     @relation("JefeDepartamento")
+  version               Int               @default(1)
+  fechaCreacion         DateTime          @default(now()) @map("fecha_creacion")
+  fechaActualizacion    DateTime          @updatedAt @map("fecha_actualizacion")
+  usuario               Usuario?          @relation("EmpleadoUsuario")
+  ausencias             Ausencia[]        @relation("AusenciaEmpleado")
 
   @@index([departamentoId])
   @@index([estado])
@@ -241,4 +245,27 @@ model Ausencia {
   @@index([usuarioResolucionId])
   @@index([departamentoId, estado])
   @@map("ausencia")
+}
+
+model CompraSolidaria {
+  id                     Int           @id @default(autoincrement())
+  empleadoId             Int           @map("empleado_id")
+  periodoId              Int           @map("periodo_id")
+  usuarioRegistroId      Int           @map("usuario_registro_id")
+  usuarioActualizacionId Int?          @map("usuario_actualizacion_id")
+  detalle                String        @db.VarChar(500)
+  monto                  Decimal       @db.Decimal(12, 2)
+  fechaRegistro          DateTime      @default(now()) @map("fecha_registro")
+  fechaActualizacion     DateTime      @updatedAt @map("fecha_actualizacion")
+  version                Int           @default(1)
+  empleado               Empleado      @relation(fields: [empleadoId], references: [id], onDelete: Restrict)
+  periodo                PeriodoNomina @relation(fields: [periodoId], references: [id], onDelete: Restrict)
+  usuarioRegistro        Usuario       @relation("CompraRegistro", fields: [usuarioRegistroId], references: [id], onDelete: Restrict)
+  usuarioActualizacion   Usuario?      @relation("CompraActualizacion", fields: [usuarioActualizacionId], references: [id], onDelete: Restrict)
+
+  @@index([periodoId, empleadoId])
+  @@index([empleadoId])
+  @@index([usuarioRegistroId])
+  @@index([usuarioActualizacionId])
+  @@map("compra_solidaria")
 }

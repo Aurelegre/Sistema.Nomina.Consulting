@@ -79,7 +79,9 @@ export async function prepararNovedades() {
   // Años aleatorios fuera de datos operativos, con dos meses en el mismo año.
   const anio = 3000 + Math.floor(Math.random() * 5000);
   const periodo = await db.periodoNomina.create({ data: { mes: 1, anio } });
-  const segundo = await db.periodoNomina.create({ data: { mes: 2, anio } });
+  const segundo = await db.periodoNomina.create({
+    data: { mes: 2, anio, estado: "CERRADO", fechaCierre: new Date() },
+  });
   return {
     db,
     prefix,

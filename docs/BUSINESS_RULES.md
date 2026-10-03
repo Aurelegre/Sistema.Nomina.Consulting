@@ -131,18 +131,23 @@ AhorroSolidarista = SalarioBase × 3%
 
 ## RN-018 — Compra Solidarista
 
-Una compra puede ser:
+Cada compra es un registro independiente con monto positivo de hasta dos
+decimales y detalle obligatorio. Solo se crean para empleados activos y se
+asignan al único período abierto. El servidor determina autor y fecha.
 
-- contado;
-- financiada.
+## RN-019 — Alcance de compras solidarias
 
-## RN-019 — Plazo máximo de compra
+Por decisión del propietario, esta entrega no incluye financiamiento ni cuotas.
+La edición modifica únicamente monto y detalle, conserva empleado, período y
+autor original, y registra usuario de actualización y versión. Una baja posterior
+del empleado no impide corregir o eliminar compras de un período abierto.
 
-El financiamiento no puede superar 6 meses.
+## RN-020 — Descuento de compras
 
-## RN-020 — Cuota de compra
-
-La cuota correspondiente al período se descuenta automáticamente de nómina.
+El descuento corresponde a la suma de todas las compras del empleado dentro del
+período procesado. Cada nueva compra genera un registro nuevo. No se usa la fecha
+del sistema para determinar el período operativo. El cierre se coordina con las
+escrituras para impedir creaciones, ediciones y eliminaciones posteriores.
 
 ## RN-021 — Ausencia
 
@@ -165,6 +170,9 @@ Estados:
 ## RN-024 — Período abierto
 
 Permite registrar y procesar información operativa.
+Puede haber como máximo un período ABIERTO y puede no existir ninguno. Su mes
+y año no tienen que coincidir con los de la fecha del sistema. Cerrar un período
+no crea automáticamente el siguiente.
 
 ## RN-025 — Período cerrado
 

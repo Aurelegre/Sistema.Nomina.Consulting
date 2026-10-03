@@ -1,6 +1,10 @@
 // Agregar aquí cada permiso nuevo junto con la protección de su procedimiento.
 // El seed sincroniza este catálogo sin borrar permisos ni asignaciones existentes.
 export const PERMISOS = {
+  "ASSOCIATION.PURCHASES.VIEW": "Consultar compras solidarias",
+  "ASSOCIATION.PURCHASES.CREATE": "Registrar compras solidarias",
+  "ASSOCIATION.PURCHASES.UPDATE": "Editar compras solidarias",
+  "ASSOCIATION.PURCHASES.DELETE": "Eliminar compras solidarias",
   "DEPARTMENT_EMPLOYEES.VIEW": "Consultar empleados del departamento dirigido",
   "DEPARTMENT_EMPLOYEES.DETAIL":
     "Ver detalle del empleado del departamento dirigido",

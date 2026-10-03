@@ -14,7 +14,13 @@ import { Input } from "~/components/ui/input";
 import { Label } from "~/components/ui/label";
 import { api } from "~/trpc/react";
 import { MESES } from "../Helpers/periodos-nomina.helper";
-export function CrearPeriodoForm() {
+export function CrearPeriodoForm({
+  abierto,
+  cargando,
+}: {
+  abierto?: { mes: number; anio: number };
+  cargando?: boolean;
+}) {
   const ahora = useMemo(() => new Date(), []);
   const [mes, setMes] = useState(String(ahora.getMonth() + 1));
   const [anio, setAnio] = useState(String(ahora.getFullYear()));
@@ -31,15 +37,22 @@ export function CrearPeriodoForm() {
           <h2>Crear período de nómina</h2>
         </CardTitle>
         <CardDescription>
-          Cada combinación de mes y año puede existir una sola vez.
+          Solo puede existir un período abierto, sin importar la fecha actual.
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">
+        {abierto && (
+          <p role="status">
+            Debes cerrar el período {abierto.mes}/{abierto.anio} antes de crear
+            otro.
+          </p>
+        )}
         <form
           className="grid gap-4 md:grid-cols-[1fr_1fr_auto] md:items-end"
           onSubmit={(event) => {
             event.preventDefault();
-            crear.mutate({ mes: Number(mes), anio: Number(anio) });
+            if (!abierto && !cargando && !crear.isPending)
+              crear.mutate({ mes: Number(mes), anio: Number(anio) });
           }}
         >
           <div className="space-y-2">
@@ -66,7 +79,10 @@ export function CrearPeriodoForm() {
               onChange={(event) => setAnio(event.target.value)}
             />
           </div>
-          <Button type="submit" disabled={crear.isPending}>
+          <Button
+            type="submit"
+            disabled={crear.isPending || !!abierto || cargando}
+          >
             {crear.isPending ? "Creando..." : "Crear período"}
           </Button>
         </form>
