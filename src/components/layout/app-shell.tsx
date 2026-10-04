@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 
 import { Header } from "~/components/layout/header";
 import { Sidebar } from "~/components/layout/sidebar";
+import { NotificacionesNomina } from "~/features/nomina/Components/notificacionesNomina";
 
 const STORAGE_KEY = "nomina-sidebar-collapsed";
 
@@ -56,7 +57,10 @@ export function AppShell({
         ].join(" ")}
       >
         <Header onOpenMobile={() => setMobileOpen(true)} />
-        <div className="p-4 sm:p-6 lg:p-8">{children}</div>
+        <div className="space-y-4 p-4 sm:p-6 lg:p-8">
+          <NotificacionesNomina />
+          {children}
+        </div>
       </div>
     </div>
   );

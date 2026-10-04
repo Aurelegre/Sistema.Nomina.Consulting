@@ -136,11 +136,11 @@ function escritura<T>(
 async function comprobarAbierto(tx: Prisma.TransactionClient, id: number) {
   await tx.$queryRaw`SELECT id FROM periodo_nomina WHERE id = ${id} FOR UPDATE`;
   const periodo = await tx.periodoNomina.findUnique({ where: { id } });
-  if (periodo?.estado !== "ABIERTO")
+  if (periodo?.estado !== "ABIERTO" || periodo.procesando)
     throw new TRPCError({
       code: "CONFLICT",
       message:
-        "El período está cerrado o ya no está disponible. Actualiza la pantalla.",
+        "El período está cerrado, en procesamiento o ya no está disponible. Actualiza la pantalla.",
     });
 }
 export function crearCompra(

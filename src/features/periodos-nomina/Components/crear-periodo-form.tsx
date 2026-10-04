@@ -43,8 +43,8 @@ export function CrearPeriodoForm({
       <CardContent className="space-y-4">
         {abierto && (
           <p role="status">
-            Debes cerrar el período {abierto.mes}/{abierto.anio} antes de crear
-            otro.
+            Genera la nómina del período {abierto.mes}/{abierto.anio} para cerrarlo
+            antes de crear otro.
           </p>
         )}
         <form

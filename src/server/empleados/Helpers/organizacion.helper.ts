@@ -14,6 +14,7 @@ export async function transaccionOrganizacion<T>(
     return "$transaction" in db
       ? await db.$transaction(ejecutar, {
           isolationLevel: Prisma.TransactionIsolationLevel.ReadCommitted,
+        timeout: 30000,
         })
       : await ejecutar(db);
   } catch (error) {

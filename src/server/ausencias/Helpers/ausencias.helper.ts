@@ -21,11 +21,11 @@ export async function comprobarMesAbierto(
     where: {
       mes_anio: { mes: fecha.getUTCMonth() + 1, anio: fecha.getUTCFullYear() },
     },
-    select: { estado: true },
+    select: { estado: true, procesando: true },
   });
-  if (periodo?.estado === "CERRADO")
+  if (periodo?.estado === "CERRADO" || periodo?.procesando)
     throw new TRPCError({
       code: "BAD_REQUEST",
-      message: "El período de la ausencia está cerrado.",
+      message: "El período de la ausencia está cerrado o en procesamiento.",
     });
 }

@@ -65,30 +65,3 @@ export const crearPeriodoNomina = async (
     throw error;
   }
 };
-
-export const cerrarPeriodoNomina = async (db: PrismaClient, id: number) => {
-  return transaccionOrganizacion(db, async (tx) => {
-    await tx.$queryRaw`SELECT id FROM periodo_nomina WHERE id = ${id} FOR UPDATE`;
-    const periodo = await tx.periodoNomina.findUnique({ where: { id } });
-    if (!periodo)
-      throw new TRPCError({
-        code: "NOT_FOUND",
-        message: "El período de nómina no existe.",
-      });
-
-    if (periodo.estado === "CERRADO") {
-      throw new TRPCError({
-        code: "BAD_REQUEST",
-        message: "El período de nómina ya se encuentra cerrado.",
-      });
-    }
-
-    return tx.periodoNomina.update({
-      where: { id },
-      data: {
-        estado: "CERRADO",
-        fechaCierre: new Date(),
-      },
-    });
-  });
-};

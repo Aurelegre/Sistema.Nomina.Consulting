@@ -56,7 +56,9 @@ del sistema. Puede no existir ninguno. Debe cerrarse el abierto antes de crear o
 ## Días laborados y ausencias
 
 ### RF-010 — Registrar días laborados
-Mantener días laborados por empleado y período.
+Mantener días laborados calculados por empleado y período. Se presume asistencia
+completa, delimitada por ingreso/baja y descontando ausencias autorizadas a cuenta
+de salario. Ver `PAYROLL_GENERATION.md` para base comercial de 30 días.
 
 ### RF-011 — Registrar solicitud de ausencia
 Registrar solicitudes de ausencia asociadas a empleado, fechas, motivo y estado.
@@ -103,6 +105,9 @@ Calcular la cuota asumida por Consulting, S.A.
 
 ### RF-022 — Calcular ISR proyectado
 Calcular ISR mediante proyección anual conforme a rentas del trabajo en relación de dependencia en Guatemala.
+Alcance acordado: cuota mensual de referencia sin recalcular por baja; sin carga
+de antecedentes fiscales externos. Conservar parámetros por ejercicio y advertir
+si faltan. Detalle y límites en `PAYROLL_GENERATION.md`.
 
 ### RF-023 — Registrar retención ISR
 Aplicar el resultado como egreso del empleado.
@@ -146,11 +151,16 @@ Mostrar la información necesaria para validar el cálculo.
 
 ### RF-032 — Cerrar nómina/período
 Proteger la información histórica una vez cerrado.
+El cierre ocurre automáticamente y de forma atómica al completar el cálculo.
+No existe cierre manual ni reapertura ordinaria. Si falla, el período sigue abierto.
 
 ## Histórico
 
 ### RF-033 — Consultar histórico de nóminas
 Consultar nóminas anteriores conservando los valores realmente aplicados.
+Cada usuario con empleado vinculado puede consultar su propio histórico en
+`/mi-nomina`, con filtros desde/hasta por período. Los inactivos conservan su
+restricción de acceso. Exportar CSV completo requiere PAYROLL.EXPORT.
 
 ## Consultas y reportes
 
@@ -180,11 +190,14 @@ Mostrar como mínimo:
 
 ## Requerimientos específicos de base de datos
 
-### RF-040 — Función nombre del mes
-Crear una función MySQL que reciba el número de mes y devuelva su nombre.
+### RF-040 — Procedimiento nombre del mes
+Por instrucción del propietario, crear un SP MySQL que obtenga el nombre del
+mes actual de Guatemala. Se usa únicamente como metadato de generación; nunca
+determina el período ni interviene en cálculos.
 
 ### RF-041 — Procedimiento de cálculo de nómina
-Crear un stored procedure MySQL que calcule o apoye el cálculo de nómina de fin de mes.
+Crear un stored procedure MySQL que realice el cálculo y persista la nómina de
+fin de mes. La ejecución será asíncrona, persistente y notificará al solicitante.
 
 ## Fuera de alcance 2026
 

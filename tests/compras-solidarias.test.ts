@@ -1,3 +1,4 @@
+import { cerrarPeriodoNomina } from "./helpers/cierre-fixture";
 import assert from "node:assert/strict";
 import { test } from "node:test";
 import { TRPCError } from "@trpc/server";
@@ -13,7 +14,6 @@ import {
 import { acumuladosComprasPeriodo } from "../src/server/compras-solidarias/Helpers/acumulados-compra.helper";
 import {
   crearPeriodoNomina,
-  cerrarPeriodoNomina,
 } from "../src/server/Periodo-Nomina/periodos-nomina.service";
 import {
   crearCompraSchema,

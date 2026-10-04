@@ -1,6 +1,18 @@
 # Estado actual
 
-Fecha de referencia: 22 de septiembre de 2026.
+Fecha de referencia: 3 de octubre de 2026.
+
+## Generación de nómina
+
+Implementada en `feature/generacion-nomina`: SP de cálculo, SP de nombre del mes,
+captura histórica, cola persistente, recuperación de fallos, cierre automático,
+permisos granulares, administración `/nomina`, CSV, `/mi-nomina` y notificaciones.
+Se retira el cierre manual. La generación integra novedades, compras y ausencias;
+permite resultados negativos y aplica las decisiones del propietario sobre
+anticipo, solidaridad e ISR. Ver `PAYROLL_GENERATION.md` para operación y alcance.
+
+Las secciones posteriores describen las entregas previas; sus referencias al
+procesador pendiente y al cierre manual quedan sustituidas por esta entrega.
 
 ## Usuario y empleado
 

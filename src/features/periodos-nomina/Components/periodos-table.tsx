@@ -1,6 +1,5 @@
 "use client";
 import { Badge } from "~/components/ui/badge";
-import { Button } from "~/components/ui/button";
 import {
   Table,
   TableBody,
@@ -11,11 +10,7 @@ import {
 } from "~/components/ui/table";
 import { formatFecha, formatPeriodo } from "../Helpers/periodos-nomina.helper";
 import type { PeriodosTableProps } from "../Models/periodosTable.model";
-export function PeriodosTable({
-  periodos,
-  puedeCerrar,
-  onCerrar,
-}: PeriodosTableProps) {
+export function PeriodosTable({ periodos }: PeriodosTableProps) {
   return (
     <Table>
       <TableHeader>
@@ -42,26 +37,6 @@ export function PeriodosTable({
             </TableCell>
             <TableCell>{formatFecha(periodo.fechaCreacion)}</TableCell>
             <TableCell>{formatFecha(periodo.fechaCierre)}</TableCell>
-            <TableCell className="text-right">
-              {periodo.estado === "ABIERTO" && puedeCerrar ? (
-                <Button
-                  variant="outline"
-                  onClick={() =>
-                    onCerrar({
-                      id: periodo.id,
-                      mes: periodo.mes,
-                      anio: periodo.anio,
-                    })
-                  }
-                >
-                  Cerrar
-                </Button>
-              ) : (
-                <span className="text-muted-foreground text-xs">
-                  Sin acciones
-                </span>
-              )}
-            </TableCell>
           </TableRow>
         ))}
       </TableBody>

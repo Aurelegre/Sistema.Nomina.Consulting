@@ -37,6 +37,7 @@ const navigation = [
   { href: "/departamentos", label: "Departamentos", icon: BuildingIcon },
   { href: "/periodos", label: "Períodos", icon: CalendarIcon },
   { href: "/nomina", label: "Nómina", icon: PayrollIcon },
+  { href: "/mi-nomina", label: "Mi Nómina", icon: PayrollIcon },
   { href: "/ausencias", label: "Ausencias", icon: AbsenceIcon },
   { href: "/asociacion", label: "Asociación", icon: AssociationIcon },
   { href: "/reportes", label: "Reportes", icon: ReportIcon },
@@ -110,6 +111,7 @@ export function Sidebar({
             )
             .filter((item) => item.href !== "/ausencias" || empleadoId != null)
             .filter((item) => {
+              if (item.href === "/mi-nomina") return empleadoId != null;
               if (PERMISOS_RUTAS[item.href])
                 return permisos.includes(PERMISOS_RUTAS[item.href]!);
 

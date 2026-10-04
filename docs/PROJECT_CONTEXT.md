@@ -37,7 +37,7 @@ El sistema debe manejar:
 - reportes de IGSS;
 - reportes de ISR;
 - cumpleañeros;
-- función MySQL para nombre de mes;
+- procedimiento MySQL para nombre del mes de generación (solo informativo);
 - stored procedure MySQL para cálculo de nómina de fin de mes;
 - usuarios, autenticación, roles y permisos.
 

@@ -28,7 +28,7 @@ test.afterAll(async () => {
   await db.$disconnect();
 });
 
-test("períodos conserva creación, duplicados, cancelación y cierre confirmado", async ({
+test("periodos: creacion, unicidad y cierre exclusivamente automatico", async ({
   page,
 }) => {
   await page.goto("/login");
@@ -52,40 +52,16 @@ test("períodos conserva creación, duplicados, cancelación y cierre confirmado
     page.getByRole("button", { name: "Crear período", exact: true }),
   ).toBeDisabled();
   await expect(
-    page.getByText(`Debes cerrar el período 1/${anio} antes de crear otro.`),
-  ).toBeVisible();
-
-  await fila.getByRole("button", { name: "Cerrar", exact: true }).click();
-  const modal = page.getByRole("alertdialog", {
-    name: "Cerrar período de nómina",
-  });
-  await expect(modal).toContainText(`Enero ${anio}`);
-  await modal.getByRole("button", { name: "Cancelar", exact: true }).click();
-  await expect(modal).not.toBeVisible();
-  await expect(fila).toContainText("ABIERTO");
-  await fila.getByRole("button", { name: "Cerrar", exact: true }).click();
-  await page.keyboard.press("Escape");
-  await expect(modal).not.toBeVisible();
-
-  await fila.getByRole("button", { name: "Cerrar", exact: true }).click();
-  await modal
-    .getByRole("button", { name: "Confirmar cierre", exact: true })
-    .click();
-  await expect(modal).not.toBeVisible();
-  await expect(fila).toContainText("CERRADO");
-  await page
-    .getByRole("button", { name: "Crear período", exact: true })
-    .click();
-  await expect(
     page.getByText(
-      "Ya existe un período de nómina para el mes y año seleccionados.",
+      `Genera la nómina del período 1/${anio} para cerrarlo antes de crear otro.`,
     ),
   ).toBeVisible();
+
   await expect(
-    fila.getByRole("button", { name: "Cerrar", exact: true }),
-  ).not.toBeVisible();
+    page.getByRole("button", { name: "Cerrar", exact: true }),
+  ).toHaveCount(0);
   await page.reload();
-  await expect(fila).toContainText("CERRADO");
+  await expect(fila).toContainText("ABIERTO");
   await page.setViewportSize({ width: 390, height: 844 });
   await page.screenshot({
     path: "test-results/periodos-mobile.png",
