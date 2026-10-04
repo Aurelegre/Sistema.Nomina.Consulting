@@ -10,7 +10,7 @@ import {
   registrarNovedad,
 } from "../src/server/novedades/novedades.service";
 import { registrarNovedadSchema } from "../src/server/novedades/Models/novedades.schema";
-import { cerrarPeriodoNomina } from "../src/server/Periodo-Nomina/periodos-nomina.service";
+import { cerrarPeriodoNomina } from "./helpers/cierre-fixture";
 import { tipoAdmitidoEnDepartamento } from "../src/server/novedades/Helpers/tipo-novedad.helper";
 
 void test("piezas y ventas corresponden exclusivamente al código de su departamento", () => {

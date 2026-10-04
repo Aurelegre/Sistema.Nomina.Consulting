@@ -1,3 +1,4 @@
+import { cerrarPeriodoNomina } from "./helpers/cierre-fixture";
 ﻿import assert from "node:assert/strict";
 import { randomBytes } from "node:crypto";
 import { test } from "node:test";
@@ -376,7 +377,7 @@ void test("ausencias: reglas, ámbito, autenticación y concurrencia", async (t)
         });
         periodos.push(periodo.id);
         const resultados = await Promise.allSettled([
-          admin.caller.periodosNomina.cerrar({ id: periodo.id }),
+          cerrarPeriodoNomina(db, periodo.id),
           jefeB.caller.ausencias.aprobar({
             id: solicitud.id,
             version: 1,

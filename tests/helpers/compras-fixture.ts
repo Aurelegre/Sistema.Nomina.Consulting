@@ -26,7 +26,6 @@ export async function prepararCompras() {
     "EMPLOYEES.VIEW",
     "PAYROLL_PERIODS.VIEW",
     "PAYROLL_PERIODS.CREATE",
-    "PAYROLL_PERIODS.CLOSE",
   ];
   const rol = await db.rol.create({
     data: {

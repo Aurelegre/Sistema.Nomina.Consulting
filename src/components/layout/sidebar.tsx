@@ -19,6 +19,7 @@ import { SidebarItem } from "~/components/layout/sidebar-item";
 import { Button } from "~/components/ui/button";
 import { ANY_PERMISOS_RUTAS, PERMISOS_RUTAS } from "~/shared/permisos-rutas";
 import { api } from "~/trpc/react";
+import { useSeguimientoNomina } from "~/features/nomina/Hooks/seguimiento-nomina";
 
 type SidebarProps = {
   esJefeDepartamento?: boolean;
@@ -37,6 +38,7 @@ const navigation = [
   { href: "/departamentos", label: "Departamentos", icon: BuildingIcon },
   { href: "/periodos", label: "Períodos", icon: CalendarIcon },
   { href: "/nomina", label: "Nómina", icon: PayrollIcon },
+  { href: "/mi-nomina", label: "Mi Nómina", icon: PayrollIcon },
   { href: "/ausencias", label: "Ausencias", icon: AbsenceIcon },
   { href: "/asociacion", label: "Asociación", icon: AssociationIcon },
   { href: "/reportes", label: "Reportes", icon: ReportIcon },
@@ -55,6 +57,7 @@ export function Sidebar({
   onCloseMobile,
 }: SidebarProps) {
   const pathname = usePathname();
+  const seguimiento = useSeguimientoNomina();
   const logout = api.auth.logout.useMutation({
     onSettled: () => window.location.assign("/login"),
   });
@@ -110,6 +113,7 @@ export function Sidebar({
             )
             .filter((item) => item.href !== "/ausencias" || empleadoId != null)
             .filter((item) => {
+              if (item.href === "/mi-nomina") return empleadoId != null;
               if (PERMISOS_RUTAS[item.href])
                 return permisos.includes(PERMISOS_RUTAS[item.href]!);
 
@@ -149,7 +153,10 @@ export function Sidebar({
               collapsed ? "justify-center px-3" : "gap-3 px-3.5",
             ].join(" ")}
             disabled={logout.isPending}
-            onClick={() => logout.mutate()}
+            onClick={() => {
+              seguimiento.cancelar();
+              logout.mutate();
+            }}
             title="Cerrar sesión"
             type="button"
           >

@@ -2,7 +2,6 @@ import { z } from "zod";
 
 import { createTRPCRouter, permissionProcedure } from "~/server/api/trpc";
 import {
-  cerrarPeriodoNomina,
   crearPeriodoNomina,
   listarPeriodosNomina,
   obtenerPeriodoNomina,
@@ -33,8 +32,4 @@ export const periodosNominaRouter = createTRPCRouter({
   crear: permissionProcedure("PAYROLL_PERIODS.CREATE")
     .input(crearPeriodoSchema)
     .mutation(({ ctx, input }) => crearPeriodoNomina(ctx.db, input)),
-
-  cerrar: permissionProcedure("PAYROLL_PERIODS.CLOSE")
-    .input(periodoIdSchema)
-    .mutation(({ ctx, input }) => cerrarPeriodoNomina(ctx.db, input.id)),
 });

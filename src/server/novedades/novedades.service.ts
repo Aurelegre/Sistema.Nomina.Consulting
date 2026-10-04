@@ -183,7 +183,7 @@ export async function registrarNovedad(
     if (periodo?.estado !== "ABIERTO")
       throw new TRPCError({
         code: "BAD_REQUEST",
-        message: "Selecciona un período existente y abierto.",
+        message: "Selecciona un período abierto y sin generación de nómina en curso.",
       });
     if (
       empleado.fechaIngreso >= new Date(Date.UTC(periodo.anio, periodo.mes, 1))

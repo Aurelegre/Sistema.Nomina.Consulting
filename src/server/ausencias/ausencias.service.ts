@@ -142,7 +142,9 @@ async function resolverAusencia(
         message: "No se encontró la solicitud de ausencia.",
       });
     autorizarResolucion(gestor, ausencia.departamentoId);
-    await comprobarMesAbierto(tx, ausencia.fechaInicio);
+    if (estado === "APROBADA") {
+      await comprobarMesAbierto(tx, ausencia.fechaInicio);
+    }
     const resultado = await tx.ausencia.updateMany({
       where: { id: data.id, version: data.version, estado: "PENDIENTE" },
       data: {

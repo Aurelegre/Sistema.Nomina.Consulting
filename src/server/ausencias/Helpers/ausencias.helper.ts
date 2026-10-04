@@ -23,9 +23,9 @@ export async function comprobarMesAbierto(
     },
     select: { estado: true },
   });
-  if (periodo?.estado === "CERRADO")
+  if (periodo && periodo.estado !== "ABIERTO")
     throw new TRPCError({
       code: "BAD_REQUEST",
-      message: "El período de la ausencia está cerrado.",
+      message: "El período de la ausencia está cerrado o en procesamiento.",
     });
 }

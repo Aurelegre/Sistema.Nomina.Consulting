@@ -136,7 +136,6 @@ DEPARTMENTS.MANAGE
 
 PAYROLL_PERIODS.VIEW
 PAYROLL_PERIODS.CREATE
-PAYROLL_PERIODS.CLOSE
 
 ABSENCES.VIEW
 ABSENCES.CREATE
@@ -144,7 +143,8 @@ ABSENCES.APPROVE
 
 PAYROLL.VIEW
 PAYROLL.PROCESS
-PAYROLL.CLOSE
+PAYROLL.DETAIL
+PAYROLL.EXPORT
 
 REPORTS.VIEW
 ACCOUNTING_POLICY.VIEW
@@ -166,7 +166,7 @@ permissionProcedure("PAYROLL.PROCESS")
 Ejemplo conceptual:
 
 ```ts
-permissionProcedure("PAYROLL_PERIODS.CLOSE")
+permissionProcedure("PAYROLL.PROCESS")
   .input(...)
   .mutation(...)
 ```
@@ -203,9 +203,13 @@ Ejemplo:
 Usuario con PAYROLL_PERIODS.VIEW
 → puede consultar períodos.
 
-Usuario con PAYROLL_PERIODS.CLOSE
-→ además puede ver y ejecutar "Cerrar".
+Usuario con PAYROLL.PROCESS
+→ puede generar la nómina; su cierre se confirma automáticamente con el cálculo.
 ```
+
+`/mi-nomina` exige usuario con empleado vinculado y deriva su ámbito de la sesión.
+No concede acceso administrativo ni exportación global. Se conserva el bloqueo
+de empleados inactivos. Los permisos de cierre manual fueron retirados.
 
 ## Sistema anterior
 

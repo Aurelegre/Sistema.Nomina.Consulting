@@ -180,9 +180,16 @@ Invocación conceptual:
 await db.$executeRaw`CALL sp_calcular_nomina(${periodoId})`;
 ```
 
-## Función MySQL
+## Mes de generación y trabajador
 
-También debe existir función para obtener nombre de mes.
+`sp_obtener_mes_actual` obtiene el mes actual de Guatemala como metadato,
+sin intervenir en cálculos. Sustituye la función inicialmente prevista por
+instrucción del propietario. `sp_generar_nomina` administra su transacción;
+el trabajador lo llama fuera de una transacción interactiva de Prisma.
+
+La cola persistente en MySQL se consume mediante `pnpm worker:nomina`.
+`pnpm dev` inicia Next y el trabajador; en producción ambos procesos deben
+supervisarse por separado. Ver `PAYROLL_GENERATION.md`.
 
 ## Nube
 

@@ -13,6 +13,7 @@ enum EstadoRol {
 }
 
 model Usuario {
+  nominas             Nomina[]
   comprasRegistradas  CompraSolidaria[] @relation("CompraRegistro")
   comprasActualizadas CompraSolidaria[] @relation("CompraActualizacion")
   novedades           NovedadNomina[]
@@ -100,10 +101,12 @@ datasource db {
 
 enum EstadoPeriodoNomina {
   ABIERTO
+  PROCESANDO
   CERRADO
 }
 
 model PeriodoNomina {
+  nomina        Nomina?
   compras       CompraSolidaria[]
   novedades     NovedadNomina[]
   id            Int                 @id @default(autoincrement())
@@ -147,6 +150,7 @@ enum EstadoEmpleado {
 }
 
 model Empleado {
+  detallesNomina        DetalleNomina[]
   compras               CompraSolidaria[]
   novedades             NovedadNomina[]
   id                    Int               @id @default(autoincrement())
@@ -169,6 +173,93 @@ model Empleado {
   @@index([departamentoId])
   @@index([estado])
   @@map("empleado")
+}
+
+enum EstadoNomina {
+  PENDIENTE
+  EN_PROCESO
+  COMPLETADA
+  FALLIDA
+}
+
+model ParametroFiscalNomina {
+  anio           Int     @id
+  deduccionAnual Decimal @db.Decimal(14, 2)
+  referencia     String  @db.VarChar(500)
+
+  @@map("parametro_fiscal_nomina")
+}
+
+model Nomina {
+  id                Int             @id @default(autoincrement())
+  periodoId         Int             @unique @map("periodo_id")
+  usuarioId         Int             @map("usuario_id")
+  solicitante       String          @db.VarChar(150)
+  estado            EstadoNomina    @default(PENDIENTE)
+  fechaSolicitud    DateTime        @default(now()) @map("fecha_solicitud")
+  fechaInicio       DateTime?       @map("fecha_inicio")
+  fechaFin          DateTime?       @map("fecha_fin")
+  mesGeneracion     String?         @map("mes_generacion") @db.VarChar(20)
+  sesionSolicitudId Int?            @map("sesion_solicitud_id")
+  intentos          Int             @default(0)
+  error             String?         @db.VarChar(500)
+  reglas            Json
+  totalIngresos     Decimal         @default(0) @map("total_ingresos") @db.Decimal(18, 2)
+  totalEgresos      Decimal         @default(0) @map("total_egresos") @db.Decimal(18, 2)
+  totalAnticipo     Decimal         @default(0) @map("total_anticipo") @db.Decimal(18, 2)
+  totalPago         Decimal         @default(0) @map("total_pago") @db.Decimal(18, 2)
+  totalPatronal     Decimal         @default(0) @map("total_patronal") @db.Decimal(18, 2)
+  periodo           PeriodoNomina   @relation(fields: [periodoId], references: [id], onDelete: Restrict)
+  usuario           Usuario         @relation(fields: [usuarioId], references: [id], onDelete: Restrict)
+  detalles          DetalleNomina[]
+
+  @@index([estado, fechaSolicitud])
+  @@index([usuarioId])
+  @@map("nomina")
+}
+
+model DetalleNomina {
+  id                 Int      @id @default(autoincrement())
+  nominaId           Int      @map("nomina_id")
+  empleadoId         Int      @map("empleado_id")
+  codigo             String   @db.VarChar(50)
+  nombre             String   @db.VarChar(150)
+  departamento       String   @db.VarChar(100)
+  cuentaContable     String?  @map("cuenta_contable") @db.VarChar(50)
+  entrada            Json
+  salarioBase        Decimal  @map("salario_base") @db.Decimal(14, 2)
+  diasLaborados      Int      @default(0) @map("dias_laborados")
+  diasAusencia       Int      @default(0) @map("dias_ausencia")
+  salarioDevengado   Decimal  @default(0) @map("salario_devengado") @db.Decimal(14, 2)
+  descuentoAusencias Decimal  @default(0) @map("descuento_ausencias") @db.Decimal(14, 2)
+  horasExtras        Decimal  @default(0) @map("horas_extras") @db.Decimal(14, 2)
+  horasDobles        Decimal  @default(0) @map("horas_dobles") @db.Decimal(14, 2)
+  piezas             Decimal  @default(0) @db.Decimal(14, 2)
+  ventas             Decimal  @default(0) @db.Decimal(14, 2)
+  montoExtras        Decimal  @default(0) @map("monto_extras") @db.Decimal(14, 2)
+  montoDobles        Decimal  @default(0) @map("monto_dobles") @db.Decimal(14, 2)
+  bonificacion       Decimal  @default(0) @db.Decimal(14, 2)
+  produccion         Decimal  @default(0) @db.Decimal(14, 2)
+  tasaComision       Decimal  @default(0) @map("tasa_comision") @db.Decimal(6, 4)
+  comision           Decimal  @default(0) @db.Decimal(14, 2)
+  baseIgss           Decimal  @default(0) @map("base_igss") @db.Decimal(14, 2)
+  igssLaboral        Decimal  @default(0) @map("igss_laboral") @db.Decimal(14, 2)
+  igssPatronal       Decimal  @default(0) @map("igss_patronal") @db.Decimal(14, 2)
+  rentaAnual         Decimal  @default(0) @map("renta_anual") @db.Decimal(16, 2)
+  isr                Decimal  @default(0) @db.Decimal(14, 2)
+  solidaridad        Decimal  @default(0) @db.Decimal(14, 2)
+  compras            Decimal  @default(0) @db.Decimal(14, 2)
+  totalIngresos      Decimal  @default(0) @map("total_ingresos") @db.Decimal(14, 2)
+  totalEgresos       Decimal  @default(0) @map("total_egresos") @db.Decimal(14, 2)
+  liquido            Decimal  @default(0) @db.Decimal(14, 2)
+  anticipo           Decimal  @default(0) @db.Decimal(14, 2)
+  pagoFinal          Decimal  @default(0) @map("pago_final") @db.Decimal(14, 2)
+  nomina             Nomina   @relation(fields: [nominaId], references: [id], onDelete: Restrict)
+  empleado           Empleado @relation(fields: [empleadoId], references: [id], onDelete: Restrict)
+
+  @@unique([nominaId, empleadoId])
+  @@index([empleadoId])
+  @@map("detalle_nomina")
 }
 
 enum EstadoAusencia {

@@ -8,7 +8,8 @@ El anticipo mensual corresponde al 50% del salario base.
 Anticipo = SalarioBase × 0.50
 ```
 
-Se entrega el día 15.
+Se asume entregado el día 15 a todos los empleados; no se registra el pago ni se
+prorratea por baja. El pago final puede resultar negativo.
 
 ## RN-002 — Aplicación del anticipo
 
@@ -73,7 +74,7 @@ Ventas de Q0 a Q100,000:
 
 ## RN-010 — Comisión 2.5%
 
-Ventas de Q100,001 a Q200,000:
+Ventas mayores de Q100,000 y hasta Q200,000, incluidos centavos:
 
 ```text
 2.5%
@@ -81,7 +82,7 @@ Ventas de Q100,001 a Q200,000:
 
 ## RN-011 — Comisión 3.5%
 
-Ventas de Q200,001 a Q400,000:
+Ventas mayores de Q200,000 y hasta Q400,000, incluidos centavos:
 
 ```text
 3.5%
@@ -89,7 +90,7 @@ Ventas de Q200,001 a Q400,000:
 
 ## RN-012 — Comisión 4.5%
 
-Ventas desde Q400,001:
+Ventas mayores de Q400,000, incluidos centavos:
 
 ```text
 4.5%
@@ -122,12 +123,16 @@ Lo asume Consulting, S.A. y no reduce el pago al empleado.
 Calcular mediante proyección anual conforme al régimen aplicable a rentas del trabajo en relación de dependencia en Guatemala.
 
 No reutilizar ciegamente umbrales del sistema legacy.
+En esta entrega, por decisión del propietario, no se controlan antecedentes
+fiscales externos. Se conserva la cuota mensual de referencia sin reducirla por
+baja o ausencias. Ver `PAYROLL_GENERATION.md` para proyección y limitaciones.
 
 ## RN-017 — Ahorro Solidarista
 
 ```text
 AhorroSolidarista = SalarioBase × 3%
 ```
+Aplica a todos los empleados incluidos, sin indicador de afiliación ni prorrateo.
 
 ## RN-018 — Compra Solidarista
 
@@ -173,6 +178,8 @@ Permite registrar y procesar información operativa.
 Puede haber como máximo un período ABIERTO y puede no existir ninguno. Su mes
 y año no tienen que coincidir con los de la fecha del sistema. Cerrar un período
 no crea automáticamente el siguiente.
+La generación protege sus movimientos mientras se procesa y lo cierra al
+confirmar correctamente todos los resultados. Se elimina el cierre manual.
 
 ## RN-025 — Período cerrado
 
@@ -242,3 +249,28 @@ no se revierten. Esta feature no calcula ni aplica descuentos monetarios.
 Además de las validaciones de usuario y rol, un empleado vinculado INACTIVO
 impide el login y el uso de sesiones existentes. Su baja revoca las sesiones del
 usuario asociado. Un usuario sin empleado conserva las validaciones habituales.
+
+## RN-035 — Generación y salario devengado
+
+Asistencia presumida completa; ingreso y baja inclusivos y ausencias aprobadas
+a cuenta de salario determinan los días pagados sobre mes comercial de 30 días.
+Fechas de ausencia superpuestas no se descuentan dos veces. Inactivos con
+movimientos del período se incluyen usando su fecha de baja. Q250 permanece fijo.
+Los resultados se calculan en SP y se guardan junto con los datos utilizados.
+
+## RN-036 — Resultado negativo
+
+El pago final negativo es válido y no bloquea la generación. No se crean cuotas,
+saldos ni compensaciones automáticas para períodos siguientes.
+
+## RN-037 — Consulta personal y ejecución
+
+Todo usuario con empleado vinculado consulta únicamente su histórico en Mi Nómina.
+La generación requiere PAYROLL.PROCESS; listado PAYROLL.VIEW; detalle
+PAYROLL.DETAIL; CSV PAYROLL.EXPORT. La tarea persiste fuera de la sesión del
+navegador. Solo la sesión y pestaña solicitante consulta la ejecución; al terminar
+o fallar se detiene la consulta y se pide recargar Nómina. Cerrar sesión cancela
+el aviso, sin recuperarlo al volver a iniciar sesión. No hay polling general.
+Desde la solicitud, el período queda `PROCESANDO` y rechaza nuevos movimientos,
+ediciones y eliminaciones. Tampoco se puede abrir otro período. El éxito lo
+cierra y un fallo lo devuelve a `ABIERTO`.

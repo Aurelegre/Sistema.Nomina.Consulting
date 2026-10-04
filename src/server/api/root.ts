@@ -1,3 +1,4 @@
+import { nominaRouter } from "~/server/nomina/nomina.router";
 import { healthRouter } from "~/server/api/health";
 import { comprasSolidariasRouter } from "~/server/compras-solidarias/compras-solidarias.router";
 import { novedadesRouter } from "~/server/novedades/novedades.router";
@@ -12,6 +13,7 @@ import { empleadosRouter } from "../empleados/empleados.router";
 import { ausenciasRouter } from "../ausencias/ausencias.router";
 
 export const appRouter = createTRPCRouter({
+  nomina: nominaRouter,
   comprasSolidarias: comprasSolidariasRouter,
   novedades: novedadesRouter,
   departamentos: departamentosRouter,

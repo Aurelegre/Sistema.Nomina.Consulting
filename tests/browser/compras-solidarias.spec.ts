@@ -1,7 +1,7 @@
 import { test, expect, type Page } from "@playwright/test";
 import { prepararCompras } from "../helpers/compras-fixture";
+import { cerrarPeriodoNomina } from "../helpers/cierre-fixture";
 import {
-  cerrarPeriodoNomina,
   crearPeriodoNomina,
 } from "../../src/server/Periodo-Nomina/periodos-nomina.service";
 

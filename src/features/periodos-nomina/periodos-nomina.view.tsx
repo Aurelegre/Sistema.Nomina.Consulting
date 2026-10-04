@@ -1,5 +1,4 @@
 "use client";
-import { useState } from "react";
 import { ErrorAcceso } from "~/components/acceso/ErrorAcceso";
 import {
   Card,
@@ -10,12 +9,8 @@ import {
 } from "~/components/ui/card";
 import { api } from "~/trpc/react";
 import { CrearPeriodoForm } from "./Components/crear-periodo-form";
-import { CerrarPeriodoModal } from "./Components/Modals/cerrarPeriodo.modal";
 import { PeriodosTable } from "./Components/periodos-table";
-import type { PeriodoSeleccionado } from "./Models/periodos-nomina.model";
 export function PeriodosNominaView() {
-  const [periodoSeleccionado, setPeriodoSeleccionado] =
-    useState<PeriodoSeleccionado | null>(null);
   const identidad = api.auth.me.useQuery();
   const periodos = api.periodosNomina.listar.useQuery();
   return (
@@ -34,7 +29,7 @@ export function PeriodosNominaView() {
       </div>
       {identidad.data?.permisos.includes("PAYROLL_PERIODS.CREATE") && (
         <CrearPeriodoForm
-          abierto={periodos.data?.find((p) => p.estado === "ABIERTO")}
+          abierto={periodos.data?.find((p) => p.estado !== "CERRADO")}
           cargando={!periodos.isSuccess}
         />
       )}
@@ -44,8 +39,8 @@ export function PeriodosNominaView() {
             <h2>Períodos registrados</h2>
           </CardTitle>
           <CardDescription>
-            Un período cerrado queda disponible únicamente para consulta y
-            reportes.
+            El período se cierra automáticamente al generar su nómina. Después
+            queda disponible únicamente para consulta y reportes.
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -56,22 +51,10 @@ export function PeriodosNominaView() {
           ) : periodos.data.length === 0 ? (
             <p>Todavía no hay períodos de nómina registrados.</p>
           ) : (
-            <PeriodosTable
-              periodos={periodos.data}
-              puedeCerrar={
-                identidad.data?.permisos.includes("PAYROLL_PERIODS.CLOSE") ??
-                false
-              }
-              onCerrar={setPeriodoSeleccionado}
-            />
+            <PeriodosTable periodos={periodos.data} />
           )}
         </CardContent>
       </Card>
-      <CerrarPeriodoModal
-        key={periodoSeleccionado?.id ?? "cerrado"}
-        periodo={periodoSeleccionado}
-        onCancelar={() => setPeriodoSeleccionado(null)}
-      />
     </main>
   );
 }

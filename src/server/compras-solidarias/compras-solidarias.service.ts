@@ -140,7 +140,7 @@ async function comprobarAbierto(tx: Prisma.TransactionClient, id: number) {
     throw new TRPCError({
       code: "CONFLICT",
       message:
-        "El período está cerrado o ya no está disponible. Actualiza la pantalla.",
+        "El período está cerrado, en procesamiento o ya no está disponible. Actualiza la pantalla.",
     });
 }
 export function crearCompra(
