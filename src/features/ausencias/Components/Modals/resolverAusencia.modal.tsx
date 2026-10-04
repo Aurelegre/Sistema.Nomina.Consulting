@@ -61,19 +61,22 @@ export function ResolverAusenciaModal({
         <p className="text-sm wrap-break-word whitespace-pre-wrap">
           {ausencia.motivo}
         </p>
-        <div className="space-y-2">
-          <p className="text-sm font-medium">A cuenta de salario</p>
-          <Selector
-            etiqueta="A cuenta de salario"
-            valor={cuenta}
-            onChange={setCuenta}
-            disabled={pendiente}
-            opciones={[
-              { value: "si", label: "Sí" },
-              { value: "no", label: "No" },
-            ]}
-          />
-        </div>
+        {decision === "aprobar" && (
+          <div className="space-y-2">
+            <p className="text-sm font-medium">A cuenta de salario</p>
+            <Selector
+              etiqueta="A cuenta de salario"
+              valor={cuenta}
+              onChange={setCuenta}
+              disabled={pendiente}
+              opciones={[
+                { value: "si", label: "Sí" },
+                { value: "no", label: "No" },
+              ]}
+            />
+          </div>
+        )}
+
         <div className="space-y-2">
           <Label htmlFor="resolucion-comentario">
             Comentario de resolución (opcional)
@@ -96,7 +99,7 @@ export function ResolverAusenciaModal({
             onClick={(e) => {
               e.preventDefault();
               if (pendiente) return;
-              if (!cuenta) {
+              if (!cuenta && decision === "aprobar") {
                 setError("Indica si la ausencia es a cuenta de salario.");
                 return;
               }
@@ -104,7 +107,8 @@ export function ResolverAusenciaModal({
               const input = {
                 id: ausencia.id,
                 version: ausencia.version,
-                aCuentaSalario: cuenta === "si",
+                aCuentaSalario:
+                  decision === "rechazar" ? false : cuenta === "si", //si descición es rechazar se manda false, si es aprobar se manda la seleccion de cuenta,
                 comentarioResolucion: comentario,
               };
               if (decision === "aprobar") aprobar.mutate(input);
