@@ -268,4 +268,9 @@ saldos ni compensaciones automáticas para períodos siguientes.
 Todo usuario con empleado vinculado consulta únicamente su histórico en Mi Nómina.
 La generación requiere PAYROLL.PROCESS; listado PAYROLL.VIEW; detalle
 PAYROLL.DETAIL; CSV PAYROLL.EXPORT. La tarea persiste fuera de la sesión del
-navegador y notifica exclusivamente al solicitante al terminar o fallar.
+navegador. Solo la sesión y pestaña solicitante consulta la ejecución; al terminar
+o fallar se detiene la consulta y se pide recargar Nómina. Cerrar sesión cancela
+el aviso, sin recuperarlo al volver a iniciar sesión. No hay polling general.
+Desde la solicitud, el período queda `PROCESANDO` y rechaza nuevos movimientos,
+ediciones y eliminaciones. Tampoco se puede abrir otro período. El éxito lo
+cierra y un fallo lo devuelve a `ABIERTO`.

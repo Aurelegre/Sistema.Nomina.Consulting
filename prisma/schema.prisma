@@ -101,11 +101,11 @@ datasource db {
 
 enum EstadoPeriodoNomina {
   ABIERTO
+  PROCESANDO
   CERRADO
 }
 
 model PeriodoNomina {
-  procesando    Boolean             @default(false)
   nomina        Nomina?
   compras       CompraSolidaria[]
   novedades     NovedadNomina[]
@@ -191,30 +191,30 @@ model ParametroFiscalNomina {
 }
 
 model Nomina {
-  id              Int             @id @default(autoincrement())
-  periodoId       Int             @unique @map("periodo_id")
-  usuarioId       Int             @map("usuario_id")
-  solicitante     String          @db.VarChar(150)
-  estado          EstadoNomina    @default(PENDIENTE)
-  fechaSolicitud  DateTime        @default(now()) @map("fecha_solicitud")
-  fechaInicio     DateTime?       @map("fecha_inicio")
-  fechaFin        DateTime?       @map("fecha_fin")
-  mesGeneracion   String?         @map("mes_generacion") @db.VarChar(20)
-  fechaNotificada DateTime?       @map("fecha_notificada")
-  intentos        Int             @default(0)
-  error           String?         @db.VarChar(500)
-  reglas          Json
-  totalIngresos   Decimal         @default(0) @map("total_ingresos") @db.Decimal(18, 2)
-  totalEgresos    Decimal         @default(0) @map("total_egresos") @db.Decimal(18, 2)
-  totalAnticipo   Decimal         @default(0) @map("total_anticipo") @db.Decimal(18, 2)
-  totalPago       Decimal         @default(0) @map("total_pago") @db.Decimal(18, 2)
-  totalPatronal   Decimal         @default(0) @map("total_patronal") @db.Decimal(18, 2)
-  periodo         PeriodoNomina   @relation(fields: [periodoId], references: [id], onDelete: Restrict)
-  usuario         Usuario         @relation(fields: [usuarioId], references: [id], onDelete: Restrict)
-  detalles        DetalleNomina[]
+  id                Int             @id @default(autoincrement())
+  periodoId         Int             @unique @map("periodo_id")
+  usuarioId         Int             @map("usuario_id")
+  solicitante       String          @db.VarChar(150)
+  estado            EstadoNomina    @default(PENDIENTE)
+  fechaSolicitud    DateTime        @default(now()) @map("fecha_solicitud")
+  fechaInicio       DateTime?       @map("fecha_inicio")
+  fechaFin          DateTime?       @map("fecha_fin")
+  mesGeneracion     String?         @map("mes_generacion") @db.VarChar(20)
+  sesionSolicitudId Int?            @map("sesion_solicitud_id")
+  intentos          Int             @default(0)
+  error             String?         @db.VarChar(500)
+  reglas            Json
+  totalIngresos     Decimal         @default(0) @map("total_ingresos") @db.Decimal(18, 2)
+  totalEgresos      Decimal         @default(0) @map("total_egresos") @db.Decimal(18, 2)
+  totalAnticipo     Decimal         @default(0) @map("total_anticipo") @db.Decimal(18, 2)
+  totalPago         Decimal         @default(0) @map("total_pago") @db.Decimal(18, 2)
+  totalPatronal     Decimal         @default(0) @map("total_patronal") @db.Decimal(18, 2)
+  periodo           PeriodoNomina   @relation(fields: [periodoId], references: [id], onDelete: Restrict)
+  usuario           Usuario         @relation(fields: [usuarioId], references: [id], onDelete: Restrict)
+  detalles          DetalleNomina[]
 
   @@index([estado, fechaSolicitud])
-  @@index([usuarioId, fechaNotificada])
+  @@index([usuarioId])
   @@map("nomina")
 }
 

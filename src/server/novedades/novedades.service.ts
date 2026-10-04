@@ -180,7 +180,7 @@ export async function registrarNovedad(
     const periodo = await tx.periodoNomina.findUnique({
       where: { id: data.periodoId },
     });
-    if (periodo?.estado !== "ABIERTO" || periodo.procesando)
+    if (periodo?.estado !== "ABIERTO")
       throw new TRPCError({
         code: "BAD_REQUEST",
         message: "Selecciona un período abierto y sin generación de nómina en curso.",

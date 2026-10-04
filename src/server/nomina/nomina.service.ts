@@ -38,7 +38,7 @@ export async function contextoNomina(db: PrismaClient, actor: ActorAcceso) {
   )
     throw new TRPCError({ code: "FORBIDDEN" });
   const activo = await db.periodoNomina.findFirst({
-    where: { estado: "ABIERTO" },
+    where: { estado: { in: ["ABIERTO", "PROCESANDO"] } },
   });
   return { activo, permisos: gestor.permisos };
 }
@@ -134,7 +134,7 @@ export async function solicitarNomina(
       fechaSolicitud: new Date(),
       fechaInicio: null,
       fechaFin: null,
-      fechaNotificada: null,
+      sesionSolicitudId: actor.sesionId,
       error: null,
       reglas: {
         version: "2026-10-v1",
@@ -195,7 +195,7 @@ export async function solicitarNomina(
     });
     await tx.periodoNomina.update({
       where: { id: periodoId },
-      data: { procesando: true },
+      data: { estado: "PROCESANDO" },
     });
     return { id: nomina.id };
   });
@@ -393,44 +393,27 @@ export async function exportarNomina(
   };
 }
 
-export async function notificacionesNomina(
-  db: PrismaClient,
-  actor: ActorAcceso,
-) {
-  const gestor = await autorizarNomina(db, actor);
-  return db.nomina.findMany({
-    where: {
-      usuarioId: gestor.id,
-      fechaNotificada: null,
-      estado: { in: ["COMPLETADA", "FALLIDA"] },
-    },
-    select: {
-      id: true,
-      estado: true,
-      error: true,
-      periodo: { select: { mes: true, anio: true } },
-      fechaFin: true,
-    },
-    orderBy: { fechaFin: "desc" },
-    take: 10,
-  });
-}
-export async function leerNotificacionNomina(
+export async function seguimientoNomina(
   db: PrismaClient,
   actor: ActorAcceso,
   input: z.input<typeof idNominaSchema>,
 ) {
   const { id } = validar(idNominaSchema, input);
   const gestor = await autorizarNomina(db, actor);
-  await db.nomina.updateMany({
-    where: {
-      id,
-      usuarioId: gestor.id,
-      estado: { in: ["COMPLETADA", "FALLIDA"] },
+  const ejecucion = await db.nomina.findFirst({
+    where: { id, usuarioId: gestor.id, sesionSolicitudId: actor.sesionId },
+    select: {
+      id: true,
+      estado: true,
+      periodo: { select: { mes: true, anio: true } },
     },
-    data: { fechaNotificada: new Date() },
   });
-  return { ok: true };
+  if (!ejecucion)
+    throw new TRPCError({
+      code: "NOT_FOUND",
+      message: "No tienes una ejecución iniciada en esta sesión.",
+    });
+  return ejecucion;
 }
 
 export async function ejecucionesPropias(db: PrismaClient, actor: ActorAcceso) {

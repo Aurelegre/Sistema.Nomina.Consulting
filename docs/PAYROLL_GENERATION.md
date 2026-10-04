@@ -10,7 +10,7 @@ Rama: `feature/generacion-nomina`, basada en `origin/develop`.
   Disponible a todo usuario vinculado; no necesita permisos administrativos.
   Se conserva el bloqueo de sesiones/login de empleados inactivos.
 - El único período ABIERTO determina los movimientos, independientemente de
-  la fecha actual. Al solicitar la generación se protege con `procesando`.
+  la fecha actual. Al solicitar la generación pasa al estado `PROCESANDO`.
 - Se captura salario, datos laborales, departamento/cuenta y movimientos en
   una transacción coordinada con empleados, compras, novedades y ausencias.
   Los cambios posteriores de salario o departamento no alteran esta captura.
@@ -97,9 +97,14 @@ Los errores SQL revierten importes/cierre, marcan FALLIDA y liberan el período.
 Al reintentar se autorizan y capturan nuevamente los datos. El estado visible,
 las fechas, solicitante e intentos permiten seguir la ejecución.
 
-La notificación se persiste mediante el estado final y `fechaNotificada`,
-dirigida únicamente al solicitante. El layout consulta avisos cada cinco
-segundos y los conserva hasta que se pulse Entendido, incluso al volver a entrar.
+Solo la pestaña y sesión que inicia la generación consulta esa ejecución cada
+tres segundos. Al finalizar detiene el seguimiento y pide recargar Nómina para
+ver los resultados, sin actualizar automáticamente el listado. Al cerrar sesión
+se cancela el seguimiento; un nuevo inicio de sesión no recupera avisos anteriores.
+No existen consultas periódicas de listados, contexto ni notificaciones generales.
+Los movimientos rechazan períodos `PROCESANDO` o `CERRADO`. Solo puede existir
+un período `ABIERTO` o `PROCESANDO` a la vez. Un fallo devuelve el período a
+`ABIERTO`; el cálculo exitoso lo deja `CERRADO`.
 
 ## Permisos
 

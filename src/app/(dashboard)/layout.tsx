@@ -12,6 +12,7 @@ export default async function DashboardLayout({
   if (sesion.usuario.debeCambiarPassword) redirect("/cambiar-password");
   return (
     <AppShell
+      sesionId={sesion.id}
       permisos={sesion.usuario.permisos}
       empleadoId={sesion.usuario.empleadoId}
       esJefeDepartamento={sesion.usuario.esJefeDepartamento}

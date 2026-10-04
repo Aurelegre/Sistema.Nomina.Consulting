@@ -7,11 +7,15 @@ import {
   detalleNomina,
   listarNominas,
   exportarNomina,
-  notificacionesNomina,
-  leerNotificacionNomina,
+  seguimientoNomina,
 } from "../src/server/nomina/nomina.service";
 import { ejecutarPendientes } from "../src/server/nomina/nomina.worker";
-import { crearCompra } from "../src/server/compras-solidarias/compras-solidarias.service";
+import {
+  crearCompra,
+  editarCompra,
+  eliminarCompra,
+} from "../src/server/compras-solidarias/compras-solidarias.service";
+import { registrarNovedad } from "../src/server/novedades/novedades.service";
 import { comprobarMesAbierto } from "../src/server/ausencias/Helpers/ausencias.helper";
 import { digest } from "../src/server/sesion/Helpers/sesion.helper";
 import { appRouter } from "../src/server/api/root";
@@ -28,7 +32,7 @@ void test("generación transaccional de nómina en MySQL", async (t) => {
         monto,
         detalle: "Alimentos",
       });
-    await compra("100");
+    const primeraCompra = await compra("100");
     await compra("50.25");
     for (const [tipo, cantidad] of [
       ["HORAS_EXTRAS", 2],
@@ -138,6 +142,52 @@ void test("generación transaccional de nómina en MySQL", async (t) => {
       "bloqueo de movimientos y copia consistente del salario",
       async () => {
         await assert.rejects(compra("1"));
+        const registro = await db.compraSolidaria.findUniqueOrThrow({
+          where: { id: primeraCompra.id },
+        });
+        await assert.rejects(
+          editarCompra(db, actor, {
+            id: registro.id,
+            version: registro.version,
+            monto: "200",
+            detalle: "Edición bloqueada",
+          }),
+        );
+        await assert.rejects(
+          eliminarCompra(db, actor, {
+            id: registro.id,
+            version: registro.version,
+          }),
+        );
+        await db.departamento.update({
+          where: { id: f.departamento.id },
+          data: { jefeId: empleado.id },
+        });
+        await assert.rejects(
+          registrarNovedad(db, actor, {
+            solicitudId: randomUUID(),
+            empleadoId: empleado.id,
+            periodoId: periodo.id,
+            tipo: "HORAS_EXTRAS",
+            cantidad: "1",
+          }),
+          /período abierto/,
+        );
+        assert.equal(
+          (
+            await db.periodoNomina.findUniqueOrThrow({
+              where: { id: periodo.id },
+            })
+          ).estado,
+          "PROCESANDO",
+        );
+        await assert.rejects(
+          db.periodoNomina.create({ data: { mes: 12, anio: 2026 } }),
+        );
+        assert.equal(
+          (await seguimientoNomina(db, actor, { id })).estado,
+          "PENDIENTE",
+        );
         await assert.rejects(comprobarMesAbierto(db, new Date("2026-11-15")));
         await db.empleado.update({
           where: { id: empleado.id },
@@ -156,7 +206,6 @@ void test("generación transaccional de nómina en MySQL", async (t) => {
         });
         assert.equal(n.estado, "COMPLETADA");
         assert.equal(n.periodo.estado, "CERRADO");
-        assert.equal(n.periodo.procesando, false);
         assert.ok(n.periodo.fechaCierre);
         const d = n.detalles.find((d) => d.empleadoId === empleado.id)!;
         assert.equal(d.salarioBase.toFixed(2), "6000.00");
@@ -203,7 +252,7 @@ void test("generación transaccional de nómina en MySQL", async (t) => {
       },
     );
     await t.test(
-      "consulta propia, permisos independientes y notificaciones persistentes",
+      "consulta propia, permisos independientes y seguimiento limitado a la sesión solicitante",
       async () => {
         const rol = await db.rol.create({
           data: {
@@ -245,9 +294,31 @@ void test("generación transaccional de nómina en MySQL", async (t) => {
             true,
           ),
         );
-        assert.equal((await notificacionesNomina(db, actor)).length, 1);
-        await leerNotificacionNomina(db, actor, { id });
-        assert.equal((await notificacionesNomina(db, actor)).length, 0);
+        assert.equal(
+          (await seguimientoNomina(db, actor, { id })).estado,
+          "COMPLETADA",
+        );
+        await assert.rejects(
+          seguimientoNomina(
+            db,
+            { usuarioId: sinEmpleado.id, sesionId: sesion.id },
+            { id },
+          ),
+        );
+        const otraSesion = await db.sesion.create({
+          data: {
+            usuarioId: usuario.id,
+            tokenHash: digest(randomBytes(32).toString("hex")),
+            fechaExpiracion: new Date(Date.now() + 3600000),
+          },
+        });
+        await assert.rejects(
+          seguimientoNomina(db, { ...actor, sesionId: otraSesion.id }, { id }),
+        );
+        await db.sesion.delete({ where: { id: otraSesion.id } });
+        await assert.rejects(
+          seguimientoNomina(db, { ...actor, sesionId: otraSesion.id }, { id }),
+        );
         await db.rolPermiso.create({
           data: {
             rolId: rol.id,
@@ -287,7 +358,6 @@ void test("generación transaccional de nómina en MySQL", async (t) => {
           where: { id: p.id },
         });
         assert.equal(abierto.estado, "ABIERTO");
-        assert.equal(abierto.procesando, false);
         assert.equal(
           await db.detalleNomina.count({
             where: { nominaId: n.id, totalIngresos: { not: 0 } },

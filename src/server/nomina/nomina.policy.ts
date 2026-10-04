@@ -25,7 +25,7 @@ export async function comprobarPeriodoDisponible(
   const periodo = await tx.periodoNomina.findUnique({
     where: { id: periodoId },
   });
-  if (periodo?.estado !== "ABIERTO" || periodo.procesando)
+  if (periodo?.estado !== "ABIERTO")
     prohibido("El período está cerrado o se está generando su nómina.");
   return periodo;
 }

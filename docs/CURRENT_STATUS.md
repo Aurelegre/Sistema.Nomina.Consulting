@@ -11,6 +11,11 @@ Se retira el cierre manual. La generación integra novedades, compras y ausencia
 permite resultados negativos y aplica las decisiones del propietario sobre
 anticipo, solidaridad e ISR. Ver `PAYROLL_GENERATION.md` para operación y alcance.
 
+El seguimiento ya no consulta periódicamente listados ni avisos generales: solo
+la sesión solicitante consulta su ejecución y muestra una indicación de recarga.
+Cerrar sesión cancela ese aviso. El período pasa a `PROCESANDO` al solicitar
+la generación y bloquea movimientos hasta el cierre o la recuperación por fallo.
+
 Las secciones posteriores describen las entregas previas; sus referencias al
 procesador pendiente y al cierre manual quedan sustituidas por esta entrega.
 

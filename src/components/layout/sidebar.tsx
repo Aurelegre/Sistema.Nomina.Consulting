@@ -19,6 +19,7 @@ import { SidebarItem } from "~/components/layout/sidebar-item";
 import { Button } from "~/components/ui/button";
 import { ANY_PERMISOS_RUTAS, PERMISOS_RUTAS } from "~/shared/permisos-rutas";
 import { api } from "~/trpc/react";
+import { useSeguimientoNomina } from "~/features/nomina/Hooks/seguimiento-nomina";
 
 type SidebarProps = {
   esJefeDepartamento?: boolean;
@@ -56,6 +57,7 @@ export function Sidebar({
   onCloseMobile,
 }: SidebarProps) {
   const pathname = usePathname();
+  const seguimiento = useSeguimientoNomina();
   const logout = api.auth.logout.useMutation({
     onSettled: () => window.location.assign("/login"),
   });
@@ -151,7 +153,10 @@ export function Sidebar({
               collapsed ? "justify-center px-3" : "gap-3 px-3.5",
             ].join(" ")}
             disabled={logout.isPending}
-            onClick={() => logout.mutate()}
+            onClick={() => {
+              seguimiento.cancelar();
+              logout.mutate();
+            }}
             title="Cerrar sesión"
             type="button"
           >

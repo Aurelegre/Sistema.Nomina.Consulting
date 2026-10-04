@@ -24,9 +24,11 @@ import {
 } from "~/components/ui/alert-dialog";
 import { DetalleNominaModal } from "./Components/Modals/detalleNomina.modal";
 import { dinero, fechaTexto, periodoTexto } from "./Helpers/nomina.helper";
+import { useSeguimientoNomina } from "./Hooks/seguimiento-nomina";
 
 export function NominaView({ propia = false }: { propia?: boolean }) {
   const utils = api.useUtils();
+  const seguimiento = useSeguimientoNomina();
   const [desde, setDesde] = useState("");
   const [hasta, setHasta] = useState("");
   const [pagina, setPagina] = useState(1);
@@ -35,7 +37,8 @@ export function NominaView({ propia = false }: { propia?: boolean }) {
   const [mensaje, setMensaje] = useState("");
   const contexto = api.nomina.contexto.useQuery(undefined, {
     enabled: !propia,
-    refetchInterval: 5000,
+    refetchOnWindowFocus: false,
+    refetchOnReconnect: false,
   });
   const permisos = contexto.data?.permisos ?? [];
   const puedeVer = permisos.includes("PAYROLL.VIEW");
@@ -48,7 +51,8 @@ export function NominaView({ propia = false }: { propia?: boolean }) {
   const rangoValido = !desde || !hasta || desde <= hasta;
   const admin = api.nomina.listar.useQuery(filtros, {
     enabled: !propia && puedeVer && rangoValido,
-    refetchInterval: 5000,
+    refetchOnWindowFocus: false,
+    refetchOnReconnect: false,
   });
   const personal = api.nomina.misNominas.useQuery(filtros, {
     enabled: propia && rangoValido,
@@ -56,10 +60,12 @@ export function NominaView({ propia = false }: { propia?: boolean }) {
   const consulta = propia ? personal : admin;
   const ejecuciones = api.nomina.ejecuciones.useQuery(undefined, {
     enabled: !propia && puedeGenerar,
-    refetchInterval: 3000,
+    refetchOnWindowFocus: false,
+    refetchOnReconnect: false,
   });
   const generar = api.nomina.generar.useMutation({
-    onSuccess: async () => {
+    onSuccess: async ({ id }) => {
+      await seguimiento.iniciar(id);
       setConfirmar(false);
       setMensaje(
         "La generación quedó en cola. Puedes continuar usando el sistema; te avisaremos al finalizar.",
@@ -109,17 +115,19 @@ export function NominaView({ propia = false }: { propia?: boolean }) {
           <CardContent className="space-y-3">
             <p>
               {activo
-                ? `Período abierto: ${periodoTexto(activo)}`
+                ? `Período: ${periodoTexto(activo)} · ${activo.estado}`
                 : "No hay un período abierto. Crea uno desde Períodos para generar la nómina."}
             </p>
-            {activo?.procesando && (
+            {activo?.estado === "PROCESANDO" && (
               <p role="status">
                 La nómina está pendiente o en procesamiento. Los movimientos del
                 período están protegidos.
               </p>
             )}
             <Button
-              disabled={!activo || activo.procesando || generar.isPending}
+              disabled={
+                activo?.estado !== "ABIERTO" || generar.isPending
+              }
               onClick={() => {
                 setMensaje("");
                 setConfirmar(true);

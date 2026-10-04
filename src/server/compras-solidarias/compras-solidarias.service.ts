@@ -136,7 +136,7 @@ function escritura<T>(
 async function comprobarAbierto(tx: Prisma.TransactionClient, id: number) {
   await tx.$queryRaw`SELECT id FROM periodo_nomina WHERE id = ${id} FOR UPDATE`;
   const periodo = await tx.periodoNomina.findUnique({ where: { id } });
-  if (periodo?.estado !== "ABIERTO" || periodo.procesando)
+  if (periodo?.estado !== "ABIERTO")
     throw new TRPCError({
       code: "CONFLICT",
       message:

@@ -74,16 +74,10 @@ export const nominaRouter = createTRPCRouter({
         true,
       ),
     ),
-  notificaciones: protectedProcedure.query(({ ctx }) =>
-    servicio.notificacionesNomina(ctx.db, {
-      usuarioId: ctx.sesion.usuario.id,
-      sesionId: ctx.sesion.id,
-    }),
-  ),
-  leerNotificacion: protectedProcedure
+  seguimiento: protectedProcedure
     .input(idNominaSchema)
-    .mutation(({ ctx, input }) =>
-      servicio.leerNotificacionNomina(
+    .query(({ ctx, input }) =>
+      servicio.seguimientoNomina(
         ctx.db,
         { usuarioId: ctx.sesion.usuario.id, sesionId: ctx.sesion.id },
         input,

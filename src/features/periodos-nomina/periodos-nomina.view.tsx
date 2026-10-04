@@ -29,7 +29,7 @@ export function PeriodosNominaView() {
       </div>
       {identidad.data?.permisos.includes("PAYROLL_PERIODS.CREATE") && (
         <CrearPeriodoForm
-          abierto={periodos.data?.find((p) => p.estado === "ABIERTO")}
+          abierto={periodos.data?.find((p) => p.estado !== "CERRADO")}
           cargando={!periodos.isSuccess}
         />
       )}

@@ -21,9 +21,9 @@ export async function comprobarMesAbierto(
     where: {
       mes_anio: { mes: fecha.getUTCMonth() + 1, anio: fecha.getUTCFullYear() },
     },
-    select: { estado: true, procesando: true },
+    select: { estado: true },
   });
-  if (periodo?.estado === "CERRADO" || periodo?.procesando)
+  if (periodo && periodo.estado !== "ABIERTO")
     throw new TRPCError({
       code: "BAD_REQUEST",
       message: "El período de la ausencia está cerrado o en procesamiento.",

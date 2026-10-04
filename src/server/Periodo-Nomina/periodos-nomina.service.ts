@@ -30,7 +30,7 @@ export const crearPeriodoNomina = async (
   try {
     return await transaccionOrganizacion(db, async (tx) => {
       const abierto = await tx.periodoNomina.findFirst({
-        where: { estado: "ABIERTO" },
+        where: { estado: { in: ["ABIERTO", "PROCESANDO"] } },
       });
       if (abierto)
         throw new TRPCError({
