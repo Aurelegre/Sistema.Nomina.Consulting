@@ -1,6 +1,13 @@
 # Estado actual
 
-Fecha de referencia: 3 de octubre de 2026.
+Fecha de referencia: 8 de octubre de 2026.
+
+## Reportes: póliza contable
+
+Implementada en `feature/reports-nomina`: `/reportes/poliza`, agrupación histórica,
+vista previa, generación manual, almacenamiento por período y exportación CSV/PDF.
+Permisos VIEW/GENERATE/EXPORT independientes. Cuentas nuevas en cero, importes
+negativos en rojo y reportes guardados inmutables. Ver `ACCOUNTING_POLICY.md`.
 
 ## Generación de nómina
 

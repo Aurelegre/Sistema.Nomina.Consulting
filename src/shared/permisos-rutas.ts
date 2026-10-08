@@ -8,7 +8,6 @@ export const PERMISOS_RUTAS: Record<string, CodigoPermiso> = {
   "/ausencias": "ABSENCES.VIEW",
   "/asociacion": "ASSOCIATION.PURCHASES.VIEW",
   "/asociacion/compras": "ASSOCIATION.PURCHASES.VIEW",
-  "/reportes": "REPORTS.VIEW",
   "/usuarios": "USERS.VIEW",
   "/roles": "ROLES.VIEW",
   "/permisos": "PERMISSIONS.VIEW",
@@ -16,6 +15,7 @@ export const PERMISOS_RUTAS: Record<string, CodigoPermiso> = {
 };
 
 export const ANY_PERMISOS_RUTAS: Record<string, CodigoPermiso[]> = {
+  "/reportes": ["REPORTS.VIEW", "ACCOUNTING_POLICY.VIEW"],
   "/nomina": ["PAYROLL.VIEW", "PAYROLL.PROCESS"],
   "/ausencias": ["ABSENCES.VIEW", "ABSENCES.HISTORICAL_VIEW"],
 };

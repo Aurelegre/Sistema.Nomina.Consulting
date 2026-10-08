@@ -178,6 +178,12 @@ Generar listado por período.
 
 ### RF-038 — Póliza contable
 Generar información agrupada por cuenta contable/departamento.
+Vista previa de nóminas completadas, generación manual y conservación de un
+reporte por período. Si existe se carga lo guardado. Cuentas nuevas sin movimientos
+históricos aparecen en cero al preparar el reporte; negativos conservan signo y
+se muestran en rojo. Exportar a CSV y PDF idéntico a la vista previa con permiso.
+Es un reporte de obligaciones al cierre, sin asientos ni registro de pagos.
+Ver `ACCOUNTING_POLICY.md`.
 
 ### RF-039 — Libro de Salarios
 Mostrar como mínimo:

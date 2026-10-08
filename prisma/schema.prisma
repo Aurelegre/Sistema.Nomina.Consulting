@@ -13,6 +13,7 @@ enum EstadoRol {
 }
 
 model Usuario {
+  reportesPoliza      ReportePoliza[]
   nominas             Nomina[]
   comprasRegistradas  CompraSolidaria[] @relation("CompraRegistro")
   comprasActualizadas CompraSolidaria[] @relation("CompraActualizacion")
@@ -191,6 +192,7 @@ model ParametroFiscalNomina {
 }
 
 model Nomina {
+  reportePoliza     ReportePoliza?
   id                Int             @id @default(autoincrement())
   periodoId         Int             @unique @map("periodo_id")
   usuarioId         Int             @map("usuario_id")
@@ -216,6 +218,20 @@ model Nomina {
   @@index([estado, fechaSolicitud])
   @@index([usuarioId])
   @@map("nomina")
+}
+
+model ReportePoliza {
+  id              Int      @id @default(autoincrement())
+  nominaId        Int      @unique @map("nomina_id")
+  usuarioId       Int      @map("usuario_id")
+  generadoPor     String   @map("generado_por") @db.VarChar(150)
+  fechaGeneracion DateTime @default(now()) @map("fecha_generacion")
+  datos           Json
+  nomina          Nomina   @relation(fields: [nominaId], references: [id], onDelete: Restrict)
+  usuario         Usuario  @relation(fields: [usuarioId], references: [id], onDelete: Restrict)
+
+  @@index([usuarioId])
+  @@map("reporte_poliza")
 }
 
 model DetalleNomina {

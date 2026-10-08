@@ -46,6 +46,8 @@ export const PERMISOS = {
   "ASSOCIATION.MANAGE": "Administrar compras solidaristas",
   "REPORTS.VIEW": "Consultar reportes",
   "ACCOUNTING_POLICY.VIEW": "Consultar póliza contable",
+  "ACCOUNTING_POLICY.GENERATE": "Generar reporte de póliza contable",
+  "ACCOUNTING_POLICY.EXPORT": "Exportar póliza contable a CSV y PDF",
   "SALARY_BOOK.VIEW": "Consultar Libro de Salarios",
   "SETTINGS.VIEW": "Consultar configuración",
   "SETTINGS.MANAGE": "Administrar configuración",

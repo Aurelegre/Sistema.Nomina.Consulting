@@ -274,3 +274,15 @@ el aviso, sin recuperarlo al volver a iniciar sesión. No hay polling general.
 Desde la solicitud, el período queda `PROCESANDO` y rechaza nuevos movimientos,
 ediciones y eliminaciones. Tampoco se puede abrir otro período. El éxito lo
 cierra y un fallo lo devuelve a `ABIERTO`.
+
+## RN-038 — Reporte de póliza contable
+
+Usar importes y asignación departamental/contable guardados en la nómina completada.
+Agrupar por cuenta/departamento, sumar por cuenta y conciliar totales sin recalcular.
+Generar manualmente después de vista previa, una sola vez por período cerrado.
+Conservar autor, fecha e información utilizada; posteriores consultas cargan lo
+guardado. Las cuentas nuevas sin movimientos aparecen en cero al preparar el
+reporte; un reporte emitido no cambia. Cuentas históricas ausentes mantienen los
+importes bajo "Sin cuenta histórica", sin trasladarlos a cuentas actuales.
+Negativos en rojo sin lógica adicional. CSV mantiene el signo; PDF reproduce
+la vista previa. No hay asientos, pagos ni administración de cuotas.
