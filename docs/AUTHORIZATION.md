@@ -148,6 +148,8 @@ PAYROLL.EXPORT
 
 REPORTS.VIEW
 ACCOUNTING_POLICY.VIEW
+ACCOUNTING_POLICY.GENERATE
+ACCOUNTING_POLICY.EXPORT
 SALARY_BOOK.VIEW
 ```
 
@@ -223,3 +225,23 @@ El sistema ASP.NET anterior ya contiene los conceptos:
 Estos modelos deben reutilizarse conceptualmente, no copiarse automáticamente.
 
 La implementación final debe ajustarse a Prisma, tRPC y la arquitectura 2026.
+
+
+## Reportes internos de IGSS e ISR
+
+| Reporte | Consulta | Generación | Exportación CSV/PDF |
+| --- | --- | --- | --- |
+| IGSS laboral | IGSS_LABOR_REPORT.VIEW | IGSS_LABOR_REPORT.GENERATE | IGSS_LABOR_REPORT.EXPORT |
+| IGSS patronal | IGSS_EMPLOYER_REPORT.VIEW | IGSS_EMPLOYER_REPORT.GENERATE | IGSS_EMPLOYER_REPORT.EXPORT |
+| ISR | ISR_REPORT.VIEW | ISR_REPORT.GENERATE | ISR_REPORT.EXPORT |
+
+Generar y exportar requieren además VIEW del mismo tipo. La autorización se
+comprueba en backend. VIEW permite abrir la ruta y el portal de reportes sin
+exigir REPORTS.VIEW. ADMINISTRADOR recibe los nueve permisos en la migración.
+
+
+## Cumpleañeros
+
+BIRTHDAYS_REPORT.VIEW autoriza la consulta global de cumpleaños por mes, estado
+y departamento. BIRTHDAYS_REPORT.EXPORT permite CSV/PDF junto con VIEW. La ruta
+y el portal admiten VIEW sin exigir REPORTS.VIEW. Asignación inicial: ADMINISTRADOR.

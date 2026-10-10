@@ -1,6 +1,47 @@
 # Estado actual
 
-Fecha de referencia: 3 de octubre de 2026.
+Fecha de referencia: 10 de octubre de 2026.
+
+## Reporte de cumpleañeros
+
+Implementado en `feature/reports-nomina`, ruta `/reportes/cumpleaneros`.
+Mes actual de Guatemala por defecto; filtros de activos/inactivos/todos y
+departamento opcional. Muestra código, nombre, departamento y día/mes, ordenados
+por día y nombre. Incluye nacimientos del 29 de febrero y departamentos inactivos.
+Consulta información actual, sin persistencia ni dependencia de períodos.
+Exportación CSV/PDF con permisos BIRTHDAYS_REPORT.VIEW y BIRTHDAYS_REPORT.EXPORT.
+
+Validación: cinco comprobaciones de servicios y un escenario de navegador
+(filtros, descargas, acceso limitado y móvil) aprobados en la shadow autorizada.
+PDF descargado y documento de seis páginas revisados visualmente. Typecheck,
+lint y build correctos; permanecen tres advertencias preexistentes de Ausencias.
+Migración de permisos 20261010100000_reporte_cumpleaneros aplicada en desarrollo
+local, conservando 5 empleados, 1 nómina, 1 póliza y 0 reportes tributarios.
+No se creó una tabla adicional. Ver `BIRTHDAYS_REPORT.md`.
+
+## Reportes: IGSS laboral, IGSS patronal e ISR
+
+Implementados en la misma rama `feature/reports-nomina`. Tres consultas internas
+independientes con permisos propios de consulta, generación y exportación.
+Vista previa PDF, confirmación manual, persistencia única por nómina/tipo y
+exportación CSV/PDF. Se conserva el detalle histórico, incluidas cuotas cero;
+departamentos actuales sin movimientos aparecen en cero al preparar reportes
+nuevos. Los reportes guardados permanecen inmutables. Ver `TAX_REPORTS.md`.
+
+Validación: 7 comprobaciones de servicios tributarios, 7 de regresión de póliza
+y un escenario de navegador que recorre los tres reportes y sus permisos.
+Revisión visual de las seis páginas PDF exportadas. Typecheck, lint y build
+correctos; lint conserva tres advertencias preexistentes de Ausencias.
+Migración `20261010090000_reportes_igss_isr` aplicada en desarrollo local.
+Se conservaron 5 empleados, 1 nómina, 1 período y 1 póliza existentes; no se
+generaron reportes tributarios operativos durante las pruebas.
+
+## Reportes: póliza contable
+
+Implementada en `feature/reports-nomina`: `/reportes/poliza`, agrupación histórica,
+vista previa, generación manual, almacenamiento por período y exportación CSV/PDF.
+Permisos VIEW/GENERATE/EXPORT independientes. Cuentas nuevas en cero, importes
+negativos en rojo y reportes guardados inmutables. Ver `ACCOUNTING_POLICY.md`.
 
 ## Generación de nómina
 

@@ -13,26 +13,28 @@ enum EstadoRol {
 }
 
 model Usuario {
+  reportesTributarios ReporteTributario[]
+  reportesPoliza      ReportePoliza[]
   nominas             Nomina[]
-  comprasRegistradas  CompraSolidaria[] @relation("CompraRegistro")
-  comprasActualizadas CompraSolidaria[] @relation("CompraActualizacion")
+  comprasRegistradas  CompraSolidaria[]   @relation("CompraRegistro")
+  comprasActualizadas CompraSolidaria[]   @relation("CompraActualizacion")
   novedades           NovedadNomina[]
-  version             Int               @default(1)
-  id                  Int               @id @default(autoincrement())
-  username            String            @unique @db.VarChar(100)
-  nombre              String            @db.VarChar(150)
-  passwordHash        String            @map("password_hash") @db.VarChar(255)
-  debeCambiarPassword Boolean           @default(true) @map("debe_cambiar_password")
-  estado              EstadoUsuario     @default(ACTIVO)
-  rolId               Int               @map("rol_id")
-  fechaCreacion       DateTime          @default(now()) @map("fecha_creacion")
-  fechaActualizacion  DateTime          @updatedAt @map("fecha_actualizacion")
-  rol                 Rol               @relation(fields: [rolId], references: [id], onDelete: Restrict)
+  version             Int                 @default(1)
+  id                  Int                 @id @default(autoincrement())
+  username            String              @unique @db.VarChar(100)
+  nombre              String              @db.VarChar(150)
+  passwordHash        String              @map("password_hash") @db.VarChar(255)
+  debeCambiarPassword Boolean             @default(true) @map("debe_cambiar_password")
+  estado              EstadoUsuario       @default(ACTIVO)
+  rolId               Int                 @map("rol_id")
+  fechaCreacion       DateTime            @default(now()) @map("fecha_creacion")
+  fechaActualizacion  DateTime            @updatedAt @map("fecha_actualizacion")
+  rol                 Rol                 @relation(fields: [rolId], references: [id], onDelete: Restrict)
   sesiones            Sesion[]
-  empleadoId          Int?              @unique @map("empleado_id")
-  empleado            Empleado?         @relation("EmpleadoUsuario", fields: [empleadoId], references: [id], onDelete: Restrict)
-  ausenciascreadas    Ausencia[]        @relation("AusenciaUsuarioCreacion")
-  ausenciasResolucion Ausencia[]        @relation("AusenciaUsuarioResolucion")
+  empleadoId          Int?                @unique @map("empleado_id")
+  empleado            Empleado?           @relation("EmpleadoUsuario", fields: [empleadoId], references: [id], onDelete: Restrict)
+  ausenciascreadas    Ausencia[]          @relation("AusenciaUsuarioCreacion")
+  ausenciasResolucion Ausencia[]          @relation("AusenciaUsuarioResolucion")
 
   @@index([rolId])
   @@map("usuario")
@@ -191,31 +193,47 @@ model ParametroFiscalNomina {
 }
 
 model Nomina {
-  id                Int             @id @default(autoincrement())
-  periodoId         Int             @unique @map("periodo_id")
-  usuarioId         Int             @map("usuario_id")
-  solicitante       String          @db.VarChar(150)
-  estado            EstadoNomina    @default(PENDIENTE)
-  fechaSolicitud    DateTime        @default(now()) @map("fecha_solicitud")
-  fechaInicio       DateTime?       @map("fecha_inicio")
-  fechaFin          DateTime?       @map("fecha_fin")
-  mesGeneracion     String?         @map("mes_generacion") @db.VarChar(20)
-  sesionSolicitudId Int?            @map("sesion_solicitud_id")
-  intentos          Int             @default(0)
-  error             String?         @db.VarChar(500)
-  reglas            Json
-  totalIngresos     Decimal         @default(0) @map("total_ingresos") @db.Decimal(18, 2)
-  totalEgresos      Decimal         @default(0) @map("total_egresos") @db.Decimal(18, 2)
-  totalAnticipo     Decimal         @default(0) @map("total_anticipo") @db.Decimal(18, 2)
-  totalPago         Decimal         @default(0) @map("total_pago") @db.Decimal(18, 2)
-  totalPatronal     Decimal         @default(0) @map("total_patronal") @db.Decimal(18, 2)
-  periodo           PeriodoNomina   @relation(fields: [periodoId], references: [id], onDelete: Restrict)
-  usuario           Usuario         @relation(fields: [usuarioId], references: [id], onDelete: Restrict)
-  detalles          DetalleNomina[]
+  reportesTributarios ReporteTributario[]
+  reportePoliza       ReportePoliza?
+  id                  Int                 @id @default(autoincrement())
+  periodoId           Int                 @unique @map("periodo_id")
+  usuarioId           Int                 @map("usuario_id")
+  solicitante         String              @db.VarChar(150)
+  estado              EstadoNomina        @default(PENDIENTE)
+  fechaSolicitud      DateTime            @default(now()) @map("fecha_solicitud")
+  fechaInicio         DateTime?           @map("fecha_inicio")
+  fechaFin            DateTime?           @map("fecha_fin")
+  mesGeneracion       String?             @map("mes_generacion") @db.VarChar(20)
+  sesionSolicitudId   Int?                @map("sesion_solicitud_id")
+  intentos            Int                 @default(0)
+  error               String?             @db.VarChar(500)
+  reglas              Json
+  totalIngresos       Decimal             @default(0) @map("total_ingresos") @db.Decimal(18, 2)
+  totalEgresos        Decimal             @default(0) @map("total_egresos") @db.Decimal(18, 2)
+  totalAnticipo       Decimal             @default(0) @map("total_anticipo") @db.Decimal(18, 2)
+  totalPago           Decimal             @default(0) @map("total_pago") @db.Decimal(18, 2)
+  totalPatronal       Decimal             @default(0) @map("total_patronal") @db.Decimal(18, 2)
+  periodo             PeriodoNomina       @relation(fields: [periodoId], references: [id], onDelete: Restrict)
+  usuario             Usuario             @relation(fields: [usuarioId], references: [id], onDelete: Restrict)
+  detalles            DetalleNomina[]
 
   @@index([estado, fechaSolicitud])
   @@index([usuarioId])
   @@map("nomina")
+}
+
+model ReportePoliza {
+  id              Int      @id @default(autoincrement())
+  nominaId        Int      @unique @map("nomina_id")
+  usuarioId       Int      @map("usuario_id")
+  generadoPor     String   @map("generado_por") @db.VarChar(150)
+  fechaGeneracion DateTime @default(now()) @map("fecha_generacion")
+  datos           Json
+  nomina          Nomina   @relation(fields: [nominaId], references: [id], onDelete: Restrict)
+  usuario         Usuario  @relation(fields: [usuarioId], references: [id], onDelete: Restrict)
+
+  @@index([usuarioId])
+  @@map("reporte_poliza")
 }
 
 model DetalleNomina {
@@ -359,4 +377,26 @@ model CompraSolidaria {
   @@index([usuarioRegistroId])
   @@index([usuarioActualizacionId])
   @@map("compra_solidaria")
+}
+
+enum TipoReporteTributario {
+  IGSS_LABORAL
+  IGSS_PATRONAL
+  ISR
+}
+
+model ReporteTributario {
+  id              Int                   @id @default(autoincrement())
+  nominaId        Int                   @map("nomina_id")
+  tipo            TipoReporteTributario
+  usuarioId       Int                   @map("usuario_id")
+  generadoPor     String                @map("generado_por") @db.VarChar(150)
+  fechaGeneracion DateTime              @default(now()) @map("fecha_generacion")
+  datos           Json
+  nomina          Nomina                @relation(fields: [nominaId], references: [id], onDelete: Restrict)
+  usuario         Usuario               @relation(fields: [usuarioId], references: [id], onDelete: Restrict)
+
+  @@unique([nominaId, tipo])
+  @@index([usuarioId])
+  @@map("reporte_tributario")
 }

@@ -1,4 +1,7 @@
+import { cumpleanerosRouter } from "~/server/cumpleaneros/cumpleaneros.router";
+import { tributarioRouter } from "~/server/reportes/tributario.router";
 import { nominaRouter } from "~/server/nomina/nomina.router";
+import { reportesRouter } from "~/server/reportes/reportes.router";
 import { healthRouter } from "~/server/api/health";
 import { comprasSolidariasRouter } from "~/server/compras-solidarias/compras-solidarias.router";
 import { novedadesRouter } from "~/server/novedades/novedades.router";
@@ -13,6 +16,9 @@ import { empleadosRouter } from "../empleados/empleados.router";
 import { ausenciasRouter } from "../ausencias/ausencias.router";
 
 export const appRouter = createTRPCRouter({
+  cumpleaneros: cumpleanerosRouter,
+  reportesTributarios: tributarioRouter,
+  reportes: reportesRouter,
   nomina: nominaRouter,
   comprasSolidarias: comprasSolidariasRouter,
   novedades: novedadesRouter,
