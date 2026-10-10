@@ -6,7 +6,13 @@ import { Alert, AlertDescription } from "~/components/ui/alert";
 
 // Render the actual export PDF, not a second HTML template. The worker is bundled
 // locally by Next; previewing financial data never contacts an external viewer.
-export function VistaPreviaPoliza({ pdf }: { pdf: string }) {
+export function VistaPreviaPoliza({
+  pdf,
+  titulo = "póliza contable",
+}: {
+  pdf: string;
+  titulo?: string;
+}) {
   const contenedor = useRef<HTMLDivElement>(null);
   const canvas = useRef<HTMLCanvasElement>(null);
   const [documento, setDocumento] = useState<PDFDocumentProxy | null>(null);
@@ -103,7 +109,7 @@ export function VistaPreviaPoliza({ pdf }: { pdf: string }) {
     };
   }, [documento, pagina, ancho, zoom]);
   return (
-    <section aria-label="Vista previa de póliza contable" className="space-y-3">
+    <section aria-label={`Vista previa de ${titulo}`} className="space-y-3">
       <div className="flex flex-wrap items-center gap-3">
         <Button
           variant="outline"
@@ -142,7 +148,7 @@ export function VistaPreviaPoliza({ pdf }: { pdf: string }) {
         <canvas
           ref={canvas}
           role="img"
-          aria-label={`Página ${pagina} de la póliza contable`}
+          aria-label={`Página ${pagina} de ${titulo === "póliza contable" ? "la póliza contable" : titulo}`}
           className="mx-auto bg-white"
         />
       </div>

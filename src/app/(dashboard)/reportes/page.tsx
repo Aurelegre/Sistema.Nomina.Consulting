@@ -8,13 +8,15 @@ export default async function ReportesPage() {
   if (!sesion) redirect("/login");
   if (
     !sesion.usuario.permisos.some((p) =>
-      ["REPORTS.VIEW", "ACCOUNTING_POLICY.VIEW"].includes(p),
+      [
+        "REPORTS.VIEW",
+        "ACCOUNTING_POLICY.VIEW",
+        "IGSS_LABOR_REPORT.VIEW",
+        "IGSS_EMPLOYER_REPORT.VIEW",
+        "ISR_REPORT.VIEW",
+      ].includes(p),
     )
   )
     redirect("/sin-acceso");
-  return (
-    <ReportesView
-      puedePoliza={sesion.usuario.permisos.includes("ACCOUNTING_POLICY.VIEW")}
-    />
-  );
+  return <ReportesView permisos={sesion.usuario.permisos} />;
 }

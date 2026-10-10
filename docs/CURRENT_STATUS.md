@@ -1,6 +1,23 @@
 # Estado actual
 
-Fecha de referencia: 8 de octubre de 2026.
+Fecha de referencia: 10 de octubre de 2026.
+
+## Reportes: IGSS laboral, IGSS patronal e ISR
+
+Implementados en la misma rama `feature/reports-nomina`. Tres consultas internas
+independientes con permisos propios de consulta, generación y exportación.
+Vista previa PDF, confirmación manual, persistencia única por nómina/tipo y
+exportación CSV/PDF. Se conserva el detalle histórico, incluidas cuotas cero;
+departamentos actuales sin movimientos aparecen en cero al preparar reportes
+nuevos. Los reportes guardados permanecen inmutables. Ver `TAX_REPORTS.md`.
+
+Validación: 7 comprobaciones de servicios tributarios, 7 de regresión de póliza
+y un escenario de navegador que recorre los tres reportes y sus permisos.
+Revisión visual de las seis páginas PDF exportadas. Typecheck, lint y build
+correctos; lint conserva tres advertencias preexistentes de Ausencias.
+Migración `20261010090000_reportes_igss_isr` aplicada en desarrollo local.
+Se conservaron 5 empleados, 1 nómina, 1 período y 1 póliza existentes; no se
+generaron reportes tributarios operativos durante las pruebas.
 
 ## Reportes: póliza contable
 

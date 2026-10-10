@@ -218,3 +218,14 @@ No implementar salvo requerimiento explícito posterior:
 - fotografía del empleado como requisito;
 - familiares del empleado como requisito;
 - restricción de crédito por préstamo bancario.
+
+
+### Precisiones RF-035, RF-036 y RF-037
+
+Reportes internos separados de IGSS laboral, IGSS patronal e ISR. Seguir el flujo
+de póliza: vista previa, confirmación manual, persistencia por período y tipo,
+carga del reporte existente y exportación CSV/PDF fiel a la vista previa.
+Incluir cuotas cero, código y nombre del empleado y resumen por departamento.
+Agregar departamentos nuevos en cero al generar un reporte histórico pendiente;
+conservar sin cambios los reportes ya guardados. Permisos independientes de
+consulta, generación y exportación por tipo. Detalle en TAX_REPORTS.md.

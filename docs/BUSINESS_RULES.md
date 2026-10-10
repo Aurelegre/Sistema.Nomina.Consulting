@@ -286,3 +286,14 @@ reporte; un reporte emitido no cambia. Cuentas históricas ausentes mantienen lo
 importes bajo "Sin cuenta histórica", sin trasladarlos a cuentas actuales.
 Negativos en rojo sin lógica adicional. CSV mantiene el signo; PDF reproduce
 la vista previa. No hay asientos, pagos ni administración de cuotas.
+
+
+## RN-039 — Reportes internos de IGSS e ISR
+
+IGSS laboral, IGSS patronal e ISR son tres reportes separados por período cerrado
+con nómina completada. Incluyen cuotas cero, código y nombre históricos, resumen
+departamental y total. No recalculan impuestos. Se generan manualmente después
+de revisar la vista previa y se conservan por nómina y tipo. Las consultas
+posteriores cargan el reporte guardado, sin regenerarlo. Departamentos nuevos se
+incluyen en cero al preparar reportes todavía no generados. CSV y PDF requieren
+permisos específicos del tipo de reporte. Ver TAX_REPORTS.md.

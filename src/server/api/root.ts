@@ -1,3 +1,4 @@
+import { tributarioRouter } from "~/server/reportes/tributario.router";
 import { nominaRouter } from "~/server/nomina/nomina.router";
 import { reportesRouter } from "~/server/reportes/reportes.router";
 import { healthRouter } from "~/server/api/health";
@@ -14,6 +15,7 @@ import { empleadosRouter } from "../empleados/empleados.router";
 import { ausenciasRouter } from "../ausencias/ausencias.router";
 
 export const appRouter = createTRPCRouter({
+  reportesTributarios: tributarioRouter,
   reportes: reportesRouter,
   nomina: nominaRouter,
   comprasSolidarias: comprasSolidariasRouter,
