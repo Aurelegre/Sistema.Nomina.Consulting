@@ -17,6 +17,7 @@ export const PERMISOS_RUTAS: Record<string, CodigoPermiso> = {
 export const ANY_PERMISOS_RUTAS: Record<string, CodigoPermiso[]> = {
   "/reportes": [
     "REPORTS.VIEW",
+    "BIRTHDAYS_REPORT.VIEW",
     "ACCOUNTING_POLICY.VIEW",
     "IGSS_LABOR_REPORT.VIEW",
     "IGSS_EMPLOYER_REPORT.VIEW",

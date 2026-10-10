@@ -1,6 +1,8 @@
 // Agregar aquí cada permiso nuevo junto con la protección de su procedimiento.
 // El seed sincroniza este catálogo sin borrar permisos ni asignaciones existentes.
 export const PERMISOS = {
+  "BIRTHDAYS_REPORT.VIEW": "Consultar reporte de cumpleañeros",
+  "BIRTHDAYS_REPORT.EXPORT": "Exportar reporte de cumpleañeros",
   "IGSS_LABOR_REPORT.VIEW": "Consultar reporte de IGSS laboral",
   "IGSS_LABOR_REPORT.GENERATE": "Generar reporte de IGSS laboral",
   "IGSS_LABOR_REPORT.EXPORT": "Exportar reporte de IGSS laboral",

@@ -2,6 +2,23 @@
 
 Fecha de referencia: 10 de octubre de 2026.
 
+## Reporte de cumpleañeros
+
+Implementado en `feature/reports-nomina`, ruta `/reportes/cumpleaneros`.
+Mes actual de Guatemala por defecto; filtros de activos/inactivos/todos y
+departamento opcional. Muestra código, nombre, departamento y día/mes, ordenados
+por día y nombre. Incluye nacimientos del 29 de febrero y departamentos inactivos.
+Consulta información actual, sin persistencia ni dependencia de períodos.
+Exportación CSV/PDF con permisos BIRTHDAYS_REPORT.VIEW y BIRTHDAYS_REPORT.EXPORT.
+
+Validación: cinco comprobaciones de servicios y un escenario de navegador
+(filtros, descargas, acceso limitado y móvil) aprobados en la shadow autorizada.
+PDF descargado y documento de seis páginas revisados visualmente. Typecheck,
+lint y build correctos; permanecen tres advertencias preexistentes de Ausencias.
+Migración de permisos 20261010100000_reporte_cumpleaneros aplicada en desarrollo
+local, conservando 5 empleados, 1 nómina, 1 póliza y 0 reportes tributarios.
+No se creó una tabla adicional. Ver `BIRTHDAYS_REPORT.md`.
+
 ## Reportes: IGSS laboral, IGSS patronal e ISR
 
 Implementados en la misma rama `feature/reports-nomina`. Tres consultas internas

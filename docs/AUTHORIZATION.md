@@ -238,3 +238,10 @@ La implementación final debe ajustarse a Prisma, tRPC y la arquitectura 2026.
 Generar y exportar requieren además VIEW del mismo tipo. La autorización se
 comprueba en backend. VIEW permite abrir la ruta y el portal de reportes sin
 exigir REPORTS.VIEW. ADMINISTRADOR recibe los nueve permisos en la migración.
+
+
+## Cumpleañeros
+
+BIRTHDAYS_REPORT.VIEW autoriza la consulta global de cumpleaños por mes, estado
+y departamento. BIRTHDAYS_REPORT.EXPORT permite CSV/PDF junto con VIEW. La ruta
+y el portal admiten VIEW sin exigir REPORTS.VIEW. Asignación inicial: ADMINISTRADOR.

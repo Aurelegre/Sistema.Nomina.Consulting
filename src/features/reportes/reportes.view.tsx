@@ -8,6 +8,12 @@ import {
 export function ReportesView({ permisos }: { permisos: string[] }) {
   const opciones = [
     {
+      titulo: "Cumpleañeros",
+      ruta: "cumpleaneros",
+      permiso: "BIRTHDAYS_REPORT.VIEW",
+      descripcion: "Consulta por mes, estado y departamento.",
+    },
+    {
       titulo: "Póliza contable",
       ruta: "poliza",
       permiso: "ACCOUNTING_POLICY.VIEW",
@@ -29,7 +35,7 @@ export function ReportesView({ permisos }: { permisos: string[] }) {
     <main className="mx-auto max-w-7xl space-y-6">
       <h2 className="text-3xl font-semibold">Reportes de nómina</h2>
       <p className="text-muted-foreground">
-        Consulta la información histórica de las nóminas completadas.
+        Consulta los reportes de nómina y empleados.
       </p>
       <div className="grid gap-4 md:grid-cols-2">
         {opciones.map((o) => (
@@ -38,7 +44,7 @@ export function ReportesView({ permisos }: { permisos: string[] }) {
               <CardTitle>{o.titulo}</CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
-              <p>{o.descripcion} Vista previa y exportación CSV/PDF.</p>
+              <p>{o.descripcion} Exportación CSV/PDF.</p>
               <Link
                 className="font-medium underline underline-offset-4"
                 href={`/reportes/${o.ruta}`}

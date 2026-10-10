@@ -32,7 +32,9 @@
     "test:reportes": "node --env-file=.env --import tsx tests/run-reportes.ts",
     "test:reportes:ui": "node --env-file=.env --import tsx tests/run-reportes.ts ui",
     "test:tributarios": "node --env-file=.env --import tsx tests/run-tributarios.ts",
-    "test:tributarios:ui": "node --env-file=.env --import tsx tests/run-tributarios.ts ui"
+    "test:tributarios:ui": "node --env-file=.env --import tsx tests/run-tributarios.ts ui",
+    "test:cumpleaneros": "node --env-file=.env --import tsx tests/run-cumpleaneros.ts",
+    "test:cumpleaneros:ui": "node --env-file=.env --import tsx tests/run-cumpleaneros.ts ui"
   },
   "dependencies": {
     "@base-ui/react": "^1.8.0",

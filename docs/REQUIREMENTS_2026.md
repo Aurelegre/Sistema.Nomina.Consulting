@@ -165,7 +165,11 @@ restricción de acceso. Exportar CSV completo requiere PAYROLL.EXPORT.
 ## Consultas y reportes
 
 ### RF-034 — Cumpleañeros por mes
-Ingresar mes y mostrar empleados que cumplen años.
+Ingresar mes y mostrar empleados que cumplen años. Mes actual de Guatemala por
+defecto; filtrar activos (predeterminado), inactivos o todos y departamento opcional.
+Mostrar código, nombre, departamento y día/mes, ordenados por día y nombre.
+Consulta vigente sin persistencia ni dependencia de período. CSV/PDF con permiso
+independiente de exportación. Ver BIRTHDAYS_REPORT.md.
 
 ### RF-035 — Descuentos IGSS por período
 Generar listado por período.

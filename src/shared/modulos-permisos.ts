@@ -10,6 +10,7 @@ export const MODULOS_PERMISOS: Record<string, string> = {
   PAYROLL_NEWS: "Novedades",
   ADVANCES: "Anticipos",
   ASSOCIATION: "Asociación Solidarista",
+  BIRTHDAYS_REPORT: "Cumpleañeros",
   REPORTS: "Reportes",
   IGSS_LABOR_REPORT: "Reporte IGSS laboral",
   IGSS_EMPLOYER_REPORT: "Reporte IGSS patronal",
