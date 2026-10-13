@@ -1,6 +1,17 @@
 // Agregar aquí cada permiso nuevo junto con la protección de su procedimiento.
 // El seed sincroniza este catálogo sin borrar permisos ni asignaciones existentes.
 export const PERMISOS = {
+  "BIRTHDAYS_REPORT.VIEW": "Consultar reporte de cumpleañeros",
+  "BIRTHDAYS_REPORT.EXPORT": "Exportar reporte de cumpleañeros",
+  "IGSS_LABOR_REPORT.VIEW": "Consultar reporte de IGSS laboral",
+  "IGSS_LABOR_REPORT.GENERATE": "Generar reporte de IGSS laboral",
+  "IGSS_LABOR_REPORT.EXPORT": "Exportar reporte de IGSS laboral",
+  "IGSS_EMPLOYER_REPORT.VIEW": "Consultar reporte de IGSS patronal",
+  "IGSS_EMPLOYER_REPORT.GENERATE": "Generar reporte de IGSS patronal",
+  "IGSS_EMPLOYER_REPORT.EXPORT": "Exportar reporte de IGSS patronal",
+  "ISR_REPORT.VIEW": "Consultar reporte de ISR",
+  "ISR_REPORT.GENERATE": "Generar reporte de ISR",
+  "ISR_REPORT.EXPORT": "Exportar reporte de ISR",
   "ASSOCIATION.PURCHASES.VIEW": "Consultar compras solidarias",
   "ASSOCIATION.PURCHASES.CREATE": "Registrar compras solidarias",
   "ASSOCIATION.PURCHASES.UPDATE": "Editar compras solidarias",
@@ -46,6 +57,8 @@ export const PERMISOS = {
   "ASSOCIATION.MANAGE": "Administrar compras solidaristas",
   "REPORTS.VIEW": "Consultar reportes",
   "ACCOUNTING_POLICY.VIEW": "Consultar póliza contable",
+  "ACCOUNTING_POLICY.GENERATE": "Generar reporte de póliza contable",
+  "ACCOUNTING_POLICY.EXPORT": "Exportar póliza contable a CSV y PDF",
   "SALARY_BOOK.VIEW": "Consultar Libro de Salarios",
   "SETTINGS.VIEW": "Consultar configuración",
   "SETTINGS.MANAGE": "Administrar configuración",

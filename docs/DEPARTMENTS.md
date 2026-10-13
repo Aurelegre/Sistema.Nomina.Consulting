@@ -31,6 +31,10 @@ Toda creación y edición exige una cuenta no vacía; la interfaz señala los re
 todavía necesitan configuración. Los futuros procesos de póliza deberán
 rechazar departamentos sin cuenta y conservar la cuenta aplicada al histórico.
 Esta feature no implementa aún el procesamiento contable.
+Actualización de RF-038: por decisión del propietario, el reporte agrupado permite
+cuentas históricas ausentes sin reasignar sus importes; las cuentas nuevas figuran
+en cero. Esto sustituye el rechazo indicado arriba para ese reporte. Ver
+`ACCOUNTING_POLICY.md`.
 
 ## Seguridad y concurrencia
 

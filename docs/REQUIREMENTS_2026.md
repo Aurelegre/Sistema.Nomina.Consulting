@@ -165,7 +165,11 @@ restricción de acceso. Exportar CSV completo requiere PAYROLL.EXPORT.
 ## Consultas y reportes
 
 ### RF-034 — Cumpleañeros por mes
-Ingresar mes y mostrar empleados que cumplen años.
+Ingresar mes y mostrar empleados que cumplen años. Mes actual de Guatemala por
+defecto; filtrar activos (predeterminado), inactivos o todos y departamento opcional.
+Mostrar código, nombre, departamento y día/mes, ordenados por día y nombre.
+Consulta vigente sin persistencia ni dependencia de período. CSV/PDF con permiso
+independiente de exportación. Ver BIRTHDAYS_REPORT.md.
 
 ### RF-035 — Descuentos IGSS por período
 Generar listado por período.
@@ -178,6 +182,12 @@ Generar listado por período.
 
 ### RF-038 — Póliza contable
 Generar información agrupada por cuenta contable/departamento.
+Vista previa de nóminas completadas, generación manual y conservación de un
+reporte por período. Si existe se carga lo guardado. Cuentas nuevas sin movimientos
+históricos aparecen en cero al preparar el reporte; negativos conservan signo y
+se muestran en rojo. Exportar a CSV y PDF idéntico a la vista previa con permiso.
+Es un reporte de obligaciones al cierre, sin asientos ni registro de pagos.
+Ver `ACCOUNTING_POLICY.md`.
 
 ### RF-039 — Libro de Salarios
 Mostrar como mínimo:
@@ -212,3 +222,14 @@ No implementar salvo requerimiento explícito posterior:
 - fotografía del empleado como requisito;
 - familiares del empleado como requisito;
 - restricción de crédito por préstamo bancario.
+
+
+### Precisiones RF-035, RF-036 y RF-037
+
+Reportes internos separados de IGSS laboral, IGSS patronal e ISR. Seguir el flujo
+de póliza: vista previa, confirmación manual, persistencia por período y tipo,
+carga del reporte existente y exportación CSV/PDF fiel a la vista previa.
+Incluir cuotas cero, código y nombre del empleado y resumen por departamento.
+Agregar departamentos nuevos en cero al generar un reporte histórico pendiente;
+conservar sin cambios los reportes ya guardados. Permisos independientes de
+consulta, generación y exportación por tipo. Detalle en TAX_REPORTS.md.
