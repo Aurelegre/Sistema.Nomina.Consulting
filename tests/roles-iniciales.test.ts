@@ -3,7 +3,7 @@ import { test } from "node:test";
 import { ROLES_INICIALES } from "../prisma/roles-iniciales";
 import { PERMISOS } from "../src/server/permisos/Helpers/permisos";
 const roles = new Map(ROLES_INICIALES.map((r) => [r.codigo, r]));
-test("plantillas válidas, únicas y sin administración de seguridad", () => {
+void test("plantillas válidas, únicas y sin administración de seguridad", () => {
   assert.equal(roles.size, 11);
   assert.equal(roles.size, ROLES_INICIALES.length);
   for (const r of roles.values()) {
@@ -15,7 +15,7 @@ test("plantillas válidas, únicas y sin administración de seguridad", () => {
     }
   }
 });
-test("cada jefe incluye los accesos del empleado de su área y su gestión departamental", () => {
+void test("cada jefe incluye los accesos del empleado de su área y su gestión departamental", () => {
   for (const area of [
     "RRHH",
     "PRODUCCION",
@@ -38,7 +38,7 @@ test("cada jefe incluye los accesos del empleado de su área y su gestión depar
     assert.ok(!empleado.permisos.includes("DEPARTMENT_EMPLOYEES.VIEW"));
   }
 });
-test("ventas, producción y procesamiento de nómina limitados al puesto responsable", () => {
+void test("ventas, producción y procesamiento de nómina limitados al puesto responsable", () => {
   for (const r of roles.values()) {
     assert.equal(
       r.permisos.includes("PAYROLL_NEWS.PRODUCTION"),
@@ -54,7 +54,7 @@ test("ventas, producción y procesamiento de nómina limitados al puesto respons
     );
   }
 });
-test("auditor solo lectura; reportes exportables/generables exigen consulta", () => {
+void test("auditor solo lectura; reportes exportables/generables exigen consulta", () => {
   for (const p of roles.get("AUDITOR")!.permisos)
     assert.match(p, /\.(VIEW|HISTORICAL_VIEW|DETAIL|EXPORT)$/);
   for (const r of roles.values())
