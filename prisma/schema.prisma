@@ -400,3 +400,15 @@ model ReporteTributario {
   @@index([usuarioId])
   @@map("reporte_tributario")
 }
+
+model Configuracion {
+  id                 Int      @id @default(autoincrement())
+  clave              String   @unique @db.VarChar(64)
+  valor              String   @db.VarChar(32)
+  descripcion        String   @db.VarChar(255)
+  version            Int      @default(1)
+  actualizadoPor     Int?     @map("actualizado_por")
+  fechaActualizacion DateTime @default(now()) @updatedAt @map("fecha_actualizacion")
+
+  @@map("configuraciones")
+}

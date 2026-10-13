@@ -1,3 +1,4 @@
+import { configuracionesRouter } from "~/server/configuraciones/configuraciones.router";
 import { cumpleanerosRouter } from "~/server/cumpleaneros/cumpleaneros.router";
 import { tributarioRouter } from "~/server/reportes/tributario.router";
 import { nominaRouter } from "~/server/nomina/nomina.router";
@@ -16,6 +17,7 @@ import { empleadosRouter } from "../empleados/empleados.router";
 import { ausenciasRouter } from "../ausencias/ausencias.router";
 
 export const appRouter = createTRPCRouter({
+  configuraciones: configuracionesRouter,
   cumpleaneros: cumpleanerosRouter,
   reportesTributarios: tributarioRouter,
   reportes: reportesRouter,

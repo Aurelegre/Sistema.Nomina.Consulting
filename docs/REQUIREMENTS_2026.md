@@ -233,3 +233,10 @@ Incluir cuotas cero, código y nombre del empleado y resumen por departamento.
 Agregar departamentos nuevos en cero al generar un reporte histórico pendiente;
 conservar sin cambios los reportes ya guardados. Permisos independientes de
 consulta, generación y exportación por tipo. Detalle en TAX_REPORTS.md.
+
+## Parametrización operativa
+
+Por solicitud del propietario, los importes y porcentajes aquí descritos son
+valores iniciales configurables. Las nuevas generaciones capturan los valores
+vigentes de configuraciones; los históricos conservan sus cálculos.
+Consulta y edición protegidas en /configuracion. Ver SYSTEM_SETTINGS.md.

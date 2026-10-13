@@ -236,3 +236,8 @@ exigir REPORTS.VIEW. ADMINISTRADOR recibe los nueve permisos en la migración.
 BIRTHDAYS_REPORT.VIEW autoriza la consulta global de cumpleaños por mes, estado
 y departamento. BIRTHDAYS_REPORT.EXPORT permite CSV/PDF junto con VIEW. La ruta
 y el portal admiten VIEW sin exigir REPORTS.VIEW. Asignación inicial: ADMINISTRADOR.
+
+## Configuraciones
+
+/configuracion y consulta requieren SETTINGS.VIEW. Editar requiere VIEW y
+SETTINGS.MANAGE en backend, con sesión vigente y control de versión.

@@ -278,3 +278,15 @@ Prisma Migrate necesita shadow database separada.
 ## Sistema legacy
 
 El repositorio anterior ya fue analizado y su información de reutilización se conserva en `docs/internal/`.
+
+## Configuraciones del sistema
+
+Implementadas en feature/configuraciones-sistema: 21 parámetros en BD,
+pantalla dinámica /configuracion, permisos VIEW/MANAGE, validación y versión.
+Login y SP de nómina usan valores persistidos; la nómina conserva su captura.
+Ver SYSTEM_SETTINGS.md.
+
+Validación: typecheck y lint correctos (tres advertencias previas de Ausencias),
+5 comprobaciones de configuración, 7 de regresión de nómina y 1 escenario
+de navegador aprobados en shadow. Migración aplicada en la base local:
+21 configuraciones, conservando 5 empleados y 1 nómina existentes.

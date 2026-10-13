@@ -297,3 +297,10 @@ de revisar la vista previa y se conservan por nómina y tipo. Las consultas
 posteriores cargan el reporte guardado, sin regenerarlo. Departamentos nuevos se
 incluyen en cero al preparar reportes todavía no generados. CSV y PDF requieren
 permisos específicos del tipo de reporte. Ver TAX_REPORTS.md.
+
+## Parametrización operativa
+
+Por solicitud del propietario, los importes y porcentajes aquí descritos son
+valores iniciales configurables. Las nuevas generaciones capturan los valores
+vigentes de configuraciones; los históricos conservan sus cálculos.
+Consulta y edición protegidas en /configuracion. Ver SYSTEM_SETTINGS.md.
