@@ -11,7 +11,7 @@ type HeaderProps = {
 const TITLES: Record<string, string> = {
   "/mi-password": "Cambiar contraseña",
   "/mi-departamento": "Mi departamento",
-  "/": "Dashboard",
+  "/": "Inicio",
   "/empleados": "Empleados",
   "/departamentos": "Departamentos",
   "/periodos": "Períodos de nómina",
