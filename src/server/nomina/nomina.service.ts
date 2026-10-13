@@ -1,3 +1,4 @@
+import { leerConfiguraciones } from "~/server/configuraciones/configuraciones.service";
 import { Prisma, type PrismaClient } from "@prisma/client";
 import { TRPCError } from "@trpc/server";
 import type { z } from "zod";
@@ -127,6 +128,7 @@ export async function solicitarNomina(
       where: { id: gestor.id },
       select: { nombre: true },
     });
+    const configuraciones = await leerConfiguraciones(tx);
     const datos = {
       usuarioId: gestor.id,
       solicitante: usuario.nombre,
@@ -137,14 +139,15 @@ export async function solicitarNomina(
       sesionSolicitudId: actor.sesionId,
       error: null,
       reglas: {
-        version: "2026-10-v1",
+        version: "2026-10-config-v2",
+        configuraciones,
         deduccionAnual: fiscal.deduccionAnual.toFixed(2),
         referenciaFiscal: fiscal.referencia,
-        igssLaboral: "0.0483",
-        igssPatronal: "0.1067",
-        solidaridad: "0.03",
-        anticipo: "0.50",
-        bonificacion: "250.00",
+        igssLaboral: String(configuraciones.igssLaboral / 100),
+        igssPatronal: String(configuraciones.igssPatronal / 100),
+        solidaridad: String(configuraciones.solidaridad / 100),
+        anticipo: String(configuraciones.anticipo / 100),
+        bonificacion: String(configuraciones.bonificacion),
         isr: "Proyección mensual anualizada, sin antecedentes externos; cuota de referencia anterior a baja/ausencias.",
         dias: "30/360: día 31 sin peso; último día de febrero completa 30.",
       },

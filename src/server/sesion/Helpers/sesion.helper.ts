@@ -5,8 +5,7 @@ import { usuarioPublico } from "../Models/usuarioPublico.Model";
 //nombre de la cookie de sesión
 export const SESSION_COOKIE = "nomina_session";
 
-//tiempo de vida de la sesión en segundos (8 horas)
-export const SESSION_SECONDS = 8 * 60 * 60;
+// La duración se obtiene de configuraciones al iniciar sesión.
 
 // Crea un hash seguro del token de sesión para almacenarlo en la base de datos.
 export const digest = (token: string) =>
@@ -54,6 +53,6 @@ export async function obtenerSesion(db: PrismaClient, headers: Headers) {
 }
 
 // Crea una nueva sesión para el usuario y devuelve el token de sesión.
-export function cookieSesion(token: string, borrar = false) {
-  return `${SESSION_COOKIE}=${token}; Path=/; HttpOnly; SameSite=Lax; Max-Age=${borrar ? 0 : SESSION_SECONDS}${process.env.NODE_ENV === "production" ? "; Secure" : ""}`;
+export function cookieSesion(token: string, borrar = false, duracion?: number) {
+  return `${SESSION_COOKIE}=${token}; Path=/; HttpOnly; SameSite=Lax; ${borrar || duracion !== undefined ? `Max-Age=${borrar ? 0 : duracion};` : ""}${process.env.NODE_ENV === "production" ? "; Secure" : ""}`;
 }

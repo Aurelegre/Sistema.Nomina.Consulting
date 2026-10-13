@@ -1,8 +1,9 @@
+import { leerConfiguraciones } from "~/server/configuraciones/configuraciones.service";
 import { TRPCError } from "@trpc/server";
 import { type PrismaClient } from "@prisma/client";
 import { hashPassword, verificarPassword } from "./Helpers/password";
 import { randomBytes } from "crypto";
-import { digest, SESSION_SECONDS } from "./Helpers/sesion.helper";
+import { digest } from "./Helpers/sesion.helper";
 import { transaccionOrganizacion } from "~/server/empleados/Helpers/organizacion.helper";
 
 export async function iniciarSesion(
@@ -10,26 +11,29 @@ export async function iniciarSesion(
   username: string,
   password: string,
 ) {
+  const config = await leerConfiguraciones(db);
+  const sessionSeconds = config.sesionMinutos * 60;
   const ahora = new Date();
   await db.intentoLogin.updateMany({
     where: { username, ventanaHasta: { lte: ahora } },
     data: {
       intentos: 0,
-      ventanaHasta: new Date(ahora.getTime() + 15 * 60 * 1000),
+      ventanaHasta: new Date(ahora.getTime() + config.loginMinutos * 60 * 1000),
     },
   });
   const intento = await db.intentoLogin.upsert({
     where: { username },
     create: {
       username,
-      ventanaHasta: new Date(ahora.getTime() + 15 * 60 * 1000),
+      ventanaHasta: new Date(ahora.getTime() + config.loginMinutos * 60 * 1000),
     },
     update: { intentos: { increment: 1 } },
   });
-  if (intento.intentos > 5)
+  if (intento.intentos > config.loginIntentos)
     throw new TRPCError({
       code: "TOO_MANY_REQUESTS",
-      message: "Demasiados intentos. Intenta de nuevo en 15 minutos.",
+      message:
+        "Demasiados intentos. Espera a que termine la ventana de intentos.",
     });
   const usuario = await db.usuario.findUnique({
     where: { username },
@@ -67,12 +71,16 @@ export async function iniciarSesion(
       data: {
         tokenHash: digest(token),
         usuarioId: usuario.id,
-        fechaExpiracion: new Date(Date.now() + SESSION_SECONDS * 1000),
+        fechaExpiracion: new Date(Date.now() + sessionSeconds * 1000),
       },
     });
     await tx.intentoLogin.deleteMany({ where: { username } });
   });
-  return { token, debeCambiarPassword: usuario.debeCambiarPassword };
+  return {
+    token,
+    sessionSeconds,
+    debeCambiarPassword: usuario.debeCambiarPassword,
+  };
 }
 
 export async function cambiarPrimeraPassword(

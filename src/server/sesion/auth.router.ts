@@ -42,7 +42,10 @@ export const authRouter = createTRPCRouter({
         input.username,
         input.password,
       );
-      ctx.responseHeaders.append("Set-Cookie", cookieSesion(resultado.token));
+      ctx.responseHeaders.append(
+        "Set-Cookie",
+        cookieSesion(resultado.token, false, resultado.sessionSeconds),
+      );
       return { debeCambiarPassword: resultado.debeCambiarPassword };
     }),
   // Obtiene la información del usuario autenticado a partir de la sesión activa.

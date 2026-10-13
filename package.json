@@ -36,7 +36,9 @@
     "test:cumpleaneros": "node --env-file=.env --import tsx tests/run-cumpleaneros.ts",
     "test:cumpleaneros:ui": "node --env-file=.env --import tsx tests/run-cumpleaneros.ts ui",
     "test:password-personal": "node --env-file=.env --import tsx tests/run-password-personal.ts",
-    "test:password-personal:ui": "node --env-file=.env --import tsx tests/run-password-personal.ts ui"
+    "test:password-personal:ui": "node --env-file=.env --import tsx tests/run-password-personal.ts ui",
+    "test:configuraciones": "node --env-file=.env --import tsx tests/run-configuraciones.ts",
+    "test:configuraciones:ui": "node --env-file=.env --import tsx tests/run-configuraciones.ts ui"
   },
   "dependencies": {
     "@base-ui/react": "^1.8.0",
