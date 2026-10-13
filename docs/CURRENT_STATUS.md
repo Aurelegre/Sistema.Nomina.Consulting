@@ -2,6 +2,22 @@
 
 Fecha de referencia: 10 de octubre de 2026.
 
+## Cambio de contraseña personal
+
+Implementado en `feature/cambio-password-personal`: opción del sidebar
+«Cambiar contraseña» y ruta /mi-password, disponible para cualquier sesión con
+contraseña definitiva. Modal con clave actual, nueva de 12 a 128 caracteres y
+confirmación; validación compartida frontend/backend y verificación Argon2id.
+Identidad derivada de la sesión, control de concurrencia y revocación de todas
+las sesiones después del cambio. Se conserva el cambio inicial obligatorio.
+No requiere permisos adicionales, migraciones ni seed.
+
+Validación: typecheck y lint correctos (tres advertencias previas de Ausencias);
+cinco comprobaciones backend y un escenario de navegador aprobados en shadow,
+incluyendo usuario sin permisos ni empleado, validaciones, concurrencia,
+revocación de sesiones, cookie, móvil y login con la nueva contraseña.
+La base principal no se modificó. Ver AUTH_BOOTSTRAP.md.
+
 ## Reporte de cumpleañeros
 
 Implementado en `feature/reports-nomina`, ruta `/reportes/cumpleaneros`.

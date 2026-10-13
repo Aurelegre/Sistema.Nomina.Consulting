@@ -76,3 +76,24 @@ mediante el seed y no modifican credenciales del administrador del propietario.
 
 Validar en navegador: login temporal, redirección al diálogo, errores por claves
 distintas o repetidas, cambio correcto, nuevo login, consulta de períodos y logout.
+
+
+## Cambio voluntario de contraseña
+
+Todo usuario autenticado con contraseña definitiva puede entrar desde el sidebar
+a /mi-password, sin permisos administrativos ni vínculo obligatorio a empleado.
+Solo cambia su contraseña: no permite editar nombre, usuario, rol ni otros datos.
+Formulario modal: contraseña actual, nueva contraseña de 12 a 128 caracteres y
+confirmación. Frontend y backend validan coincidencia y diferencia respecto a la
+actual; el servicio verifica la clave actual con Argon2id. No se recortan espacios.
+
+La identidad proviene de la sesión. Se revalida su vigencia y el estado del
+usuario/rol/empleado dentro de una transacción coordinada con administración de
+accesos. Una actualización condicional por hash y versión impide sobrescribir
+cambios concurrentes. El cambio revoca todas las sesiones y elimina la cookie;
+se muestra confirmación y acceso al login. El cambio temporal inicial se conserva.
+No requiere migraciones, seed ni nuevos permisos.
+
+Validación aislada:
+- pnpm test:password-personal --shadow
+- pnpm test:password-personal:ui --shadow
