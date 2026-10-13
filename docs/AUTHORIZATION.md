@@ -62,55 +62,46 @@ Tabla pivote:
 
 ## Roles funcionales iniciales
 
-Como mínimo se contemplan:
+ADMINISTRADOR se crea por separado en el seed y conserva el catálogo completo.
+Las siguientes once plantillas se definen en `prisma/roles-iniciales.ts`:
 
-### ADMINISTRADOR
+| Rol | Alcance adicional a sus accesos personales |
+| --- | --- |
+| EMPLEADO_LOGISTICA | Ninguno: ausencias propias y Mi Nómina. |
+| EMPLEADO_PRODUCCION | Ninguno: ausencias propias y Mi Nómina. |
+| EMPLEADO_MERCADEO | Ninguno: ausencias propias y Mi Nómina. |
+| EMPLEADO_RRHH | Gestión global de empleados, consulta de departamentos, histórico global de ausencias y cumpleañeros con exportación. |
+| EMPLEADO_FINANZAS | Consulta y exportación global de nómina, póliza, IGSS e ISR; consulta, creación y edición de compras solidarias. |
+| JEFE_LOGISTICA | Accesos del empleado de su área más gestión de empleados, horas extras/dobles y resolución de ausencias del departamento dirigido. |
+| JEFE_PRODUCCION | Lo anterior más registro de piezas de Producción. |
+| JEFE_MERCADEO | Lo anterior más registro de ventas de Mercadeo. |
+| JEFE_RRHH | Accesos de EMPLEADO_RRHH y jefatura; administración global de departamentos, creación de períodos, procesamiento, consulta, detalle y exportación de nómina. |
+| JEFE_FINANZAS | Accesos de EMPLEADO_FINANZAS y jefatura; eliminación de compras y generación de póliza, IGSS e ISR. |
+| AUDITOR | Consulta global de empleados, departamentos, ausencias, compras, períodos, nómina y reportes; exportaciones, sin crear, editar, eliminar, aprobar ni procesar. |
 
-Acceso completo:
+Cada jefe incluye todos los permisos de su empleado equivalente. Mi Nómina
+requiere usuario vinculado a empleado activo y no necesita PAYROLL.VIEW.
+Las ausencias propias requieren ese vínculo; el rol no lo crea automáticamente.
 
-- usuarios;
-- roles;
-- permisos;
-- empleados;
-- departamentos;
-- períodos;
-- nómina;
-- reportes;
-- configuración.
+La gestión departamental usa DEPARTMENT_EMPLOYEES y los permisos específicos
+de novedades. Además requiere jefatura real asignada en un departamento activo.
+Producción y Mercadeo conservan las validaciones de departamento en los servicios.
+El código del rol no asigna ni cambia el departamento del empleado.
 
-### NOMINA_RRHH
+EMPLOYEES, DEPARTMENTS.MANAGE, PAYROLL, compras e informes tributarios tienen
+alcance global: se asignan deliberadamente a RR. HH., Finanzas o Auditor según
+esta matriz. No se concede DEPARTMENTS.MANAGE a todas las jefaturas, porque
+permite administrar el catálogo completo, no solo el departamento dirigido.
+Solo ADMINISTRADOR administra usuarios, roles, permisos y configuración.
 
-Gestión operativa:
+Las plantillas omiten permisos genéricos sin operación específica (anticipos,
+novedades genéricas, asociación genérica y libro de salarios). El libro se consulta
+mediante la nómina existente. Cada reporte dispone de sus propios permisos.
 
-- empleados;
-- períodos;
-- novedades;
-- ausencias;
-- anticipos;
-- procesamiento de nómina;
-- consultas relacionadas.
-
-### JEFE_DEPARTAMENTO
-
-Acceso limitado a su ámbito:
-
-- consultar empleados de su departamento;
-- revisar solicitudes de ausencia;
-- aprobar o rechazar ausencias;
-- consultar información autorizada.
-
-### FINANZAS_CONSULTA
-
-Principalmente:
-
-- consultar nóminas cerradas;
-- reportes;
-- póliza contable;
-- IGSS;
-- ISR;
-- Libro de Salarios.
-
-Los nombres y distribución final pueden ajustarse durante la feature de autenticación, pero el diseño debe conservar autorización granular.
+Aplicación: ejecutar explícitamente `pnpm db:seed`. El seed crea los roles que
+no existen; no elimina los anteriores, reasigna usuarios ni sobrescribe permisos
+personalizados de roles existentes. Los roles anteriores pueden retirarse desde
+la administración después de revisar sus usuarios. No se requiere migración.
 
 ## Convención de permisos
 

@@ -3,6 +3,7 @@ import { randomBytes } from "node:crypto";
 import { test } from "node:test";
 import { PrismaClient } from "@prisma/client";
 import { seed } from "../prisma/seed";
+import { ROLES_INICIALES } from "../prisma/roles-iniciales";
 import {
   iniciarSesion,
   cambiarPrimeraPassword,
@@ -248,11 +249,11 @@ void test("administración de acceso con cuentas temporales", async (t) => {
           await db.rol.count({
             where: {
               codigo: {
-                in: ["NOMINA_RRHH", "JEFE_DEPARTAMENTO", "FINANZAS_CONSULTA"],
+                in: ROLES_INICIALES.map((rol) => rol.codigo),
               },
             },
           }),
-          3,
+          ROLES_INICIALES.length,
         );
         const usuario = await api.usuarios.crear({
           username: nombre("consulta"),
