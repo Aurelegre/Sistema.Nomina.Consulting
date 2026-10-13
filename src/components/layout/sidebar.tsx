@@ -1,4 +1,5 @@
 "use client";
+import { KeyRound } from "lucide-react";
 
 import { usePathname } from "next/navigation";
 
@@ -136,6 +137,14 @@ export function Sidebar({
         </nav>
 
         <div className="border-t border-white/10 px-3 py-4">
+          <SidebarItem
+            active={isActive("/mi-password")}
+            collapsed={collapsed}
+            href="/mi-password"
+            icon={KeyRound}
+            label="Cambiar contraseña"
+            onNavigate={onCloseMobile}
+          />
           {permisos.includes("SETTINGS.VIEW") && (
             <SidebarItem
               active={isActive("/configuracion")}

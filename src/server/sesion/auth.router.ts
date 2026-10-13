@@ -1,7 +1,10 @@
+import { cambioPasswordSchema } from "~/shared/cambio-password.schema";
+import { cambiarPasswordPersonal } from "./password-personal.service";
 import { z } from "zod";
 import {
   createTRPCRouter,
   publicProcedure,
+  protectedProcedure,
   sessionProcedure,
 } from "../api/trpc";
 import { iniciarSesion, cambiarPrimeraPassword } from "./auth.service";
@@ -10,6 +13,17 @@ import { cookieSesion } from "./Helpers/sesion.helper";
 
 // Router de autenticación que maneja el inicio de sesión, la obtención de información del usuario autenticado, el cambio de contraseña inicial y el cierre de sesión.
 export const authRouter = createTRPCRouter({
+  cambiarPasswordPersonal: protectedProcedure
+    .input(cambioPasswordSchema)
+    .mutation(async ({ ctx, input }) => {
+      await cambiarPasswordPersonal(
+        ctx.db,
+        { usuarioId: ctx.sesion.usuario.id, sesionId: ctx.sesion.id },
+        input,
+      );
+      ctx.responseHeaders.append("Set-Cookie", cookieSesion("", true));
+      return { ok: true };
+    }),
   login: publicProcedure
     .input(
       z.object({
