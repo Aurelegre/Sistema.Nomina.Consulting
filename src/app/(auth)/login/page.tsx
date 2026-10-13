@@ -9,7 +9,7 @@ export default async function LoginPage() {
   if (sesion)
     redirect(sesion.usuario.debeCambiarPassword ? "/cambiar-password" : "/");
   return (
-    <main className="mx-auto flex min-h-screen max-w-md items-center p-6">
+    <main className="min-h-svh bg-slate-50">
       <SesionView />
     </main>
   );
