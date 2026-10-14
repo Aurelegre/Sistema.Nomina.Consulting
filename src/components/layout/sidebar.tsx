@@ -33,8 +33,8 @@ type SidebarProps = {
 };
 
 const navigation = [
+  { href: "/", label: "Inicio", icon: DashboardIcon },
   { href: "/mi-departamento", label: "Mi departamento", icon: UsersIcon },
-  { href: "/", label: "Dashboard", icon: DashboardIcon },
   { href: "/empleados", label: "Empleados", icon: UsersIcon },
   { href: "/departamentos", label: "Departamentos", icon: BuildingIcon },
   { href: "/periodos", label: "Períodos", icon: CalendarIcon },
@@ -114,6 +114,7 @@ export function Sidebar({
             )
             .filter((item) => item.href !== "/ausencias" || empleadoId != null)
             .filter((item) => {
+              if (item.href === "/") return true;
               if (item.href === "/mi-nomina") return empleadoId != null;
               if (PERMISOS_RUTAS[item.href])
                 return permisos.includes(PERMISOS_RUTAS[item.href]!);
