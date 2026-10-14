@@ -290,3 +290,21 @@ Validación: typecheck y lint correctos (tres advertencias previas de Ausencias)
 5 comprobaciones de configuración, 7 de regresión de nómina y 1 escenario
 de navegador aprobados en shadow. Migración aplicada en la base local:
 21 configuraciones, conservando 5 empleados y 1 nómina existentes.
+
+## Preparación Railway (14 de octubre de 2026)
+
+Preparación directa en develop por solicitud del propietario. Dockerfile común
+para web/worker, archivos Railway separados, readiness /api/health y comandos
+sin dependencia de .env. Migraciones solo en pre-deploy web; seed manual.
+Plan, variables, respaldos y pasos pendientes: RAILWAY_DEPLOYMENT.md.
+No se desplegó ni se crearon servicios Railway.
+
+Validación local: typecheck y lint correctos (tres advertencias anteriores de
+Ausencias), build de producción con DATABASE_URL ficticia, tres pruebas de
+variables, web en modo producción con health 200/503, trabajador --once en
+shadow y parada entre trabajos mediante cola simulada. Archivos Railway
+validados contra su esquema oficial. Prisma migrate status comprobado sin
+SHADOW_DATABASE_URL, en modo lectura.
+Pendiente antes de desplegar: construir/probar la imagen Linux y la propagación
+de señales dentro del contenedor; el motor Docker Desktop no estaba encendido.
+No se ejecutó seed ni migración principal, no hubo push ni despliegue remoto.

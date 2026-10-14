@@ -13,7 +13,7 @@ const web = spawn(
 );
 const worker = spawn(
   process.execPath,
-  ["--env-file=.env", "--import", "tsx", "scripts/nomina-worker.ts"],
+  ["--env-file-if-exists=.env", "--import", "tsx", "scripts/nomina-worker.ts"],
   { stdio: "inherit", windowsHide: true },
 );
 let stopping = false;

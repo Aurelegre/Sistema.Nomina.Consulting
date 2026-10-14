@@ -1,6 +1,6 @@
-# T3 + Prisma Starter
+# Sistema de Nómina — Consulting, S.A.
 
-Scaffolding reutilizable para proyectos web con T3 Stack.
+Aplicación de administración de personal, nómina y reportes.
 
 ## Stack
 
@@ -15,7 +15,7 @@ Scaffolding reutilizable para proyectos web con T3 Stack.
 - @t3-oss/env-nextjs
 - ESLint y Prettier
 
-Esta base no contiene lógica de negocio ni modelos específicos de una aplicación.
+Preparación de Railway y plan de despliegue: [docs/RAILWAY_DEPLOYMENT.md](docs/RAILWAY_DEPLOYMENT.md). El despliegue requiere autorización del propietario.
 
 ## Requisitos
 
@@ -36,7 +36,7 @@ pnpm dev
 
 ## Prisma
 
-El archivo `prisma/schema.prisma` está configurado para MySQL y comienza sin modelos de dominio.
+El archivo `prisma/schema.prisma` contiene los modelos del sistema para MySQL 8.4. En producción usar únicamente migraciones versionadas con migrate deploy.
 
 ```bash
 pnpm db:generate
