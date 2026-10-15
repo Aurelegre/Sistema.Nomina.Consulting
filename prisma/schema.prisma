@@ -1,0 +1,414 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+enum EstadoUsuario {
+  ACTIVO
+  INACTIVO
+}
+
+enum EstadoRol {
+  ACTIVO
+  INACTIVO
+}
+
+model Usuario {
+  reportesTributarios ReporteTributario[]
+  reportesPoliza      ReportePoliza[]
+  nominas             Nomina[]
+  comprasRegistradas  CompraSolidaria[]   @relation("CompraRegistro")
+  comprasActualizadas CompraSolidaria[]   @relation("CompraActualizacion")
+  novedades           NovedadNomina[]
+  version             Int                 @default(1)
+  id                  Int                 @id @default(autoincrement())
+  username            String              @unique @db.VarChar(100)
+  nombre              String              @db.VarChar(150)
+  passwordHash        String              @map("password_hash") @db.VarChar(255)
+  debeCambiarPassword Boolean             @default(true) @map("debe_cambiar_password")
+  estado              EstadoUsuario       @default(ACTIVO)
+  rolId               Int                 @map("rol_id")
+  fechaCreacion       DateTime            @default(now()) @map("fecha_creacion")
+  fechaActualizacion  DateTime            @updatedAt @map("fecha_actualizacion")
+  rol                 Rol                 @relation(fields: [rolId], references: [id], onDelete: Restrict)
+  sesiones            Sesion[]
+  empleadoId          Int?                @unique @map("empleado_id")
+  empleado            Empleado?           @relation("EmpleadoUsuario", fields: [empleadoId], references: [id], onDelete: Restrict)
+  ausenciascreadas    Ausencia[]          @relation("AusenciaUsuarioCreacion")
+  ausenciasResolucion Ausencia[]          @relation("AusenciaUsuarioResolucion")
+
+  @@index([rolId])
+  @@map("usuario")
+}
+
+model Rol {
+  version     Int          @default(1)
+  id          Int          @id @default(autoincrement())
+  codigo      String       @unique @db.VarChar(50)
+  nombre      String       @unique @db.VarChar(100)
+  descripcion String?      @db.VarChar(255)
+  estado      EstadoRol    @default(ACTIVO)
+  usuarios    Usuario[]
+  permisos    RolPermiso[]
+
+  @@map("rol")
+}
+
+model Permiso {
+  id          Int          @id @default(autoincrement())
+  codigo      String       @unique @db.VarChar(100)
+  nombre      String       @db.VarChar(100)
+  descripcion String?      @db.VarChar(255)
+  roles       RolPermiso[]
+
+  @@map("permiso")
+}
+
+model RolPermiso {
+  rolId     Int     @map("rol_id")
+  permisoId Int     @map("permiso_id")
+  rol       Rol     @relation(fields: [rolId], references: [id], onDelete: Cascade)
+  permiso   Permiso @relation(fields: [permisoId], references: [id], onDelete: Restrict)
+
+  @@id([rolId, permisoId])
+  @@index([permisoId])
+  @@map("rol_permiso")
+}
+
+model Sesion {
+  id              Int      @id @default(autoincrement())
+  tokenHash       String   @unique @map("token_hash") @db.Char(64)
+  usuarioId       Int      @map("usuario_id")
+  fechaExpiracion DateTime @map("fecha_expiracion")
+  fechaCreacion   DateTime @default(now()) @map("fecha_creacion")
+  usuario         Usuario  @relation(fields: [usuarioId], references: [id], onDelete: Cascade)
+
+  @@index([usuarioId])
+  @@index([fechaExpiracion])
+  @@map("sesion")
+}
+
+model IntentoLogin {
+  username     String   @id @db.VarChar(100)
+  intentos     Int      @default(1)
+  ventanaHasta DateTime @map("ventana_hasta")
+
+  @@map("intento_login")
+}
+
+datasource db {
+  provider          = "mysql"
+  url               = env("DATABASE_URL")
+  shadowDatabaseUrl = env("SHADOW_DATABASE_URL")
+}
+
+enum EstadoPeriodoNomina {
+  ABIERTO
+  PROCESANDO
+  CERRADO
+}
+
+model PeriodoNomina {
+  nomina        Nomina?
+  compras       CompraSolidaria[]
+  novedades     NovedadNomina[]
+  id            Int                 @id @default(autoincrement())
+  mes           Int
+  anio          Int
+  estado        EstadoPeriodoNomina @default(ABIERTO)
+  fechaCreacion DateTime            @default(now()) @map("fecha_creacion")
+  fechaCierre   DateTime?           @map("fecha_cierre")
+
+  @@unique([mes, anio], map: "uq_periodo_nomina_mes_anio")
+  @@map("periodo_nomina")
+}
+
+enum EstadoDepartamento {
+  ACTIVO
+  INACTIVO
+}
+
+model Departamento {
+  novedades          NovedadNomina[]
+  id                 Int                @id @default(autoincrement())
+  codigo             String             @unique @db.VarChar(50)
+  estado             EstadoDepartamento @default(ACTIVO)
+  nombre             String             @unique @db.VarChar(100)
+  cuentaContable     String?            @map("cuenta_contable") @db.VarChar(50)
+  jefeId             Int?               @unique @map("jefe_id")
+  empleados          Empleado[]         @relation("EmpleadoDepartamento")
+  jefe               Empleado?          @relation("JefeDepartamento", fields: [jefeId], references: [id], onDelete: Restrict)
+  version            Int                @default(1)
+  fechaCreacion      DateTime           @default(now()) @map("fecha_creacion")
+  fechaActualizacion DateTime           @updatedAt @map("fecha_actualizacion")
+  ausencias          Ausencia[]         @relation("AusenciaDepartamento")
+
+  @@index([jefeId])
+  @@map("departamento")
+}
+
+enum EstadoEmpleado {
+  ACTIVO
+  INACTIVO
+}
+
+model Empleado {
+  detallesNomina        DetalleNomina[]
+  compras               CompraSolidaria[]
+  novedades             NovedadNomina[]
+  id                    Int               @id @default(autoincrement())
+  codigo                String            @unique @db.VarChar(50)
+  nombre                String            @db.VarChar(150)
+  fechaNacimiento       DateTime          @map("fecha_nacimiento") @db.Date
+  fechaIngreso          DateTime          @map("fecha_ingreso") @db.Date
+  fechaSalida           DateTime?         @map("fecha_salida") @db.Date
+  salarioBase           Decimal           @map("salario_base") @db.Decimal(12, 2)
+  estado                EstadoEmpleado    @default(ACTIVO)
+  departamentoId        Int               @map("departamento_id")
+  departamento          Departamento      @relation("EmpleadoDepartamento", fields: [departamentoId], references: [id], onDelete: Restrict)
+  departamentoQueDirige Departamento?     @relation("JefeDepartamento")
+  version               Int               @default(1)
+  fechaCreacion         DateTime          @default(now()) @map("fecha_creacion")
+  fechaActualizacion    DateTime          @updatedAt @map("fecha_actualizacion")
+  usuario               Usuario?          @relation("EmpleadoUsuario")
+  ausencias             Ausencia[]        @relation("AusenciaEmpleado")
+
+  @@index([departamentoId])
+  @@index([estado])
+  @@map("empleado")
+}
+
+enum EstadoNomina {
+  PENDIENTE
+  EN_PROCESO
+  COMPLETADA
+  FALLIDA
+}
+
+model ParametroFiscalNomina {
+  anio           Int     @id
+  deduccionAnual Decimal @db.Decimal(14, 2)
+  referencia     String  @db.VarChar(500)
+
+  @@map("parametro_fiscal_nomina")
+}
+
+model Nomina {
+  reportesTributarios ReporteTributario[]
+  reportePoliza       ReportePoliza?
+  id                  Int                 @id @default(autoincrement())
+  periodoId           Int                 @unique @map("periodo_id")
+  usuarioId           Int                 @map("usuario_id")
+  solicitante         String              @db.VarChar(150)
+  estado              EstadoNomina        @default(PENDIENTE)
+  fechaSolicitud      DateTime            @default(now()) @map("fecha_solicitud")
+  fechaInicio         DateTime?           @map("fecha_inicio")
+  fechaFin            DateTime?           @map("fecha_fin")
+  mesGeneracion       String?             @map("mes_generacion") @db.VarChar(20)
+  sesionSolicitudId   Int?                @map("sesion_solicitud_id")
+  intentos            Int                 @default(0)
+  error               String?             @db.VarChar(500)
+  reglas              Json
+  totalIngresos       Decimal             @default(0) @map("total_ingresos") @db.Decimal(18, 2)
+  totalEgresos        Decimal             @default(0) @map("total_egresos") @db.Decimal(18, 2)
+  totalAnticipo       Decimal             @default(0) @map("total_anticipo") @db.Decimal(18, 2)
+  totalPago           Decimal             @default(0) @map("total_pago") @db.Decimal(18, 2)
+  totalPatronal       Decimal             @default(0) @map("total_patronal") @db.Decimal(18, 2)
+  periodo             PeriodoNomina       @relation(fields: [periodoId], references: [id], onDelete: Restrict)
+  usuario             Usuario             @relation(fields: [usuarioId], references: [id], onDelete: Restrict)
+  detalles            DetalleNomina[]
+
+  @@index([estado, fechaSolicitud])
+  @@index([usuarioId])
+  @@map("nomina")
+}
+
+model ReportePoliza {
+  id              Int      @id @default(autoincrement())
+  nominaId        Int      @unique @map("nomina_id")
+  usuarioId       Int      @map("usuario_id")
+  generadoPor     String   @map("generado_por") @db.VarChar(150)
+  fechaGeneracion DateTime @default(now()) @map("fecha_generacion")
+  datos           Json
+  nomina          Nomina   @relation(fields: [nominaId], references: [id], onDelete: Restrict)
+  usuario         Usuario  @relation(fields: [usuarioId], references: [id], onDelete: Restrict)
+
+  @@index([usuarioId])
+  @@map("reporte_poliza")
+}
+
+model DetalleNomina {
+  id                 Int      @id @default(autoincrement())
+  nominaId           Int      @map("nomina_id")
+  empleadoId         Int      @map("empleado_id")
+  codigo             String   @db.VarChar(50)
+  nombre             String   @db.VarChar(150)
+  departamento       String   @db.VarChar(100)
+  cuentaContable     String?  @map("cuenta_contable") @db.VarChar(50)
+  entrada            Json
+  salarioBase        Decimal  @map("salario_base") @db.Decimal(14, 2)
+  diasLaborados      Int      @default(0) @map("dias_laborados")
+  diasAusencia       Int      @default(0) @map("dias_ausencia")
+  salarioDevengado   Decimal  @default(0) @map("salario_devengado") @db.Decimal(14, 2)
+  descuentoAusencias Decimal  @default(0) @map("descuento_ausencias") @db.Decimal(14, 2)
+  horasExtras        Decimal  @default(0) @map("horas_extras") @db.Decimal(14, 2)
+  horasDobles        Decimal  @default(0) @map("horas_dobles") @db.Decimal(14, 2)
+  piezas             Decimal  @default(0) @db.Decimal(14, 2)
+  ventas             Decimal  @default(0) @db.Decimal(14, 2)
+  montoExtras        Decimal  @default(0) @map("monto_extras") @db.Decimal(14, 2)
+  montoDobles        Decimal  @default(0) @map("monto_dobles") @db.Decimal(14, 2)
+  bonificacion       Decimal  @default(0) @db.Decimal(14, 2)
+  produccion         Decimal  @default(0) @db.Decimal(14, 2)
+  tasaComision       Decimal  @default(0) @map("tasa_comision") @db.Decimal(6, 4)
+  comision           Decimal  @default(0) @db.Decimal(14, 2)
+  baseIgss           Decimal  @default(0) @map("base_igss") @db.Decimal(14, 2)
+  igssLaboral        Decimal  @default(0) @map("igss_laboral") @db.Decimal(14, 2)
+  igssPatronal       Decimal  @default(0) @map("igss_patronal") @db.Decimal(14, 2)
+  rentaAnual         Decimal  @default(0) @map("renta_anual") @db.Decimal(16, 2)
+  isr                Decimal  @default(0) @db.Decimal(14, 2)
+  solidaridad        Decimal  @default(0) @db.Decimal(14, 2)
+  compras            Decimal  @default(0) @db.Decimal(14, 2)
+  totalIngresos      Decimal  @default(0) @map("total_ingresos") @db.Decimal(14, 2)
+  totalEgresos       Decimal  @default(0) @map("total_egresos") @db.Decimal(14, 2)
+  liquido            Decimal  @default(0) @db.Decimal(14, 2)
+  anticipo           Decimal  @default(0) @db.Decimal(14, 2)
+  pagoFinal          Decimal  @default(0) @map("pago_final") @db.Decimal(14, 2)
+  nomina             Nomina   @relation(fields: [nominaId], references: [id], onDelete: Restrict)
+  empleado           Empleado @relation(fields: [empleadoId], references: [id], onDelete: Restrict)
+
+  @@unique([nominaId, empleadoId])
+  @@index([empleadoId])
+  @@map("detalle_nomina")
+}
+
+enum EstadoAusencia {
+  PENDIENTE
+  APROBADA
+  RECHAZADA
+  APLICADA_NOMINA
+}
+
+enum TipoNovedadNomina {
+  HORAS_EXTRAS
+  HORAS_DOBLES
+  PIEZAS
+  VENTAS
+}
+
+model NovedadNomina {
+  id             Int               @id @default(autoincrement())
+  solicitudId    String            @unique @map("solicitud_id") @db.Char(36)
+  empleadoId     Int               @map("empleado_id")
+  periodoId      Int               @map("periodo_id")
+  departamentoId Int               @map("departamento_id")
+  usuarioId      Int               @map("usuario_id")
+  tipo           TipoNovedadNomina
+  cantidad       Decimal           @db.Decimal(14, 2)
+  fechaCreacion  DateTime          @default(now()) @map("fecha_creacion")
+  empleado       Empleado          @relation(fields: [empleadoId], references: [id], onDelete: Restrict)
+  periodo        PeriodoNomina     @relation(fields: [periodoId], references: [id], onDelete: Restrict)
+  departamento   Departamento      @relation(fields: [departamentoId], references: [id], onDelete: Restrict)
+  usuario        Usuario           @relation(fields: [usuarioId], references: [id], onDelete: Restrict)
+
+  @@index([periodoId, empleadoId, tipo])
+  @@index([departamentoId, periodoId])
+  @@index([empleadoId])
+  @@index([usuarioId])
+  @@map("novedad_nomina")
+}
+
+model Ausencia {
+  id Int @id @default(autoincrement())
+
+  empleadoId     Int @map("empleado_id")
+  departamentoId Int @map("departamento_id")
+
+  fechaInicio DateTime @map("fecha_inicio") @db.Date
+  fechaFin    DateTime @map("fecha_fin") @db.Date
+
+  motivo String @db.VarChar(500)
+
+  aCuentaSalario Boolean @default(false) @map("a_cuenta_salario")
+
+  estado EstadoAusencia @default(PENDIENTE)
+
+  usuarioResolucionId  Int?      @map("usuario_resolucion_id")
+  fechaResolucion      DateTime? @map("fecha_resolucion")
+  comentarioResolucion String?   @map("comentario_resolucion") @db.VarChar(500)
+
+  version Int @default(1)
+
+  fechaCreacion      DateTime @default(now()) @map("fecha_creacion")
+  fechaActualizacion DateTime @updatedAt @map("fecha_actualizacion")
+
+  empleado          Empleado     @relation("AusenciaEmpleado", fields: [empleadoId], references: [id], onDelete: Restrict)
+  departamento      Departamento @relation("AusenciaDepartamento", fields: [departamentoId], references: [id], onDelete: Restrict)
+  usuarioResolucion Usuario?     @relation("AusenciaUsuarioResolucion", fields: [usuarioResolucionId], references: [id], onDelete: SetNull)
+  usuarioCreacionId Int?         @map("usuario_creacion_id")
+  usuarioCreacion   Usuario?     @relation("AusenciaUsuarioCreacion", fields: [usuarioCreacionId], references: [id], onDelete: SetNull)
+
+  @@index([empleadoId])
+  @@index([departamentoId])
+  @@index([estado])
+  @@index([fechaInicio, fechaFin])
+  @@index([usuarioCreacionId])
+  @@index([usuarioResolucionId])
+  @@index([departamentoId, estado])
+  @@map("ausencia")
+}
+
+model CompraSolidaria {
+  id                     Int           @id @default(autoincrement())
+  empleadoId             Int           @map("empleado_id")
+  periodoId              Int           @map("periodo_id")
+  usuarioRegistroId      Int           @map("usuario_registro_id")
+  usuarioActualizacionId Int?          @map("usuario_actualizacion_id")
+  detalle                String        @db.VarChar(500)
+  monto                  Decimal       @db.Decimal(12, 2)
+  fechaRegistro          DateTime      @default(now()) @map("fecha_registro")
+  fechaActualizacion     DateTime      @updatedAt @map("fecha_actualizacion")
+  version                Int           @default(1)
+  empleado               Empleado      @relation(fields: [empleadoId], references: [id], onDelete: Restrict)
+  periodo                PeriodoNomina @relation(fields: [periodoId], references: [id], onDelete: Restrict)
+  usuarioRegistro        Usuario       @relation("CompraRegistro", fields: [usuarioRegistroId], references: [id], onDelete: Restrict)
+  usuarioActualizacion   Usuario?      @relation("CompraActualizacion", fields: [usuarioActualizacionId], references: [id], onDelete: Restrict)
+
+  @@index([periodoId, empleadoId])
+  @@index([empleadoId])
+  @@index([usuarioRegistroId])
+  @@index([usuarioActualizacionId])
+  @@map("compra_solidaria")
+}
+
+enum TipoReporteTributario {
+  IGSS_LABORAL
+  IGSS_PATRONAL
+  ISR
+}
+
+model ReporteTributario {
+  id              Int                   @id @default(autoincrement())
+  nominaId        Int                   @map("nomina_id")
+  tipo            TipoReporteTributario
+  usuarioId       Int                   @map("usuario_id")
+  generadoPor     String                @map("generado_por") @db.VarChar(150)
+  fechaGeneracion DateTime              @default(now()) @map("fecha_generacion")
+  datos           Json
+  nomina          Nomina                @relation(fields: [nominaId], references: [id], onDelete: Restrict)
+  usuario         Usuario               @relation(fields: [usuarioId], references: [id], onDelete: Restrict)
+
+  @@unique([nominaId, tipo])
+  @@index([usuarioId])
+  @@map("reporte_tributario")
+}
+
+model Configuracion {
+  id                 Int      @id @default(autoincrement())
+  clave              String   @unique @db.VarChar(64)
+  valor              String   @db.VarChar(32)
+  descripcion        String   @db.VarChar(255)
+  version            Int      @default(1)
+  actualizadoPor     Int?     @map("actualizado_por")
+  fechaActualizacion DateTime @default(now()) @updatedAt @map("fecha_actualizacion")
+
+  @@map("configuraciones")
+}

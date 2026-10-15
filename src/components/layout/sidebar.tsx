@@ -1,0 +1,201 @@
+"use client";
+import { KeyRound } from "lucide-react";
+
+import { usePathname } from "next/navigation";
+
+import {
+  AbsenceIcon,
+  AssociationIcon,
+  BuildingIcon,
+  CalendarIcon,
+  ChevronIcon,
+  DashboardIcon,
+  LogoutIcon,
+  PayrollIcon,
+  ReportIcon,
+  SettingsIcon,
+  UsersIcon,
+} from "~/components/layout/sidebar-icons";
+import { SidebarItem } from "~/components/layout/sidebar-item";
+import { Button } from "~/components/ui/button";
+import { ANY_PERMISOS_RUTAS, PERMISOS_RUTAS } from "~/shared/permisos-rutas";
+import { api } from "~/trpc/react";
+import { useSeguimientoNomina } from "~/features/nomina/Hooks/seguimiento-nomina";
+
+type SidebarProps = {
+  esJefeDepartamento?: boolean;
+  empleadoId?: number | null;
+  permisos: string[];
+  collapsed: boolean;
+  mobileOpen: boolean;
+  onToggleCollapsed: () => void;
+  onCloseMobile: () => void;
+};
+
+const navigation = [
+  { href: "/", label: "Inicio", icon: DashboardIcon },
+  { href: "/mi-departamento", label: "Mi departamento", icon: UsersIcon },
+  { href: "/empleados", label: "Empleados", icon: UsersIcon },
+  { href: "/departamentos", label: "Departamentos", icon: BuildingIcon },
+  { href: "/periodos", label: "Períodos", icon: CalendarIcon },
+  { href: "/nomina", label: "Nómina", icon: PayrollIcon },
+  { href: "/mi-nomina", label: "Mi Nómina", icon: PayrollIcon },
+  { href: "/ausencias", label: "Ausencias", icon: AbsenceIcon },
+  { href: "/asociacion", label: "Asociación", icon: AssociationIcon },
+  { href: "/reportes", label: "Reportes", icon: ReportIcon },
+  { href: "/usuarios", label: "Usuarios", icon: UsersIcon },
+  { href: "/roles", label: "Roles", icon: UsersIcon },
+  { href: "/permisos", label: "Permisos", icon: SettingsIcon },
+] as const;
+
+export function Sidebar({
+  esJefeDepartamento,
+  empleadoId,
+  permisos,
+  collapsed,
+  mobileOpen,
+  onToggleCollapsed,
+  onCloseMobile,
+}: SidebarProps) {
+  const pathname = usePathname();
+  const seguimiento = useSeguimientoNomina();
+  const logout = api.auth.logout.useMutation({
+    onSettled: () => window.location.assign("/login"),
+  });
+
+  const isActive = (href: string) =>
+    href === "/" ? pathname === "/" : pathname.startsWith(href);
+
+  return (
+    <>
+      {mobileOpen ? (
+        <button
+          aria-label="Cerrar menú lateral"
+          className="fixed inset-0 z-30 bg-slate-950/50 lg:hidden"
+          type="button"
+          onClick={onCloseMobile}
+        />
+      ) : null}
+
+      <aside
+        className={[
+          "bg-primary fixed inset-y-0 left-0 z-40 flex flex-col text-white shadow-xl transition-[width,transform] duration-300",
+          collapsed ? "lg:w-20" : "lg:w-64",
+          mobileOpen ? "translate-x-0" : "-translate-x-full",
+          "w-64 lg:translate-x-0",
+        ].join(" ")}
+      >
+        <div
+          className={[
+            "flex h-20 items-center border-b border-white/10",
+            collapsed ? "justify-center px-3" : "gap-3 px-5",
+          ].join(" ")}
+        >
+          <div className="text-primary flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-white text-sm font-bold">
+            CS
+          </div>
+
+          {!collapsed ? (
+            <div className="min-w-0">
+              <p className="truncate text-sm font-semibold tracking-wide">
+                Consulting, S.A.
+              </p>
+              <p className="truncate text-xs text-slate-400">
+                Sistema de Nómina
+              </p>
+            </div>
+          ) : null}
+        </div>
+
+        <nav className="flex-1 space-y-1 overflow-y-auto px-3 py-5">
+          {navigation
+            .filter(
+              (item) => item.href !== "/mi-departamento" || esJefeDepartamento,
+            )
+            .filter((item) => item.href !== "/ausencias" || empleadoId != null)
+            .filter((item) => {
+              if (item.href === "/") return true;
+              if (item.href === "/mi-nomina") return empleadoId != null;
+              if (PERMISOS_RUTAS[item.href])
+                return permisos.includes(PERMISOS_RUTAS[item.href]!);
+
+              if (ANY_PERMISOS_RUTAS[item.href])
+                return ANY_PERMISOS_RUTAS[item.href]!.some((permiso) =>
+                  permisos.includes(permiso),
+                );
+            })
+            .map((item) => (
+              <SidebarItem
+                key={item.href}
+                active={isActive(item.href)}
+                collapsed={collapsed}
+                href={item.href}
+                icon={item.icon}
+                label={item.label}
+                onNavigate={onCloseMobile}
+              />
+            ))}
+        </nav>
+
+        <div className="border-t border-white/10 px-3 py-4">
+          <SidebarItem
+            active={isActive("/mi-password")}
+            collapsed={collapsed}
+            href="/mi-password"
+            icon={KeyRound}
+            label="Cambiar contraseña"
+            onNavigate={onCloseMobile}
+          />
+          {permisos.includes("SETTINGS.VIEW") && (
+            <SidebarItem
+              active={isActive("/configuracion")}
+              collapsed={collapsed}
+              href="/configuracion"
+              icon={SettingsIcon}
+              label="Configuración"
+              onNavigate={onCloseMobile}
+            />
+          )}
+
+          <Button
+            className={[
+              "mt-1 flex min-h-11 w-full items-center rounded-xl text-sm font-medium text-slate-400 transition",
+              collapsed ? "justify-center px-3" : "gap-3 px-3.5",
+            ].join(" ")}
+            disabled={logout.isPending}
+            onClick={() => {
+              seguimiento.cancelar();
+              logout.mutate();
+            }}
+            title="Cerrar sesión"
+            type="button"
+          >
+            <LogoutIcon className="h-5 w-5 shrink-0" aria-hidden="true" />
+            {!collapsed ? <span>Cerrar sesión</span> : null}
+          </Button>
+
+          <button
+            aria-label={
+              collapsed ? "Expandir menú lateral" : "Contraer menú lateral"
+            }
+            className={[
+              "mt-3 hidden min-h-10 w-full items-center rounded-xl border border-white/10 text-xs font-medium text-slate-300 transition hover:bg-white/5 hover:text-white lg:flex",
+              collapsed ? "justify-center px-3" : "gap-3 px-3.5",
+            ].join(" ")}
+            type="button"
+            onClick={onToggleCollapsed}
+          >
+            <ChevronIcon
+              className={[
+                "h-4 w-4 transition-transform",
+                collapsed ? "rotate-180" : "",
+              ].join(" ")}
+              aria-hidden="true"
+            />
+            {!collapsed ? <span>Contraer menú</span> : null}
+          </button>
+        </div>
+      </aside>
+    </>
+  );
+}

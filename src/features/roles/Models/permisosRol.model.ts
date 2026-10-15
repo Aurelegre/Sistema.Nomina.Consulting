@@ -1,0 +1,21 @@
+import type { Dispatch, SetStateAction } from "react";
+import type { useAccionAcceso } from "~/shared/Hooks/use-accion-acceso";
+import type { Salidas } from "~/shared/Models/acceso.model";
+import type { Rol } from "./Rol.model";
+export type PermisosRolModalProps = {
+  rolPermisos: Rol | null;
+  setRolPermisos: Dispatch<SetStateAction<Rol | null>>;
+  accion: ReturnType<typeof useAccionAcceso>;
+  confirmarPermisos: boolean;
+  setConfirmarPermisos: Dispatch<SetStateAction<boolean>>;
+  buscarPermiso: string;
+  setBuscarPermiso: Dispatch<SetStateAction<string>>;
+  seleccionados: string[];
+  setSeleccionados: Dispatch<SetStateAction<string[]>>;
+  agregados: string[];
+  retirados: string[];
+  visibles: Salidas["roles"]["catalogoAsignable"];
+  grupos: string[];
+  errorCatalogo: string | undefined;
+  cargandoCatalogo: boolean;
+};

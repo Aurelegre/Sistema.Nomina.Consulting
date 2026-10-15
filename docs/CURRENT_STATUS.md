@@ -1,0 +1,335 @@
+# Estado actual
+
+Fecha de referencia: 10 de octubre de 2026.
+
+## Cambio de contraseña personal
+
+Implementado en `feature/cambio-password-personal`: opción del sidebar
+«Cambiar contraseña» y ruta /mi-password, disponible para cualquier sesión con
+contraseña definitiva. Modal con clave actual, nueva de 12 a 128 caracteres y
+confirmación; validación compartida frontend/backend y verificación Argon2id.
+Identidad derivada de la sesión, control de concurrencia y revocación de todas
+las sesiones después del cambio. Se conserva el cambio inicial obligatorio.
+No requiere permisos adicionales, migraciones ni seed.
+
+Validación: typecheck y lint correctos (tres advertencias previas de Ausencias);
+cinco comprobaciones backend y un escenario de navegador aprobados en shadow,
+incluyendo usuario sin permisos ni empleado, validaciones, concurrencia,
+revocación de sesiones, cookie, móvil y login con la nueva contraseña.
+La base principal no se modificó. Ver AUTH_BOOTSTRAP.md.
+
+## Reporte de cumpleañeros
+
+Implementado en `feature/reports-nomina`, ruta `/reportes/cumpleaneros`.
+Mes actual de Guatemala por defecto; filtros de activos/inactivos/todos y
+departamento opcional. Muestra código, nombre, departamento y día/mes, ordenados
+por día y nombre. Incluye nacimientos del 29 de febrero y departamentos inactivos.
+Consulta información actual, sin persistencia ni dependencia de períodos.
+Exportación CSV/PDF con permisos BIRTHDAYS_REPORT.VIEW y BIRTHDAYS_REPORT.EXPORT.
+
+Validación: cinco comprobaciones de servicios y un escenario de navegador
+(filtros, descargas, acceso limitado y móvil) aprobados en la shadow autorizada.
+PDF descargado y documento de seis páginas revisados visualmente. Typecheck,
+lint y build correctos; permanecen tres advertencias preexistentes de Ausencias.
+Migración de permisos 20261010100000_reporte_cumpleaneros aplicada en desarrollo
+local, conservando 5 empleados, 1 nómina, 1 póliza y 0 reportes tributarios.
+No se creó una tabla adicional. Ver `BIRTHDAYS_REPORT.md`.
+
+## Reportes: IGSS laboral, IGSS patronal e ISR
+
+Implementados en la misma rama `feature/reports-nomina`. Tres consultas internas
+independientes con permisos propios de consulta, generación y exportación.
+Vista previa PDF, confirmación manual, persistencia única por nómina/tipo y
+exportación CSV/PDF. Se conserva el detalle histórico, incluidas cuotas cero;
+departamentos actuales sin movimientos aparecen en cero al preparar reportes
+nuevos. Los reportes guardados permanecen inmutables. Ver `TAX_REPORTS.md`.
+
+Validación: 7 comprobaciones de servicios tributarios, 7 de regresión de póliza
+y un escenario de navegador que recorre los tres reportes y sus permisos.
+Revisión visual de las seis páginas PDF exportadas. Typecheck, lint y build
+correctos; lint conserva tres advertencias preexistentes de Ausencias.
+Migración `20261010090000_reportes_igss_isr` aplicada en desarrollo local.
+Se conservaron 5 empleados, 1 nómina, 1 período y 1 póliza existentes; no se
+generaron reportes tributarios operativos durante las pruebas.
+
+## Reportes: póliza contable
+
+Implementada en `feature/reports-nomina`: `/reportes/poliza`, agrupación histórica,
+vista previa, generación manual, almacenamiento por período y exportación CSV/PDF.
+Permisos VIEW/GENERATE/EXPORT independientes. Cuentas nuevas en cero, importes
+negativos en rojo y reportes guardados inmutables. Ver `ACCOUNTING_POLICY.md`.
+
+## Generación de nómina
+
+Implementada en `feature/generacion-nomina`: SP de cálculo, SP de nombre del mes,
+captura histórica, cola persistente, recuperación de fallos, cierre automático,
+permisos granulares, administración `/nomina`, CSV, `/mi-nomina` y notificaciones.
+Se retira el cierre manual. La generación integra novedades, compras y ausencias;
+permite resultados negativos y aplica las decisiones del propietario sobre
+anticipo, solidaridad e ISR. Ver `PAYROLL_GENERATION.md` para operación y alcance.
+
+El seguimiento ya no consulta periódicamente listados ni avisos generales: solo
+la sesión solicitante consulta su ejecución y muestra una indicación de recarga.
+Cerrar sesión cancela ese aviso. El período pasa a `PROCESANDO` al solicitar
+la generación y bloquea movimientos hasta el cierre o la recuperación por fallo.
+
+Las secciones posteriores describen las entregas previas; sus referencias al
+procesador pendiente y al cierre manual quedan sustituidas por esta entrega.
+
+## Usuario y empleado
+
+Usuarios permite crear cuentas con empleado opcional y asignarlo posteriormente
+mediante el mismo selector modal, con filtros, paginación y confirmación.
+Los servicios listan empleados activos sin usuario y comprueban disponibilidad,
+permisos y concurrencia al guardar. No requiere cambios en Prisma.
+Ver `ACCESS_MANAGEMENT.md`.
+
+## Ausencias
+
+Implementado en `feature/absences`: creación propia, listado y detalle por ámbito,
+aprobación/rechazo definitivo por jefe vigente del departamento histórico,
+autoaprobación permitida y decisión salarial del jefe sin cálculos monetarios.
+Incluye vínculo opcional usuario-empleado administrable por permiso, bloqueo de
+login/sesiones por empleado inactivo y coordinación con cierre de períodos.
+Reutiliza la migración base existente. Incluye frontend en `/ausencias`: historial
+propio y creación modal, navegación superior a revisión del departamento,
+filtros por empleado/estado/fechas, detalle y confirmaciones de aprobación o
+rechazo. La navegación y las rutas exigen vínculo y jefatura según el apartado.
+Ver `ABSENCES.md`.
+
+## Empleados
+
+Implementado en `feature/employees`, pendiente de revisión e integración:
+listado paginado, búsqueda y filtros, detalle, editor modal para creación y
+actualización de datos y salario, baja con fecha de salida y recontratación.
+Incluye permisos, versiones y validaciones transaccionales de departamentos
+activos y jefaturas. La creación de departamentos exige jefe activo y la
+desactivación se bloquea si tiene empleados asignados. Se reutilizan los modelos
+Prisma existentes de la rama. Detalles y validación en `EMPLOYEES.md`.
+
+## Tienda Solidaria
+
+Implementación en `feature/tiendaSolidaria`: compras independientes desde
+`/empleados` y gestión en `/asociacion/compras`, con permisos de consulta,
+creación, edición y eliminación. Histórico por período, monto acumulado,
+detalle obligatorio, autor y control de versiones. No se admiten nuevas compras
+a empleados inactivos ni modificaciones de períodos cerrados. MySQL restringe
+la existencia de más de un período abierto; la fecha del sistema no determina
+el período operativo. Ver `SOLIDARITY_PURCHASES.md`. El procesador de nómina
+continúa pendiente y consumirá la suma de compras por empleado y período.
+
+## Base técnica
+
+Completado:
+
+- Next.js
+- React
+- TypeScript
+- tRPC
+- TanStack Query
+- Prisma
+- MySQL
+- Tailwind
+- pnpm
+- ESLint
+- configuración de entorno
+- health check
+- migraciones Prisma
+
+## PeriodoNomina
+
+Estado: integrado en develop.
+
+Implementado:
+
+- modelo Prisma;
+- migración;
+- mes;
+- año;
+- estado ABIERTO/CERRADO;
+- fecha de creación;
+- fecha de cierre;
+- restricción única mes+año;
+- listar;
+- obtener;
+- crear;
+- cerrar;
+- Service;
+- router tRPC;
+- validación Zod;
+- UI;
+- confirmación de cierre.
+
+## Base Layout
+
+Estado: integrado en develop.
+
+Implementado:
+
+- AppShell;
+- sidebar izquierdo;
+- expandido/contraído;
+- persistencia en localStorage;
+- responsive;
+- drawer móvil;
+- header;
+- navegación;
+- opción activa;
+- placeholders de módulos.
+
+## Pendiente / próximas features
+
+### Novedades departamentales
+
+Implementadas en `feature/department-payroll-news`: pantalla `/mi-departamento`
+para jefes vigentes, listado y detalle por permisos, registro acumulable de horas
+extras/dobles, piezas de Producción y ventas de Mercadeo por período abierto.
+Conserva autor y departamento histórico, valida ámbito en servicios y evita
+duplicados al reintentar la misma solicitud. Incluye migración Prisma.
+El cálculo monetario e integración al procesamiento de nómina quedan pendientes.
+Ver `PAYROLL_NEWS.md` para permisos, instalación, decisiones y siguientes pasos.
+
+Orden sugerido:
+
+1. revisar e integrar departamentos (`feature/departments`);
+2. revisar e integrar empleados (`feature/employees`), con jefe obligatorio al crear departamentos y bloqueo de desactivación si tienen empleados asignados;
+3. ausencias;
+4. novedades de nómina;
+5. Asociación Solidarista;
+6. cálculo de IGSS;
+7. ISR;
+8. procesamiento de nómina;
+9. stored procedure;
+10. función nombre de mes;
+11. póliza contable;
+12. reportes;
+13. histórico/auditoría;
+14. deployment cloud;
+15. pruebas y documentación final.
+
+## Departamentos
+
+Implementado en `feature/departments`, pendiente de revisión e integración:
+catálogo ampliable con cinco departamentos iniciales, creación, edición y
+desactivación por permisos, códigos únicos e inmutables y estado ACTIVO/INACTIVO
+visible en tabla. Incluye control de concurrencia, formularios modales y
+confirmación shadcn/ui. Las cuentas iniciales quedan pendientes de configurar;
+los nuevos departamentos requieren cuenta. La asignación obligatoria de jefe y
+la validación de empleados al desactivar se incorporan en `feature/employees`.
+Detalles en `DEPARTMENTS.md`.
+
+## Arquitectura frontend
+
+La rama `feature/frontend-entity-architecture` reorganiza las pantallas existentes
+en `src/features`, con vistas, componentes, modales y modelos por entidad.
+Incluye usuarios, roles, permisos, períodos, sesión e inicio. Los elementos de
+layout y acceso reutilizados se ubican en `src/components`.
+Períodos utiliza los componentes shadcn/ui existentes para formulario, tabla y
+confirmación de cierre. Integrada en develop mediante el PR #12.
+No agregó módulos funcionales ni cambios de BD.
+
+Validación de la refactorización: `pnpm lint`, `pnpm typecheck` y `pnpm build`
+correctos; cuatro pruebas Playwright aprobadas para acceso, usuarios/roles,
+autenticación y períodos. La prueba de períodos también verifica cancelación,
+duplicados, cierre persistido y ausencia de desbordamiento horizontal en móvil.
+
+El proyecto adoptó shadcn/ui como estándar después de las primeras features.
+
+Por tanto, algunos componentes actuales todavía usan Tailwind manual.
+
+Regla:
+
+Cuando se toque una feature existente, migrar progresivamente sus componentes interactivos a shadcn/ui.
+
+Prioridad:
+
+- dialogs;
+- buttons;
+- forms;
+- tables;
+- selects;
+- badges;
+- tooltips.
+
+## Autenticación
+
+Implementación inicial de `feature/auth-bootstrap`, integrada en develop:
+modelos de seguridad, catálogo y seed administrador, login/logout, sesiones,
+cambio obligatorio de contraseña temporal y protección backend de períodos.
+Administración visual de usuarios/roles/permisos implementada en
+`feature/users-roles-permissions`, integrada en develop. Incluye contraseñas
+temporales, revocación de sesiones, delegación limitada y control de concurrencia.
+El ámbito departamental queda pendiente de los módulos de empleados/ausencias.
+Detalles: `ACCESS_MANAGEMENT.md`.
+Preparación de acceso y despliegue: `AUTH_BOOTSTRAP.md`.
+
+El diseño objetivo está en `AUTHORIZATION.md`.
+
+## Base de datos
+
+MySQL local:
+`127.0.0.1:3306`
+
+Base:
+`nomina_consulting`
+
+Prisma Migrate necesita shadow database separada.
+
+## Sistema legacy
+
+El repositorio anterior ya fue analizado y su información de reutilización se conserva en `docs/internal/`.
+
+## Configuraciones del sistema
+
+Implementadas en feature/configuraciones-sistema: 21 parámetros en BD,
+pantalla dinámica /configuracion, permisos VIEW/MANAGE, validación y versión.
+Login y SP de nómina usan valores persistidos; la nómina conserva su captura.
+Ver SYSTEM_SETTINGS.md.
+
+Validación: typecheck y lint correctos (tres advertencias previas de Ausencias),
+5 comprobaciones de configuración, 7 de regresión de nómina y 1 escenario
+de navegador aprobados en shadow. Migración aplicada en la base local:
+21 configuraciones, conservando 5 empleados y 1 nómina existentes.
+
+## Preparación Railway (14 de octubre de 2026)
+
+Preparación directa en develop por solicitud del propietario. Dockerfile común
+para web/worker, archivos Railway separados, readiness /api/health y comandos
+sin dependencia de .env. Migraciones solo en pre-deploy web; seed manual.
+Plan, variables, respaldos y pasos pendientes: RAILWAY_DEPLOYMENT.md.
+No se desplegó ni se crearon servicios Railway.
+
+Validación local: typecheck y lint correctos (tres advertencias anteriores de
+Ausencias), build de producción con DATABASE_URL ficticia, tres pruebas de
+variables, web en modo producción con health 200/503, trabajador --once en
+shadow y parada entre trabajos mediante cola simulada. Archivos Railway
+validados contra su esquema oficial. Prisma migrate status comprobado sin
+SHADOW_DATABASE_URL, en modo lectura.
+Pendiente antes de desplegar: construir/probar la imagen Linux y la propagación
+de señales dentro del contenedor; el motor Docker Desktop no estaba encendido.
+No se ejecutó seed ni migración principal, no hubo push ni despliegue remoto.
+
+## Validación Docker completada (14 de octubre de 2026)
+
+Imagen local `nomina-consulting:railway-test`, Linux amd64, construida
+correctamente desde el Dockerfile sin cambios de código adicionales.
+Build, TypeScript y lint correctos (tres advertencias previas de Ausencias).
+MySQL 8.4.11 temporal, red privada Docker y contenedores limitados a 1 GiB.
+
+Comprobaciones aprobadas:
+- 15 migraciones aplicadas desde cero sin SHADOW_DATABASE_URL.
+- Seed y Argon2 nativo; siete comprobaciones de regresión de nómina/SP.
+- Web, assets CSS, login, cookie Secure/HttpOnly y rechazo de origen externo.
+- Generación de un PDF dentro de Linux.
+- Healthcheck 200 con MySQL disponible y 503 sin exponer detalles cuando se detiene.
+- Imagen sin .env, ejecutada como UID 1000.
+- Trabajador separado y parada SIGTERM con salida 0, sin OOM.
+
+Medición puntual después de las pruebas: web 118 MiB, worker 44.8 MiB,
+MySQL 716.4 MiB. MySQL utilizó tmpfs, por lo que la cifra incluye almacenamiento
+temporal en RAM; no representa el consumo con volumen ni una prueba de carga.
+No garantiza que el crédito gratuito dure 30 días.
+
+Se eliminaron los tres contenedores y la red temporales. Se conserva la imagen
+local para reutilizarla. No se modificaron la base principal ni la shadow.
+No se creó infraestructura Railway ni se hizo push o despliegue.
