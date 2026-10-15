@@ -64,14 +64,28 @@ incorrecto ocasionará 403 en el login. HTTPS permite la cookie Secure.
 No establecer TZ=America/Guatemala en MySQL: conservar almacenamiento UTC; la
 aplicación y el SP ya resuelven el mes informativo de Guatemala.
 
+## Decisiones confirmadas por el propietario
+
+- Plan: trial de Railway de hasta 30 días. Incluye US$5; finaliza al agotar
+  ese saldo o el plazo. Confirmar si la cuenta tiene Full Trial o Limited Trial.
+- Dominio: el gratuito asignado por Railway.
+- Región: cualquier región disponible; colocar los tres servicios en la misma.
+- No se ha autorizado ejecutar el despliegue. Primero se validan contenedores localmente.
+
+El trial limita recursos (la documentación indica 1 GB de RAM y cinco servicios
+por proyecto). Tres servicios caben en el límite de cantidad, pero su consumo
+puede agotar el crédito antes de 30 días. No usarlo como garantía de continuidad
+productiva; exportar backups antes del vencimiento y revisar la retención de
+volúmenes. Fuente: https://docs.railway.com/pricing/free-trial.
+
 ## Decisiones pendientes antes de ejecutar
 
-1. Cuenta/proyecto Railway, región y presupuesto con alertas de consumo.
+1. Proyecto Railway, saldo disponible y alertas de consumo del trial.
 2. Elegir un entorno de pruebas separado del productivo. develop será inicialmente
    el origen solicitado; el paso a main continúa bajo control del propietario.
 3. Base nueva o traslado de la información local. **Por defecto se preparará una
    base nueva**; no se trasladan empleados, usuarios ni nóminas sin autorización.
-4. Dominio Railway o dominio propio y persona que configurará DNS.
+4. Registrar el dominio asignado por Railway en APP_URL una vez creado.
 5. Identidad del administrador inicial; ingresar su contraseña como secreto,
    no en documentación ni en el repositorio.
 6. Retención de backups, responsables de restauración y ventana de mantenimiento.
@@ -83,7 +97,8 @@ aplicación y el SP ya resuelven el mes informativo de Guatemala.
    preparados para revisar; no ejecutar un despliegue preliminar accidental.
 2. Activar el motor Docker y ejecutar `docker build -t nomina-consulting .`.
    Validar en Linux la instalación de Argon2/Prisma, assets y ejecución de PDF.
-   Esta comprobación de imagen es requisito pendiente si no se pudo ejecutar.
+   Comprobación Linux aprobada localmente el 14 de octubre de 2026; repetir
+   si cambia el código o la imagen base.
 3. Crear proyecto/entorno Railway. Crear MySQL y verificar explícitamente
    versión 8.4, volumen persistente, red privada, UTC y backups. No cambiar la
    versión de una base poblada para adaptarla; una versión distinta requiere
@@ -138,8 +153,10 @@ prueba periódica de restauración. No eliminar volúmenes para resolver fallos.
 
 ## Validación de esta preparación
 
-No se realizaron migraciones ni seed sobre la base principal, ni se consumió su
-cola. Ver docs/CURRENT_STATUS.md para los resultados locales y limitaciones.
+Imagen Linux probada: build, migraciones en MySQL temporal, seed, nómina,
+login, PDF, healthcheck y SIGTERM aprobados. No se realizaron migraciones ni
+seed sobre la base principal, ni se consumió su cola. Ver docs/CURRENT_STATUS.md
+para los resultados locales y las mediciones de memoria.
 El docker-compose.yml existente sigue destinado exclusivamente a MySQL local;
 no es la definición del despliegue Railway. Railway permite importar algunos
 Compose, pero aquí se usan servicios separados y dos archivos explícitos.

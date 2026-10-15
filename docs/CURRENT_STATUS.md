@@ -308,3 +308,28 @@ SHADOW_DATABASE_URL, en modo lectura.
 Pendiente antes de desplegar: construir/probar la imagen Linux y la propagación
 de señales dentro del contenedor; el motor Docker Desktop no estaba encendido.
 No se ejecutó seed ni migración principal, no hubo push ni despliegue remoto.
+
+## Validación Docker completada (14 de octubre de 2026)
+
+Imagen local `nomina-consulting:railway-test`, Linux amd64, construida
+correctamente desde el Dockerfile sin cambios de código adicionales.
+Build, TypeScript y lint correctos (tres advertencias previas de Ausencias).
+MySQL 8.4.11 temporal, red privada Docker y contenedores limitados a 1 GiB.
+
+Comprobaciones aprobadas:
+- 15 migraciones aplicadas desde cero sin SHADOW_DATABASE_URL.
+- Seed y Argon2 nativo; siete comprobaciones de regresión de nómina/SP.
+- Web, assets CSS, login, cookie Secure/HttpOnly y rechazo de origen externo.
+- Generación de un PDF dentro de Linux.
+- Healthcheck 200 con MySQL disponible y 503 sin exponer detalles cuando se detiene.
+- Imagen sin .env, ejecutada como UID 1000.
+- Trabajador separado y parada SIGTERM con salida 0, sin OOM.
+
+Medición puntual después de las pruebas: web 118 MiB, worker 44.8 MiB,
+MySQL 716.4 MiB. MySQL utilizó tmpfs, por lo que la cifra incluye almacenamiento
+temporal en RAM; no representa el consumo con volumen ni una prueba de carga.
+No garantiza que el crédito gratuito dure 30 días.
+
+Se eliminaron los tres contenedores y la red temporales. Se conserva la imagen
+local para reutilizarla. No se modificaron la base principal ni la shadow.
+No se creó infraestructura Railway ni se hizo push o despliegue.
